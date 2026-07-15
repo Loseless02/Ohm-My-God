@@ -26,6 +26,7 @@ export interface SimResult {
   energized: Record<string, boolean>; // bobin LABEL → enerjili
   level: Record<string, number>; // yük/kapı part id → 0..1
   flow: Record<string, number>; // kablo id → normalize akım / mantık değeri
+  dir: Record<string, number>; // kablo id → akış yönü: +1 = a→b, -1 = b→a
   closed: Record<string, boolean>; // anahtar part id → kapalı mı
 }
 
@@ -107,6 +108,7 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
     energized: {},
     level: {},
     flow: {},
+    dir: {},
     closed: {},
   };
   if (!empty.hasSource) {
@@ -212,6 +214,9 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
     const b = nodeIdx.get(w.b);
     if (a === undefined || b === undefined) continue;
     res.flow[w.id] = (Math.abs(volts[a] - volts[b]) * G_WIRE) / vRef;
+    // akım yüksek potansiyelden alçağa akar: kablonun kendi üzerindeki minik
+    // gerilim düşümünün işareti gerçek yönü verir
+    res.dir[w.id] = volts[a] > volts[b] ? 1 : volts[a] < volts[b] ? -1 : 0;
   }
   // kısa devre: yüksek potansiyel uçlarından çekilen etkin iletkenlik
   const highIds = new Set<string>([
@@ -243,6 +248,7 @@ export function simulateLogic(
     energized: {},
     level: {},
     flow: {},
+    dir: {},
     closed: {},
   };
 
@@ -341,6 +347,50 @@ export function simulateLogic(
   for (const w of wires) {
     if (!par.has(w.a)) continue;
     res.flow[w.id] = val[find(w.a)] ? 1 : 0;
+  }
+
+  // akış yönü: sürücülerden (L rayı + aktif kapı çıkışları) uzaklaşan yönde.
+  // iletken graf üzerinde çok kaynaklı BFS derinliği karşılaştırılır.
+  const adj = new Map<string, string[]>();
+  const link = (a: string, b: string) => {
+    if (!par.has(a) || !par.has(b)) return;
+    (adj.get(a) ?? adj.set(a, []).get(a)!).push(b);
+    (adj.get(b) ?? adj.set(b, []).get(b)!).push(a);
+  };
+  for (const w of wires) link(w.a, w.b);
+  for (const p of parts) {
+    const kind = SPEC[p.type].kind;
+    if (kind === "switch" && res.closed[p.id]) {
+      const [t0, t1] = terminalsOf(p);
+      link(t0.id, t1.id);
+    }
+    if (kind === "rail") {
+      const ts = terminalsOf(p);
+      for (let i = 1; i < ts.length; i++) link(ts[0].id, ts[i].id);
+    }
+  }
+  const depth = new Map<string, number>();
+  const queue: string[] = [];
+  for (const p of parts) {
+    if (p.type === "rail_l") for (const t of terminalsOf(p)) if (!depth.has(t.id)) { depth.set(t.id, 0); queue.push(t.id); }
+    if (SPEC[p.type].kind === "gate" && res.level[p.id] === 1) {
+      const ts = terminalsOf(p);
+      const out = ts[ts.length - 1].id;
+      if (!depth.has(out)) { depth.set(out, 0); queue.push(out); }
+    }
+  }
+  for (let qi = 0; qi < queue.length; qi++) {
+    const cur = queue[qi];
+    const d = depth.get(cur)!;
+    for (const nb of adj.get(cur) ?? [])
+      if (!depth.has(nb)) { depth.set(nb, d + 1); queue.push(nb); }
+  }
+  for (const w of wires) {
+    if (!res.flow[w.id]) continue;
+    const da = depth.get(w.a);
+    const db = depth.get(w.b);
+    if (da === undefined || db === undefined || da === db) continue;
+    res.dir[w.id] = da < db ? 1 : -1;
   }
   return res;
 }

@@ -16,6 +16,10 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
         <NavLink to="/playground" className={linkCls} onClick={onNavigate}>
           <span className="mr-2 inline-block w-5 text-center">🎛️</span>
           Playground
+        </NavLink>
+        <NavLink to="/schaltung" className={linkCls} onClick={onNavigate}>
+          <span className="mr-2 inline-block w-5 text-center">🧮</span>
+          Devre Çözücü
           <span className="ml-1.5 rounded-full bg-spark/15 px-1.5 text-[10px] text-spark">yeni</span>
         </NavLink>
       </div>

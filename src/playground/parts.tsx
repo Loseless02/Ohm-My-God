@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import type { Part, PartType } from "./types";
 import { RAIL_H } from "./types";
 
@@ -37,13 +38,22 @@ function SwitchBody({
   timed?: boolean;
   coupled?: boolean; // eş kontak: mekanik bağ işareti
 }) {
-  const tip = closed ? { x: nc ? 5 : 0, y: 18 } : { x: 15, y: 23 };
+  // bıçak pivotu (0,42): kapalıyken dik, açıkken 38° sağa yatık — yayla döner
+  const angle = closed ? (nc ? 12 : 0) : 38;
   return (
     <>
       {lead(0, 0, 0, 18)}
       {lead(0, 42, 0, 60)}
       {nc && <line x1={0} y1={18} x2={9} y2={18} stroke={C.line} strokeWidth={2} />}
-      <line x1={0} y1={42} x2={tip.x} y2={tip.y} stroke={C.line} strokeWidth={2.4} strokeLinecap="round" />
+      <g transform="translate(0 42)">
+        <motion.g
+          initial={false}
+          animate={{ rotate: angle }}
+          transition={{ type: "spring", stiffness: 650, damping: 26 }}
+        >
+          <line x1={0} y1={0} x2={0} y2={-24} stroke={C.line} strokeWidth={2.4} strokeLinecap="round" />
+        </motion.g>
+      </g>
       <circle cx={0} cy={18} r={2.2} fill={C.line} />
       <circle cx={0} cy={42} r={2.2} fill={C.line} />
       {taster && (
@@ -173,7 +183,12 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
             fillOpacity={on ? 0.85 : 0.45}
             stroke={C.line}
             strokeWidth={2}
-            style={on ? { filter: "drop-shadow(0 0 10px rgba(251,191,36,0.9))" } : undefined}
+            style={{
+              transition: "fill 0.35s ease, fill-opacity 0.35s ease, filter 0.4s ease",
+              filter: on
+                ? "drop-shadow(0 0 10px rgba(251,191,36,0.9))"
+                : "drop-shadow(0 0 0px rgba(251,191,36,0))",
+            }}
           />
           <line x1={-9.9} y1={20.1} x2={9.9} y2={39.9} stroke={C.line} strokeWidth={2} />
           <line x1={9.9} y1={20.1} x2={-9.9} y2={39.9} stroke={C.line} strokeWidth={2} />
@@ -220,7 +235,12 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
             fill={hot ? "rgba(251,191,36,0.25)" : "transparent"}
             stroke={hot ? C.volt : C.line}
             strokeWidth={2}
-            style={hot ? { filter: "drop-shadow(0 0 8px rgba(251,191,36,0.6))" } : undefined}
+            style={{
+              transition: "fill 0.3s ease, stroke 0.3s ease, filter 0.35s ease",
+              filter: hot
+                ? "drop-shadow(0 0 8px rgba(251,191,36,0.6))"
+                : "drop-shadow(0 0 0px rgba(251,191,36,0))",
+            }}
           />
           {part.type === "tcoil" && (
             <>
@@ -278,7 +298,12 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
             fill={hot ? "rgba(251,191,36,0.12)" : "#131c2a"}
             stroke={stroke}
             strokeWidth={2}
-            style={hot ? { filter: "drop-shadow(0 0 7px rgba(251,191,36,0.5))" } : undefined}
+            style={{
+              transition: "fill 0.25s ease, stroke 0.25s ease, filter 0.3s ease",
+              filter: hot
+                ? "drop-shadow(0 0 7px rgba(251,191,36,0.5))"
+                : "drop-shadow(0 0 0px rgba(251,191,36,0))",
+            }}
           />
           <text x={29} y={25} textAnchor="middle" fill={stroke} fontSize={13} fontWeight={600}>
             {lbl}

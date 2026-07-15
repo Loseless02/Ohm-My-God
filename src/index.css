@@ -203,6 +203,33 @@ button.eq-v.eq-v-sel:hover {
   }
 }
 
+/* akım b→a yönünde akıyorsa animasyon ters oynar */
+.wire-flow-rev {
+  stroke-dasharray: 7 7;
+  animation: wire-dash-rev 0.5s linear infinite;
+}
+
+@keyframes wire-dash-rev {
+  to {
+    stroke-dashoffset: 14;
+  }
+}
+
+/* sürüklerken terminal çakışması: bağlanacak nokta yanıp söner */
+.snap-hit {
+  animation: snap-pulse 0.7s ease-in-out infinite;
+}
+
+@keyframes snap-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* etkileşilebilir öğelerde çok hafif hover vurgusu */
 .pg-part {
   transition: filter 0.12s ease;

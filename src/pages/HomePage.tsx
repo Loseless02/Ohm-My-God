@@ -164,8 +164,8 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* ── Playground ───────────────────────────────────────────────── */}
-      <section className="mt-4">
+      {/* ── Playground & Çözücü ──────────────────────────────────────── */}
+      <section className="mt-4 grid gap-4 lg:grid-cols-2">
         <Link
           to="/playground"
           className="card group relative block overflow-hidden p-6 transition hover:-translate-y-0.5 hover:border-spark/60 hover:shadow-[0_8px_50px_rgba(34,211,238,0.12)]"
@@ -188,6 +188,30 @@ export default function HomePage() {
             </div>
             <span className="rounded-xl bg-spark/10 px-4 py-2 font-disp text-sm font-semibold text-spark transition group-hover:bg-spark/20">
               Devre kurmaya başla →
+            </span>
+          </div>
+        </Link>
+        <Link
+          to="/schaltung"
+          className="card group relative block overflow-hidden p-6 transition hover:-translate-y-0.5 hover:border-volt/60 hover:shadow-[0_8px_50px_rgba(251,191,36,0.12)]"
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(251,191,36,0.08),transparent_55%)]" />
+          <div className="relative flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="font-disp text-2xl font-bold text-ink">
+                🧮 Devre Çözücü{" "}
+                <span className="ml-1 rounded-full bg-volt/15 px-2 py-0.5 align-middle text-xs font-medium text-volt">
+                  yeni
+                </span>
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-mut">
+                Reihen-, Parallel- veya Gruppenschaltung kur; bildiğin R/U/I değerlerini gir —{" "}
+                <span className="text-ink">bulunabilecek her şeyi</span> zincirleme hesaplasın.
+                Ödevin çözümünü değil, çözüm yolunu bilmeyene de üçgen çizeriz ayrıca.
+              </p>
+            </div>
+            <span className="rounded-xl bg-volt/10 px-4 py-2 font-disp text-sm font-semibold text-volt transition group-hover:bg-volt/20">
+              Hesaplamaya başla →
             </span>
           </div>
         </Link>

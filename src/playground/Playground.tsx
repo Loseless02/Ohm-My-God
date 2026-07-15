@@ -182,6 +182,11 @@ export default function Playground() {
   const timersRef = useRef<Record<string, TState>>({});
   const energizedRef = useRef<Record<string, boolean>>({});
   const lastDoneRef = useRef("");
+  const partsRef = useRef<Part[]>(initialStore.phys.parts);
+
+  useEffect(() => {
+    partsRef.current = parts;
+  }, [parts]);
 
   // ── kalıcılık ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -373,6 +378,15 @@ export default function Playground() {
           const spec = SPEC[drag.type];
           addPart(drag.type, snap(pt.x - spec.w / 2), snap(pt.y - spec.h / 2));
         }
+      } else {
+        // taşıma bitti: terminal çakışması varsa otomatik bağla
+        const pt = toSvg(e.clientX, e.clientY);
+        const others = partsRef.current;
+        const cur = others.find((p) => p.id === drag.id);
+        if (cur) {
+          const movedNow = { ...cur, x: snap(pt.x - drag.dx), y: snap(pt.y - drag.dy) };
+          connectPairs(coincidentPairs(movedNow, others));
+        }
       }
       setDrag(null);
     };
@@ -423,6 +437,7 @@ export default function Playground() {
       p.group = parts.find((q) => MAIN_SWITCH.includes(q.type))?.label;
     setParts((ps) => [...ps, p]);
     setSel({ kind: "part", id });
+    connectPairs(coincidentPairs(p, parts)); // tam bir ucun üstüne bırakıldıysa bağla
   }
 
   function addNodeAt(x: number, y: number): string {
@@ -431,13 +446,55 @@ export default function Playground() {
     return `${id}:0`;
   }
 
+  /** Taşınan/bırakılan parçanın terminalleriyle çakışan yabancı terminaller. */
+  function coincidentPairs(moved: Part, others: Part[]) {
+    const out: { a: string; b: string; x: number; y: number }[] = [];
+    for (const m of terminalsOf(moved))
+      for (const op of others) {
+        if (op.id === moved.id) continue;
+        for (const t of terminalsOf(op))
+          if (t.x === m.x && t.y === m.y) out.push({ a: m.id, b: t.id, x: t.x, y: t.y });
+      }
+    return out;
+  }
+
+  /** Çakışan terminalleri otomatik kablola (üst üste bırak = bağla). */
+  function connectPairs(pairs: { a: string; b: string }[]) {
+    if (!pairs.length) return;
+    setWires((ws) => {
+      const out = [...ws];
+      for (const pr of pairs) {
+        const dup = out.some(
+          (w) => (w.a === pr.a && w.b === pr.b) || (w.a === pr.b && w.b === pr.a),
+        );
+        if (!dup) out.push({ id: `w${++idc.current}`, a: pr.a, b: pr.b });
+      }
+      return out;
+    });
+  }
+
+  /** Kablosu kalmayan Knotenpunkt'lar kablosuyla birlikte yok olur. */
+  function pruneOrphanNodes(ps: Part[], ws: Wire[]): Part[] {
+    const used = new Set<string>();
+    for (const w of ws) {
+      used.add(w.a.split(":")[0]);
+      used.add(w.b.split(":")[0]);
+    }
+    return ps.filter((p) => p.type !== "node" || used.has(p.id));
+  }
+
   function removeSelected() {
     if (!sel) return;
     if (sel.kind === "part") {
-      setWires((ws) => ws.filter((w) => !w.a.startsWith(sel.id + ":") && !w.b.startsWith(sel.id + ":")));
-      setParts((ps) => ps.filter((p) => p.id !== sel.id));
+      const nextWires = wires.filter(
+        (w) => !w.a.startsWith(sel.id + ":") && !w.b.startsWith(sel.id + ":"),
+      );
+      setWires(nextWires);
+      setParts((ps) => pruneOrphanNodes(ps.filter((p) => p.id !== sel.id), nextWires));
     } else {
-      setWires((ws) => ws.filter((w) => w.id !== sel.id));
+      const nextWires = wires.filter((w) => w.id !== sel.id);
+      setWires(nextWires);
+      setParts((ps) => pruneOrphanNodes(ps, nextWires));
     }
     setSel(null);
   }
@@ -677,9 +734,9 @@ export default function Playground() {
         </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[230px_1fr]">
-        {/* ── palet + özellikler ── */}
-        <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-[220px_1fr_250px]">
+        {/* ── palet (sol) ── */}
+        <div className="order-1">
           <div className="card p-3">
             <p className="mb-2 px-1 font-disp text-xs uppercase tracking-widest text-mut/70">
               {domain === "phys" ? "Parçalar" : "Logik parçaları"}
@@ -706,8 +763,10 @@ export default function Playground() {
               ))}
             </div>
           </div>
+        </div>
 
-          {/* özellik paneli */}
+        {/* ── özellikler (sağ) ── */}
+        <div className="order-3 w-full self-start lg:sticky lg:top-4">
           <div className="card p-4">
             <p className="mb-2 font-disp text-xs uppercase tracking-widest text-mut/70">Özellikler</p>
             {!sel && <p className="text-xs text-mut">Bir parça ya da kablo seç.</p>}
@@ -810,8 +869,8 @@ export default function Playground() {
           </div>
         </div>
 
-        {/* ── tuval ── */}
-        <div>
+        {/* ── tuval (orta) ── */}
+        <div className="order-2 min-w-0">
           <div className="relative">
             <svg
               ref={svgRef}
@@ -878,6 +937,7 @@ export default function Playground() {
                 const flow = sim?.flow[w.id] ?? 0;
                 const isShortPath = sim?.short && flow > 50;
                 const live = sim && flow > 0.1;
+                const rev = (sim?.dir[w.id] ?? 1) < 0; // akım b→a yönünde: animasyon ters
                 const stroke = isShortPath
                   ? "#f87171"
                   : live
@@ -892,7 +952,7 @@ export default function Playground() {
                       fill="none"
                       stroke={stroke}
                       strokeWidth={2.4}
-                      className={isShortPath ? "wire-short" : live ? "wire-flow" : ""}
+                      className={isShortPath ? "wire-short" : live ? (rev ? "wire-flow-rev" : "wire-flow") : ""}
                     />
                     <path
                       d={d}
@@ -1056,6 +1116,26 @@ export default function Playground() {
                     </g>
                   )),
                 )}
+
+              {/* sürüklerken çakışan terminal: buraya bırakırsan bağlanır */}
+              {drag?.kind === "move" &&
+                (() => {
+                  const mp = parts.find((p) => p.id === drag.id);
+                  if (!mp) return null;
+                  return coincidentPairs(mp, parts).map((h, i) => (
+                    <circle
+                      key={i}
+                      cx={h.x}
+                      cy={h.y}
+                      r={11}
+                      fill="none"
+                      stroke="#22d3ee"
+                      strokeWidth={2.5}
+                      className="snap-hit"
+                      pointerEvents="none"
+                    />
+                  ));
+                })()}
 
               {/* palet hayaleti */}
               {drag?.kind === "new" && (
