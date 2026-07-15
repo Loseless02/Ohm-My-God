@@ -1,0 +1,110 @@
+import { v, num, mul, frac, add, sum, plus, minus, group } from "../lib/expr";
+import type { FormulaDef } from "./types";
+import { vR, vRho, vLen, vA } from "./vars";
+
+export const F_WIDERSTAND: FormulaDef[] = [
+  {
+    id: "leiterwiderstand",
+    cat: "widerstand",
+    title: "İletken Direnci",
+    tagline: "Kablo da bir dirençtir — sadece bunu itiraf etmez.",
+    desc: "Bir iletkenin direnci malzemesine (ρ), uzunluğuna (l) ve kesitine (A) bağlıdır: R = ρ·l / A. Uzun ve ince kablo = çok direnç; kısa ve kalın kablo = az direnç. Bahçe hortumuyla aynı mantık: uzadıkça ve inceldikçe su gelmez olur.",
+    note: "Birimler bu formülde el ele: ρ [Ω·mm²/m], l [m], A [mm²] → R [Ω]. Hepsini SI'ya çevirmeye kalkma, bu üçlü zaten anlaşmış.",
+    vars: [
+      vR({ desc: "İletkenin kendi direnci. Kısa devre hesaplarında ve gerilim düşümünde karşına çıkar — kablo masum değil." }),
+      vRho(),
+      vLen({ desc: "İletkenin uzunluğu. Gidiş-dönüş hattı hesaplıyorsan toplam tel uzunluğunu al (2·l)." }),
+      vA(),
+    ],
+    base: "R",
+    forms: {
+      R: frac(mul(v("rho"), v("l")), v("A")),
+      rho: frac(mul(v("R"), v("A")), v("l")),
+      l: frac(mul(v("R"), v("A")), v("rho")),
+      A: frac(mul(v("rho"), v("l")), v("R")),
+    },
+    keywords: ["leiterwiderstand", "kablo direnci", "öz direnç", "rho", "kesit", "iletken"],
+  },
+  {
+    id: "leitwert",
+    cat: "widerstand",
+    title: "İletkenlik Değeri",
+    tagline: "G = 1/R — direncin ayna evrendeki ikizi.",
+    desc: "Leitwert (iletkenlik değeri) direncin tersidir. Direnç 'ne kadar zorlanıyor' derken, G 'ne kadar kolay geçiyor' der. Birimi Siemens (S). Paralel devre hesaplarında hayat kurtarır: paralelde G'ler toplanır, R'lerle kesir cambazlığı yapmak zorunda kalmazsın.",
+    vars: [
+      {
+        id: "G",
+        sym: "G",
+        name: "İletkenlik değeri",
+        de: "Leitwert",
+        units: [
+          { label: "S", mult: 1 },
+          { label: "mS", mult: 1e-3 },
+        ],
+        desc: "Akımın ne kadar rahat geçtiğinin ölçüsü. Direnç kötümser, Leitwert iyimserdir — aynı gerçeğin iki yüzü.",
+        find: "Genelde ölçülmez, 1/R'den hesaplanır. Ohmmetrede R'yi ölç, tersini al, bitti.",
+      },
+      vR(),
+    ],
+    base: "G",
+    forms: {
+      G: frac(num(1), v("R")),
+      R: frac(num(1), v("G")),
+    },
+    keywords: ["leitwert", "siemens", "iletkenlik"],
+  },
+  {
+    id: "temperaturabhaengigkeit",
+    cat: "widerstand",
+    title: "Direncin Sıcaklıkla Değişimi",
+    tagline: "Direnç de ısınınca huysuzlanır.",
+    desc: "Metal iletkenlerin direnci sıcaklıkla artar: R_w = R_k · (1 + α · Δθ). Soğuk direnç R_k, ısınınca R_w olur. α malzemenin sıcaklık katsayısı (bakır için ≈ 0,0039 1/K). Akkor ampulün soğukken ölçtüğün direncinin çalışırkenkinden neden 10 kat küçük olduğunun cevabı budur.",
+    note: "α bakır ve alüminyum için ≈ 0,004 1/K. NTC'lerde işaret tersine döner (ısındıkça direnç DÜŞER) — bu formül metaller içindir.",
+    vars: [
+      vR({
+        id: "Rw",
+        sym: "R",
+        sub: "w",
+        name: "Sıcak direnç",
+        de: "Warmwiderstand",
+        desc: "İletkenin çalışma (sıcak) durumundaki direnci.",
+        find: "Çalışma sıcaklığında ölçülür ya da bu formülle hesaplanır.",
+      }),
+      vR({
+        id: "Rk",
+        sym: "R",
+        sub: "k",
+        name: "Soğuk direnç",
+        de: "Kaltwiderstand",
+        desc: "İletkenin başlangıç (genelde 20 °C) sıcaklığındaki direnci.",
+        find: "Cihaz soğukken ohmmetreyle ölçülür.",
+      }),
+      {
+        id: "alpha",
+        sym: "α",
+        name: "Sıcaklık katsayısı",
+        de: "Temperaturbeiwert",
+        units: [{ label: "1/K", mult: 1 }],
+        desc: "Malzemenin sıcaklık başına direnç değiştirme oranı. Bakır/alüminyum ≈ 0,0039–0,004 1/K.",
+        find: "Tablo kitabından (Tabellenbuch).",
+      },
+      {
+        id: "dtheta",
+        sym: "Δϑ",
+        name: "Sıcaklık farkı",
+        de: "Temperaturdifferenz",
+        units: [{ label: "K", mult: 1 }],
+        desc: "Son sıcaklık − başlangıç sıcaklığı. Kelvin ile °C farkı burada aynıdır (fark alınca birim dansı biter).",
+        find: "Termometreyle iki durumu ölç, farkını al.",
+      },
+    ],
+    base: "Rw",
+    forms: {
+      Rw: mul(v("Rk"), group(add(num(1), mul(v("alpha"), v("dtheta"))))),
+      Rk: frac(v("Rw"), group(add(num(1), mul(v("alpha"), v("dtheta"))))),
+      dtheta: frac(sum(plus(v("Rw")), minus(v("Rk"))), mul(v("Rk"), v("alpha"))),
+      alpha: frac(sum(plus(v("Rw")), minus(v("Rk"))), mul(v("Rk"), v("dtheta"))),
+    },
+    keywords: ["temperatur", "sıcaklık", "warmwiderstand", "kaltwiderstand", "alpha"],
+  },
+];

@@ -1,0 +1,280 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0e14;
+  --color-panel: #101724;
+  --color-panel2: #16202f;
+  --color-line: #1e2a3b;
+  --color-ink: #e8edf4;
+  --color-mut: #8b9aad;
+  --color-volt: #fbbf24;
+  --color-spark: #22d3ee;
+
+  --font-disp: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-math: Georgia, "Times New Roman", "STIX Two Text", serif;
+}
+
+html {
+  scrollbar-color: var(--color-line) transparent;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* çok hafif teknik doku */
+  background-image:
+    linear-gradient(rgba(139, 154, 173, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 154, 173, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.font-disp {
+  font-family: var(--font-disp);
+}
+
+.card {
+  border-radius: 1rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-panel) 85%, transparent);
+  display: block;
+}
+
+/* ── Denklem dizgisi ───────────────────────────────────────────────────────
+   .eq-row: yatay hizalama birimi; kesir/kök içinde de kullanılır. */
+.eq-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18em;
+  white-space: nowrap;
+}
+
+.eq {
+  font-family: var(--font-math);
+  line-height: 1.2;
+}
+
+.eq-v {
+  font-family: var(--font-math);
+  font-style: italic;
+  border-radius: 0.4em;
+  padding: 0.04em 0.26em;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+
+button.eq-v {
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+button.eq-v:hover {
+  background: color-mix(in srgb, var(--color-spark) 16%, transparent);
+  color: var(--color-spark);
+}
+
+.eq-v-sel,
+button.eq-v.eq-v-sel:hover {
+  background: var(--color-volt);
+  color: #1c1303;
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.35);
+}
+
+.eq-sub {
+  font-size: 0.55em;
+  font-style: normal;
+  margin-left: 0.05em;
+}
+
+.eq-n,
+.eq-op,
+.eq-paren {
+  font-family: var(--font-math);
+  animation: eq-fade 0.45s ease both;
+}
+
+.eq-op {
+  opacity: 0.7;
+  animation: eq-fade-op 0.45s ease both;
+}
+
+.eq-eq {
+  margin: 0 0.15em;
+  opacity: 0.9;
+  animation: none;
+}
+
+.eq-paren {
+  opacity: 0.6;
+  font-size: 1.15em;
+}
+
+@keyframes eq-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes eq-fade-op {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+
+.eq-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.1em;
+}
+
+.eq-frac > .eq-row {
+  padding: 0 0.28em;
+}
+
+.eq-bar {
+  align-self: stretch;
+  height: 0.075em;
+  min-height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.85;
+  margin: 0.12em 0;
+  animation: eq-fade 0.45s ease both;
+}
+
+.eq-pow {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.eq-sup {
+  font-size: 0.55em;
+  line-height: 1;
+  margin-top: -0.2em;
+  margin-left: 0.06em;
+  animation: eq-fade 0.45s ease both;
+}
+
+.eq-sqrt {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.eq-rad {
+  font-size: 1.35em;
+  line-height: 1;
+  align-self: flex-end;
+  transform: translateY(-0.02em);
+  animation: eq-fade 0.45s ease both;
+}
+
+.eq-sqrt-arg {
+  border-top: 0.075em solid currentColor;
+  padding: 0.14em 0.3em 0 0.12em;
+  animation: eq-fade 0.45s ease both;
+}
+
+/* ── Playground ─────────────────────────────────────────────────────────── */
+.wire-flow {
+  stroke-dasharray: 7 7;
+  animation: wire-dash 0.5s linear infinite;
+}
+
+.wire-short {
+  stroke-dasharray: 5 5;
+  animation: wire-dash 0.18s linear infinite;
+}
+
+@keyframes wire-dash {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* etkileşilebilir öğelerde çok hafif hover vurgusu */
+.pg-part {
+  transition: filter 0.12s ease;
+}
+
+.pg-part:hover {
+  filter: brightness(1.35) drop-shadow(0 0 5px rgba(34, 211, 238, 0.18));
+}
+
+.pg-wire {
+  transition: filter 0.12s ease;
+}
+
+.pg-wire:hover {
+  filter: brightness(1.5);
+}
+
+.pg-term {
+  cursor: crosshair;
+}
+
+.pg-zoom {
+  height: 2rem;
+  width: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-panel) 90%, transparent);
+  color: var(--color-mut);
+  font-size: 1.05rem;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.pg-zoom:hover {
+  color: var(--color-ink);
+  border-color: color-mix(in srgb, var(--color-volt) 50%, transparent);
+}
+
+.pg-term .dot {
+  transition: transform 0.12s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pg-term:hover .dot {
+  transform: scale(1.55);
+}
+
+/* arama sonucu kartları: hafif giriş animasyonu */
+.card-pop {
+  animation: card-pop 0.28s ease both;
+}
+
+@keyframes card-pop {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* select ok rengi koyu temada okunaklı olsun */
+select {
+  color-scheme: dark;
+}
+
+input::placeholder {
+  color: color-mix(in srgb, var(--color-mut) 60%, transparent);
+}

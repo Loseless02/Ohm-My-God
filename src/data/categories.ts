@@ -1,0 +1,110 @@
+import type { CategoryDef } from "./types";
+
+export const CATEGORIES: CategoryDef[] = [
+  {
+    id: "grundlagen",
+    title: "Temeller",
+    de: "Grundlagen",
+    icon: "⚡",
+    blurb: "Ohm kanunu, iş, yük — her şeyin başladığı yer. Bunlar oturmadan gerisi Jenga.",
+  },
+  {
+    id: "widerstand",
+    title: "Direnç",
+    de: "Widerstand",
+    icon: "Ω",
+    blurb: "İletken direnci, Leitwert ve sıcaklığın dirençle imtihanı.",
+  },
+  {
+    id: "reihenschaltung",
+    title: "Seri Devre",
+    de: "Reihenschaltung",
+    icon: "🔗",
+    blurb: "Tek sıra halinde: akım sabit, gerilim paylaştırılır, dirençler toplanır.",
+  },
+  {
+    id: "parallelschaltung",
+    title: "Paralel Devre",
+    de: "Parallelschaltung",
+    icon: "🔀",
+    blurb: "Yollar çoğalır: gerilim sabit, akım bölüşülür, toplam direnç küçülür.",
+  },
+  {
+    id: "gruppenschaltung",
+    title: "Karma Devre",
+    de: "Gruppenschaltung",
+    icon: "🧩",
+    blurb: "Seri + paralel karışımı. Formülü yok, stratejisi var — sadeleştire sadeleştire çöz.",
+    article: [
+      "Kötü haber: Gruppenschaltung'un tek satırlık bir formülü yok. İyi haber: yeni bir şey öğrenmene de gerek yok — seri ve paralel kurallarını sırayla uygulamak yetiyor.",
+      "Strateji şu: devrenin en içindeki, net olarak 'bunlar kesin paralel' ya da 'bunlar kesin seri' dediğin grubu bul. Onu tek bir eşdeğer dirence indir. Devreyi yeniden çiz (evet, gerçekten çiz — kafada tutmaya çalışanların anıtı her okulda vardır). Şimdi devre biraz sadeleşti; aynı işlemi tekrarla. Soğan soymak gibi: katman katman, ta ki elinde tek bir R_ges kalana kadar.",
+      "Sonra istersen geri sar: R_ges ve kaynak geriliminden toplam akımı bul (Ohm kanunu kartı hazır bekliyor), akımı ve gerilimleri katmanları geri açarak dağıt. Her adımda kullandığın formüller bu sitede zaten var — Seri Devre ve Paralel Devre kategorilerindeki kartlar senin alet çantan.",
+      "Pro ipucu: hangi elemanların paralel olduğunu anlamanın en sağlam yolu düğüm noktalarını (Knoten) işaretlemek. İki eleman aynı iki düğüm arasındaysa paraleldir — çizimde yan yana durmaları hiçbir şey ifade etmez. Şema çizerler bunu bilerek yapıyor, eminiz.",
+    ],
+  },
+  {
+    id: "leistung",
+    title: "Güç",
+    de: "Elektrische Leistung",
+    icon: "💪",
+    blurb: "P = U·I ailesi: gücün üç kılığı ve kabloların neden ısındığı.",
+  },
+  {
+    id: "wirkungsgrad",
+    title: "Verim",
+    de: "Wirkungsgrad",
+    icon: "♻️",
+    blurb: "Giren, çıkan ve yolda ısıya dönüşen. η daima < 1; itirazlar termodinamiğe.",
+  },
+  {
+    id: "motoren",
+    title: "Motorlar",
+    de: "Motoren",
+    icon: "⚙️",
+    blurb: "Moment, senkron devir, kayma — dönen demirin matematiği.",
+  },
+  {
+    id: "wechselstrom",
+    title: "Alternatif Akım",
+    de: "Wechselspannung / -strom",
+    icon: "〰️",
+    blurb: "Tepe değer, periyot, açısal frekans: sinüsün kimlik bilgileri.",
+  },
+  {
+    id: "induktivitaet",
+    title: "Bobin & Kondansatör",
+    de: "Induktivität / Kapazität",
+    icon: "🌀",
+    blurb: "X_L ve X_C: frekansla dans eden dirençler. Biri artarken öteki azalır.",
+  },
+  {
+    id: "drehstrom",
+    title: "Trifaze",
+    de: "Drehstrom",
+    icon: "🔺",
+    blurb: "Yıldız, üçgen, √3 ve 400 V dünyası. Endüstrinin ana dili.",
+  },
+  {
+    id: "trafo",
+    title: "Trafolar",
+    de: "Transformatoren",
+    icon: "🔁",
+    blurb: "Sarım oranları ve güç dengesi: gerilimi büyüt, akımı küçült — ya da tersi.",
+  },
+  {
+    id: "leistungsarten",
+    title: "Güç Türleri",
+    de: "Wirk-, Blind-, Scheinleistung",
+    icon: "📐",
+    blurb: "P, Q, S ve güç üçgeni. Pisagor'un elektrikçi stajı.",
+  },
+  {
+    id: "spannungsfall",
+    title: "Gerilim Düşümü & Kesit",
+    de: "Spannungsfall & Querschnitt",
+    icon: "📉",
+    blurb: "Kablo hesabının kalbi: düşümü hesapla, kesiti seç, %3'ü geçme.",
+  },
+];
+
+export const CATEGORY_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));

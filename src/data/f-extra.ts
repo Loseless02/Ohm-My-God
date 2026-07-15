@@ -1,0 +1,145 @@
+import { v, num, mul, frac, pow, sqrt, add, sum, plus, minus } from "../lib/expr";
+import type { FormulaDef } from "./types";
+import { vU, vI, vR, vCap, vL } from "./vars";
+
+const U_J = [
+  { label: "J (Ws)", mult: 1 },
+  { label: "mJ", mult: 1e-3 },
+  { label: "kJ", mult: 1e3 },
+];
+
+export const F_EXTRA: FormulaDef[] = [
+  {
+    id: "klemmenspannung",
+    cat: "grundlagen",
+    title: "Klemens Gerilimi & İç Direnç",
+    tagline: "U_K = U₀ − I·R_i — pil neden yük altında 'yoruluyor'?",
+    desc: "Hiçbir kaynak mükemmel değildir: her pilin, akünün, trafonun bir iç direnci (R_i) vardır. Yük akımı arttıkça iç dirençte gerilim düşer ve klemenslerde kalan gerilim azalır: U_K = U₀ − I·R_i. Marşa basınca farların kısılması, tam olarak bu formülün canlı yayınıdır. Boşta ölçtüğün gerilim U₀'dır (akım yok → düşüm yok); gerçek hayat yük altında başlar.",
+    note: "İç direnci ölçmenin pratik yolu: boşta U₀'ı, yük altında U_K ve I'yı ölç → R_i = (U₀−U_K)/I. Kaynak yaşlandıkça R_i büyür — pilin 'yaşlılık belgesi'.",
+    vars: [
+      vU({
+        id: "UK",
+        sym: "U",
+        sub: "K",
+        name: "Klemens gerilimi",
+        de: "Klemmenspannung",
+        desc: "Kaynağın uçlarında YÜK ALTINDA ölçülen gerilim. İç dirençteki düşüm kadar U₀'dan küçüktür.",
+        find: "Yük bağlıyken kaynağın uçlarından multimetreyle ölç.",
+      }),
+      vU({
+        id: "U0",
+        sym: "U",
+        sub: "0",
+        name: "Kaynak gerilimi (boşta)",
+        de: "Quellenspannung / Leerlaufspannung",
+        desc: "Kaynağın 'ideal' gerilimi — akım akmazken klemenslerde görünen değer.",
+        find: "Yükü ayır, boşta ölç. Akım yok → iç düşüm yok → gördüğün şey U₀.",
+      }),
+      vI({ desc: "Yükün çektiği akım. Bu arttıkça iç dirençteki kayıp da artar — bedava öğle yemeği yok." }),
+      vR({
+        id: "Ri",
+        sym: "R",
+        sub: "i",
+        name: "İç direnç",
+        de: "Innenwiderstand",
+        desc: "Kaynağın kendi içindeki kaçınılmaz direnç. Küçük olması iyidir; sıfır olması efsanedir.",
+        find: "Doğrudan ölçülmez — boşta ve yük altındaki gerilim farkından hesaplanır.",
+      }),
+    ],
+    base: "UK",
+    forms: {
+      UK: sum(plus(v("U0")), minus(mul(v("I"), v("Ri")))),
+      U0: add(v("UK"), mul(v("I"), v("Ri"))),
+      I: frac(sum(plus(v("U0")), minus(v("UK"))), v("Ri")),
+      Ri: frac(sum(plus(v("U0")), minus(v("UK"))), v("I")),
+    },
+    keywords: ["innenwiderstand", "iç direnç", "klemmenspannung", "leerlauf", "pil", "akü"],
+  },
+  {
+    id: "kondensator-ladung",
+    cat: "induktivitaet",
+    title: "Kondansatör Yükü",
+    tagline: "Q = C · U — kapasite kadar depola, gerilim kadar doldur.",
+    desc: "Kondansatörün depoladığı yük, kapasitesi ile üzerindeki gerilimin çarpımıdır. 100 µF'lik kondansatörü 10 V'a şarj edersen 1 mC (milicoulomb) yük tutar. Gerilimi iki katına çıkar, yük de ikiye katlanır — kapasite değişmez, o kondansatörün karakteridir.",
+    note: "Kondansatörler fişten çekilince de dolu kalabilir! Büyük kondansatörlü cihazlarda (mikrodalga, sürücüler) önce deşarj, sonra dokunma — bu formül orada 'sürpriz' üretir.",
+    vars: [
+      {
+        id: "Q",
+        sym: "Q",
+        name: "Elektrik yükü",
+        de: "Ladung",
+        units: [
+          { label: "µC", mult: 1e-6 },
+          { label: "mC", mult: 1e-3 },
+          { label: "C (As)", mult: 1 },
+        ],
+        desc: "Kondansatörün plakalarında biriken yük miktarı.",
+        find: "Ölçülmez, hesaplanır: C·U. (Deşarj akımını entegre eden de var ama biz normal insanlarız.)",
+      },
+      vCap(),
+      vU({ desc: "Kondansatörün üzerindeki gerilim. Etiketteki değer MAKSİMUM dayanma gerilimi — onu aşarsan kondansatör kısa ve gürültülü bir kariyer yapar." }),
+    ],
+    base: "Q",
+    forms: {
+      Q: mul(v("C"), v("U")),
+      C: frac(v("Q"), v("U")),
+      U: frac(v("Q"), v("C")),
+    },
+    keywords: ["kondensator", "kondansatör", "ladung", "kapasite", "farad"],
+  },
+  {
+    id: "kondensator-energie",
+    cat: "induktivitaet",
+    title: "Kondansatörde Depolanan Enerji",
+    tagline: "W = ½ · C · U² — küçük kutu, sürpriz tokat.",
+    desc: "Kondansatörün elektrik alanında depolanan enerji. Gerilim KARESİYLE girer: 450 V'luk bir ara devre kondansatörü, görünüşünün aksine ciddi enerji taşır. Fotoğraf flaşının 'şak' diye verdiği enerji, tam olarak bu formülle önceden istiflenmiştir.",
+    vars: [
+      {
+        id: "W",
+        sym: "W",
+        name: "Depolanan enerji",
+        de: "gespeicherte Energie",
+        units: U_J,
+        desc: "Elektrik alanında bekleyen enerji. Deşarjda ısıya, ışığa ya da (dikkatsizsen) kötü anılara dönüşür.",
+        find: "Hesaplanır: ½·C·U².",
+      },
+      vCap(),
+      vU(),
+    ],
+    base: "W",
+    forms: {
+      W: mul(frac(num(1), num(2)), v("C"), pow(v("U"), 2)),
+      C: frac(mul(num(2), v("W")), pow(v("U"), 2)),
+      U: sqrt(frac(mul(num(2), v("W")), v("C"))),
+    },
+    keywords: ["energie", "enerji", "kondensator", "flaş", "zwischenkreis"],
+  },
+  {
+    id: "spule-energie",
+    cat: "induktivitaet",
+    title: "Bobinde Depolanan Enerji",
+    tagline: "W = ½ · L · I² — manyetik alandaki gizli hazine.",
+    desc: "Bobin enerjiyi manyetik alanında, akım cinsinden depolar (kondansatörün ayna ikizi: o gerilimle, bu akımla çalışır). Akım kesilince bu enerji BİR YERE gitmek zorundadır — gidecek yer bulamazsa endüksiyon piki olarak kontaklarında ark yapar. Rölelerin bobinlerine neden 'Freilaufdiode' (serbest geçiş diyotu) konduğunun cevabı bu formüldür.",
+    note: "Kontaktör bobinini süren transistörlü devrede diyot unutulursa, transistör bu enerjiyi 'yüzüne yiyerek' öğrenir. Diyotu unutma.",
+    vars: [
+      {
+        id: "W",
+        sym: "W",
+        name: "Depolanan enerji",
+        de: "gespeicherte Energie",
+        units: U_J,
+        desc: "Manyetik alanda bekleyen enerji. Akım kesildiğinde tahsilata çıkar.",
+        find: "Hesaplanır: ½·L·I².",
+      },
+      vL(),
+      vI({ desc: "Bobinden geçen akım. Karesiyle girer: akımı ikiye katla, depolanan enerji dörde katlansın." }),
+    ],
+    base: "W",
+    forms: {
+      W: mul(frac(num(1), num(2)), v("L"), pow(v("I"), 2)),
+      L: frac(mul(num(2), v("W")), pow(v("I"), 2)),
+      I: sqrt(frac(mul(num(2), v("W")), v("L"))),
+    },
+    keywords: ["spule", "bobin", "energie", "freilaufdiode", "induktion"],
+  },
+];

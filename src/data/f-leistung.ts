@@ -1,0 +1,120 @@
+import { v, mul, frac, pow, sqrt } from "../lib/expr";
+import type { FormulaDef } from "./types";
+import { vU, vI, vR, vP, vEta } from "./vars";
+
+export const F_LEISTUNG: FormulaDef[] = [
+  {
+    id: "leistung-ui",
+    cat: "leistung",
+    title: "Elektriksel Güç",
+    tagline: "P = U · I — volt çarpı amper, watt eder; fatura da faturayı eder.",
+    desc: "Güç, gerilim ile akımın çarpımıdır (DC ve saf omik yüklerde). 230 V'ta 10 A çeken ısıtıcı 2300 W harcar. Ohm kanunuyla birleştirince güç formülü ailesi doğar: P = I²·R ve P = U²/R — üçü de aynı gerçeğin farklı kılıkları.",
+    vars: [vP(), vU(), vI()],
+    base: "P",
+    forms: {
+      P: mul(v("U"), v("I")),
+      U: frac(v("P"), v("I")),
+      I: frac(v("P"), v("U")),
+    },
+    keywords: ["leistung", "güç", "watt", "p=ui"],
+  },
+  {
+    id: "leistung-i2r",
+    cat: "leistung",
+    title: "Güç (Akım ve Direnç ile)",
+    tagline: "P = I² · R — akımın karesi: kabloların neden ısındığının hikâyesi.",
+    desc: "Gücü gerilimi bilmeden, akım ve dirençten hesapla. Akım KARESİYLE girdiği için iki kat akım = dört kat ısı demektir. Kablo kesitlerinin neden akıma göre seçildiğinin, gevşek klemenslerin neden yangın çıkardığının matematiksel özeti.",
+    note: "Kayıp güç (Verlustleistung) hesaplarının baş aktörü. Hattaki kaybı bulmak için R yerine hat direncini koy.",
+    vars: [
+      vP({ desc: "Dirençte ısıya dönüşen güç. Bazen istenen şey (ısıtıcı), bazen düşman (hat kaybı)." }),
+      vI(),
+      vR(),
+    ],
+    base: "P",
+    forms: {
+      P: mul(pow(v("I"), 2), v("R")),
+      R: frac(v("P"), pow(v("I"), 2)),
+      I: sqrt(frac(v("P"), v("R"))),
+    },
+    keywords: ["verlustleistung", "kayıp", "i2r", "ısınma"],
+  },
+  {
+    id: "leistung-u2r",
+    cat: "leistung",
+    title: "Güç (Gerilim ve Direnç ile)",
+    tagline: "P = U² / R — akımı sormadan güç hesabı.",
+    desc: "Elinde sadece gerilim ve direnç varsa: P = U²/R. Gerilim de karesiyle girer — bu yüzden 230 V'luk ampulü 115 V'ta yakarsan yarı parlaklık değil, ÇEYREK güç alırsın. Gerilim düşünce cihazların neden bu kadar dramatik tepki verdiğinin açıklaması.",
+    vars: [vP(), vU(), vR()],
+    base: "P",
+    forms: {
+      P: frac(pow(v("U"), 2), v("R")),
+      R: frac(pow(v("U"), 2), v("P")),
+      U: sqrt(mul(v("P"), v("R"))),
+    },
+    keywords: ["u2r", "güç direnç gerilim"],
+  },
+  // ── Wirkungsgrad ───────────────────────────────────────────────────────────
+  {
+    id: "wirkungsgrad",
+    cat: "wirkungsgrad",
+    title: "Verim",
+    tagline: "η = P_ab / P_zu — verdiğinin ne kadarı geri geliyor?",
+    desc: "Verim, çıkan faydalı gücün giren güce oranıdır. Motora 1000 W verip milden 850 W alıyorsan η = 0,85 yani %85. Kalan 150 W kayıp değil aslında — ısınma olarak atölyeyi ısıtıyor, sadece senin istediğin iş bu değildi. η daima 1'in (yani %100'ün) altındadır; üstünde çıktıysa ya ölçüm hatası var ya da patent dairesine koşmalısın (koşma, ölçüm hatası).",
+    vars: [
+      vEta(),
+      vP({
+        id: "Pab",
+        sym: "P",
+        sub: "ab",
+        name: "Çıkan güç",
+        de: "abgegebene Leistung",
+        desc: "Cihazın işe yarayan çıkışı: motorda mil gücü, trafoda sekonder güç.",
+        find: "Tip etiketinde motorlarda yazan güç genellikle ÇIKIŞ gücüdür (P_ab / P₂). Evet, bu bilgi sınavda hayat kurtarır.",
+      }),
+      vP({
+        id: "Pzu",
+        sym: "P",
+        sub: "zu",
+        name: "Giren güç",
+        de: "zugeführte Leistung",
+        desc: "Şebekeden çekilen güç — faturaya yansıyan taraf.",
+        find: "Ölçü aletiyle şebeke tarafından ölçülür ya da P_ab/η ile hesaplanır.",
+      }),
+    ],
+    base: "eta",
+    forms: {
+      eta: frac(v("Pab"), v("Pzu")),
+      Pab: mul(v("eta"), v("Pzu")),
+      Pzu: frac(v("Pab"), v("eta")),
+    },
+    keywords: ["wirkungsgrad", "verim", "eta", "kayıp"],
+  },
+  {
+    id: "gesamtwirkungsgrad",
+    cat: "wirkungsgrad",
+    title: "Toplam Verim",
+    tagline: "Kötü haber: verimler çarpılır, yani hep küçülür.",
+    desc: "Ard arda bağlı sistemlerde (motor → şanzıman → pompa) toplam verim, tek tek verimlerin ÇARPIMIDIR: η_ges = η₁ · η₂. %90 × %90 = %81 — iki tane 'gayet iyi' cihaz, birlikte 'eh işte' yapar. Zincir uzadıkça durum kötüleşir; mühendisliğin sessiz trajedisi.",
+    note: "Üç ve daha fazla kademe varsa çarpmaya devam et: sonucu al, üçüncü verimle bu kartta tekrar çarp.",
+    vars: [
+      vEta({
+        id: "etag",
+        sym: "η",
+        sub: "ges",
+        name: "Toplam verim",
+        de: "Gesamtwirkungsgrad",
+        desc: "Zincirin başından sonuna kalan fayda oranı. Zincirdeki en zayıf halkadan bile küçüktür.",
+        find: "Kademelerin verimlerini çarparak bulunur.",
+      }),
+      vEta({ id: "eta1", sym: "η", sub: "1", name: "1. kademe verimi", de: "Wirkungsgrad Stufe 1" }),
+      vEta({ id: "eta2", sym: "η", sub: "2", name: "2. kademe verimi", de: "Wirkungsgrad Stufe 2" }),
+    ],
+    base: "etag",
+    forms: {
+      etag: mul(v("eta1"), v("eta2")),
+      eta1: frac(v("etag"), v("eta2")),
+      eta2: frac(v("etag"), v("eta1")),
+    },
+    keywords: ["gesamtwirkungsgrad", "toplam verim", "kademe"],
+  },
+];

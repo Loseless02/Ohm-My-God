@@ -1,0 +1,120 @@
+import { v, mul, frac } from "../lib/expr";
+import type { FormulaDef } from "./types";
+import { vU, vI } from "./vars";
+
+const N = (sub: string, name: string) => ({
+  id: `N${sub}`,
+  sym: "N",
+  sub,
+  name,
+  de: `Windungszahl ${sub === "1" ? "Primär" : "Sekundär"}`,
+  integer: true,
+  unitNote: "sarım (adet)",
+  desc: "Sargının tur sayısı. Trafonun bütün karakteri bu oranda saklı — kim daha çok sarmışsa gerilim ondan yana.",
+  find: "Veri sayfasından; pratikte sayamazsın (denemeni de önermeyiz, sarımlar dar alanda yaşar).",
+});
+
+export const F_TRAFO: FormulaDef[] = [
+  {
+    id: "uebersetzung",
+    cat: "trafo",
+    title: "Dönüştürme Oranı",
+    tagline: "ü = U₁/U₂ — trafonun kimlik numarası.",
+    desc: "Übersetzungsverhältnis: primer gerilimin sekondere oranı. ü = 10 ise trafo gerilimi 10'a böler (230 V → 23 V). İdeal trafoda bu oran aynı zamanda sarım oranına eşittir. Trafo hakkında tek bir sayı bilecek olsan, bu olurdu.",
+    vars: [
+      {
+        id: "ue",
+        sym: "ü",
+        name: "Dönüştürme oranı",
+        de: "Übersetzungsverhältnis",
+        unitNote: "birimsiz",
+        desc: "U₁/U₂ = N₁/N₂. 1'den büyükse düşürücü, küçükse yükseltici trafo.",
+        find: "Gerilimleri ölç ve oranla; ya da veri sayfasına bak.",
+      },
+      vU({
+        id: "U1",
+        sym: "U",
+        sub: "1",
+        name: "Primer gerilim",
+        de: "Primärspannung",
+        desc: "Giriş tarafının gerilimi — şebekeye bakan yüz.",
+        find: "Tip etiketi (ör. 230 V) ya da giriş uçlarından ölçüm.",
+      }),
+      vU({
+        id: "U2",
+        sym: "U",
+        sub: "2",
+        name: "Sekonder gerilim",
+        de: "Sekundärspannung",
+        desc: "Çıkış tarafının gerilimi — yüke giden taraf.",
+        find: "Tip etiketi ya da çıkış uçlarından (boşta) ölçüm.",
+      }),
+    ],
+    base: "ue",
+    forms: {
+      ue: frac(v("U1"), v("U2")),
+      U1: mul(v("ue"), v("U2")),
+      U2: frac(v("U1"), v("ue")),
+    },
+    keywords: ["übersetzung", "trafo", "transformator", "oran"],
+  },
+  {
+    id: "trafo-windungen",
+    cat: "trafo",
+    title: "Gerilim ↔ Sarım Sayısı",
+    tagline: "U₁/U₂ = N₁/N₂ — kim çok sarmışsa gerilim onda.",
+    desc: "İdeal trafoda gerilimler sarım sayılarıyla DOĞRU orantılıdır. Sekondere iki kat sarım = iki kat gerilim. Dört büyüklükten üçünü bil, dördüncüyü bul — trafo hesabının ekmek kapısı.",
+    vars: [
+      vU({ id: "U1", sym: "U", sub: "1", name: "Primer gerilim", de: "Primärspannung" }),
+      vU({ id: "U2", sym: "U", sub: "2", name: "Sekonder gerilim", de: "Sekundärspannung" }),
+      N("1", "Primer sarım sayısı"),
+      N("2", "Sekonder sarım sayısı"),
+    ],
+    base: "U1",
+    forms: {
+      U1: mul(v("U2"), frac(v("N1"), v("N2"))),
+      U2: mul(v("U1"), frac(v("N2"), v("N1"))),
+      N1: mul(v("N2"), frac(v("U1"), v("U2"))),
+      N2: mul(v("N1"), frac(v("U2"), v("U1"))),
+    },
+    keywords: ["windungszahl", "sarım", "trafo oran"],
+  },
+  {
+    id: "trafo-stroeme",
+    cat: "trafo",
+    title: "Gerilim ↔ Akım (Güç Dengesi)",
+    tagline: "U₁·I₁ = U₂·I₂ — bedava güç yok, sadece takas var.",
+    desc: "İdeal trafoda giren güç = çıkan güç. Gerilimi 10'a düşüren trafo, akımı 10'la çarpar. Kaynak makinelerinin nasıl yüzlerce amper verebildiğinin ve yüksek gerilim hatlarının neden yüksek gerilimli olduğunun tek satırlık cevabı: aynı gücü az akımla taşı, kayıpları (I²R!) küçük tut.",
+    note: "Akım oranının TERS olduğuna dikkat: U₁/U₂ = I₂/I₁. Gerilim kimde çoksa akım onda azdır — trafo dünyasının denge yasası.",
+    vars: [
+      vU({ id: "U1", sym: "U", sub: "1", name: "Primer gerilim", de: "Primärspannung" }),
+      vU({ id: "U2", sym: "U", sub: "2", name: "Sekonder gerilim", de: "Sekundärspannung" }),
+      vI({
+        id: "I1",
+        sym: "I",
+        sub: "1",
+        name: "Primer akım",
+        de: "Primärstrom",
+        desc: "Giriş tarafından çekilen akım.",
+        find: "Giriş hattından pens ampermetreyle.",
+      }),
+      vI({
+        id: "I2",
+        sym: "I",
+        sub: "2",
+        name: "Sekonder akım",
+        de: "Sekundärstrom",
+        desc: "Çıkış tarafının yüke verdiği akım.",
+        find: "Çıkış hattından pens ampermetreyle ya da etiketten.",
+      }),
+    ],
+    base: "U1",
+    forms: {
+      U1: frac(mul(v("U2"), v("I2")), v("I1")),
+      U2: frac(mul(v("U1"), v("I1")), v("I2")),
+      I1: frac(mul(v("U2"), v("I2")), v("U1")),
+      I2: frac(mul(v("U1"), v("I1")), v("U2")),
+    },
+    keywords: ["trafo akım", "leistungsgleichgewicht", "güç dengesi"],
+  },
+];

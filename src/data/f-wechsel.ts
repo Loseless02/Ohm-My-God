@@ -1,0 +1,143 @@
+import { v, num, mul, frac, SQRT2, PI } from "../lib/expr";
+import type { FormulaDef } from "./types";
+import { vU, vF, vL, vCap, U_OHM, U_S } from "./vars";
+
+export const F_WECHSEL: FormulaDef[] = [
+  {
+    id: "scheitelwert",
+    cat: "wechselstrom",
+    title: "Tepe Değeri",
+    tagline: "û = √2 · U — prizdeki 230 V aslında ara sıra 325 V'tur.",
+    desc: "Multimetrenin gösterdiği 230 V, etkin değerdir (Effektivwert): aynı ısıtma işini yapan DC eşdeğeri. Sinüs dalgasının gerçek tepesi ise √2 kat yüksektir: 230 · 1,414 ≈ 325 V. İzolasyon ve yarı iletkenler bu tepe değere dayanmak zorundadır — 'ama ortalaması 230'du' savunması kondansatörde geçmez.",
+    vars: [
+      {
+        id: "us",
+        sym: "û",
+        name: "Tepe değeri",
+        de: "Scheitelwert / Spitzenwert",
+        units: [{ label: "V", mult: 1 }, { label: "kV", mult: 1e3 }],
+        desc: "Sinüs dalgasının ulaştığı en yüksek anlık değer. Osiloskopta gördüğün zirve.",
+        find: "Osiloskopla ölçülür ya da etkin değerden √2 ile hesaplanır.",
+      },
+      vU({
+        name: "Etkin değer",
+        de: "Effektivwert",
+        desc: "Aynı gücü sağlayan DC eşdeğeri — multimetrelerin ve etiketlerin dili. 'Şebeke 230 V' derken kastedilen budur.",
+        find: "Multimetreyle (AC kademesinde) ölçülür; cihaz zaten etkin değer gösterir.",
+      }),
+    ],
+    base: "us",
+    forms: {
+      us: mul(SQRT2(), v("U")),
+      U: frac(v("us"), SQRT2()),
+    },
+    keywords: ["scheitelwert", "tepe", "effektivwert", "etkin", "325", "amplitü"],
+  },
+  {
+    id: "periodendauer",
+    cat: "wechselstrom",
+    title: "Periyot Süresi",
+    tagline: "T = 1/f — bir dalganın kendini tamamlama süresi.",
+    desc: "Frekans ile periyot birbirinin tersidir. 50 Hz'lik şebekede bir tam dalga 20 ms sürer. Osiloskopta zaman ekseninden T'yi okur, tersini alır, frekansı bulursun — cihazın otomatiği bozulduğunda hâlâ bilen kişi ol.",
+    vars: [
+      {
+        id: "T",
+        sym: "T",
+        name: "Periyot süresi",
+        de: "Periodendauer",
+        units: U_S,
+        desc: "Bir tam salınımın süresi. 50 Hz → 20 ms; göz kırpmandan bile kısa.",
+        find: "Osiloskopta bir tam dalganın yatay uzunluğunu oku.",
+      },
+      vF(),
+    ],
+    base: "T",
+    forms: {
+      T: frac(num(1), v("f")),
+      f: frac(num(1), v("T")),
+    },
+    keywords: ["periode", "periyot", "frekans", "20ms"],
+  },
+  {
+    id: "kreisfrequenz",
+    cat: "wechselstrom",
+    title: "Açısal Frekans",
+    tagline: "ω = 2π · f — frekansın matematik smokini giymiş hali.",
+    desc: "Sinüs hesaplarında frekans genelde ω (omega) olarak, radyan/saniye cinsinden gezer: ω = 2πf. 50 Hz → 314 1/s. X_L ve X_C formüllerinin içindeki 2πf paketinin ta kendisi. Ezberlemesen de olur ama tanımazsan formüller sana yabancı bakar.",
+    vars: [
+      {
+        id: "omega",
+        sym: "ω",
+        name: "Açısal frekans",
+        de: "Kreisfrequenz",
+        units: [{ label: "1/s", mult: 1 }],
+        desc: "Saniyedeki radyan cinsinden dönüş hızı. Bir tam dalga = 2π radyan.",
+        find: "Hesaplanır: 2π·f. 50 Hz için ≈ 314 1/s — bu sayıyı görürsen 50 Hz kokusu al.",
+      },
+      vF(),
+    ],
+    base: "omega",
+    forms: {
+      omega: mul(num(2), PI(), v("f")),
+      f: frac(v("omega"), mul(num(2), PI())),
+    },
+    keywords: ["kreisfrequenz", "omega", "314", "radyan"],
+  },
+  {
+    id: "xl",
+    cat: "induktivitaet",
+    title: "İndüktif Reaktans",
+    tagline: "X_L = 2π · f · L — bobinin AC'ye kestiği fatura.",
+    desc: "Bobin, alternatif akıma frekansla artan bir direnç gösterir: X_L = 2πfL. DC'de (f=0) bobin sadece bir tel parçasıdır; frekans yükseldikçe 'dur bakalım' demeye başlar. Bu yüzden şok bobinleri yüksek frekans gürültüsünü süzer ama 50 Hz'i rahat bırakır.",
+    note: "X_L gerçek direnç gibi ısı üretmez — enerjiyi manyetik alanda saklayıp geri verir. Bu yüzden adı 'reaktans', güç türü de 'reaktif'.",
+    vars: [
+      {
+        id: "XL",
+        sym: "X",
+        sub: "L",
+        name: "İndüktif reaktans",
+        de: "induktiver Blindwiderstand",
+        units: U_OHM,
+        desc: "Bobinin AC'ye gösterdiği frekans bağımlı direnç. Akımı gerilimden 90° geride bıraktırır.",
+        find: "Hesaplanır; ya da U/I ölçümünden (saf bobin varsayımıyla) çıkarılır.",
+      },
+      vF(),
+      vL(),
+    ],
+    base: "XL",
+    forms: {
+      XL: mul(num(2), PI(), v("f"), v("L")),
+      L: frac(v("XL"), mul(num(2), PI(), v("f"))),
+      f: frac(v("XL"), mul(num(2), PI(), v("L"))),
+    },
+    keywords: ["blindwiderstand", "reaktans", "bobin", "spule", "induktiv"],
+  },
+  {
+    id: "xc",
+    cat: "induktivitaet",
+    title: "Kapasitif Reaktans",
+    tagline: "X_C = 1 / (2π·f·C) — kondansatör tam tersini yapar.",
+    desc: "Kondansatörün AC direnci frekansla TERS orantılıdır: frekans arttıkça X_C küçülür. DC'de (f=0) kondansatör duvardır (X_C → ∞), yüksek frekansta ise neredeyse kablodur. Bobinin ayna görüntüsü — biri artarken öteki azalır; ikisinin eşitlendiği yerde rezonans denen ilginç şeyler olur (o konu sonra 😏).",
+    vars: [
+      {
+        id: "XC",
+        sym: "X",
+        sub: "C",
+        name: "Kapasitif reaktans",
+        de: "kapazitiver Blindwiderstand",
+        units: U_OHM,
+        desc: "Kondansatörün AC'ye gösterdiği frekans bağımlı direnç. Akımı gerilimden 90° öne geçirtir.",
+        find: "Hesaplanır: 1/(2πfC).",
+      },
+      vF(),
+      vCap(),
+    ],
+    base: "XC",
+    forms: {
+      XC: frac(num(1), mul(num(2), PI(), v("f"), v("C"))),
+      C: frac(num(1), mul(num(2), PI(), v("f"), v("XC"))),
+      f: frac(num(1), mul(num(2), PI(), v("C"), v("XC"))),
+    },
+    keywords: ["kapazitiv", "kondansatör", "kondensator", "reaktans"],
+  },
+];
