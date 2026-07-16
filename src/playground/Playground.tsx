@@ -734,7 +734,7 @@ export default function Playground() {
         </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[220px_1fr_250px]">
+      <div className="grid gap-3 lg:grid-cols-[200px_minmax(0,1fr)_220px] xl:gap-4">
         {/* ── palet (sol) ── */}
         <div className="order-1">
           <div className="card p-3">

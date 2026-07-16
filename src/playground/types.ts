@@ -117,8 +117,8 @@ export const SPEC: Record<PartType, PartSpec> = {
 };
 
 export const GRID = 20;
-export const CANVAS_W = 960;
-export const CANVAS_H = 600;
+export const CANVAS_W = 1200;
+export const CANVAS_H = 820;
 
 export const snap = (v: number) => Math.round(v / GRID) * GRID;
 
