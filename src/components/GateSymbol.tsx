@@ -16,7 +16,7 @@ export function GateSymbol({ g }: { g: GateKind }) {
   const neg = g === "nand" || g === "nor" || g === "not";
   const two = g !== "not";
   return (
-    <svg viewBox="0 0 96 64" className="h-16 w-24" role="img" aria-label={`${g.toUpperCase()} sembolü`}>
+    <svg viewBox="0 0 96 64" className="h-16 w-24" role="img" aria-label={g.toUpperCase()}>
       {two ? (
         <>
           <line x1={0} y1={18} x2={22} y2={18} stroke={C} strokeWidth={2} />

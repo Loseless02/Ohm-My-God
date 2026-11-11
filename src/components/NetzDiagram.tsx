@@ -15,6 +15,8 @@ const COL = {
   hot: "#fbbf24",
 };
 
+import { useI18n } from "../i18n";
+
 export type NetzSystem = "tn-c" | "tn-s" | "tn-c-s" | "tt" | "it";
 
 function Earth({ x, y, label }: { x: number; y: number; label?: string }) {
@@ -56,6 +58,7 @@ function Label({ x, y, c, t }: { x: number; y: number; c: string; t: string }) {
 }
 
 export function NetzDiagram({ sys }: { sys: NetzSystem }) {
+  const { t } = useI18n();
   const penToHak = sys === "tn-c" || sys === "tn-c-s";
   const penToDevice = sys === "tn-c";
   const split = sys === "tn-c-s";
@@ -63,15 +66,17 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
   const peFromTrafo = sys === "tn-s";
   const localEarth = sys === "tt" || sys === "it";
 
-  const H = 300;
+  const H = 292;
   const W = 720;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`${sys.toUpperCase()} şeması`}>
+    <div>
+    <div className="overflow-x-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[540px]" role="img" aria-label={sys.toUpperCase()}>
       {/* ── Trafo bölgesi ── */}
       <rect x={12} y={20} width={X.trafoEnd - 4} height={220} rx={10} fill="none" stroke={COL.box} strokeDasharray="5 4" opacity={0.5} />
       <text x={12 + (X.trafoEnd - 4) / 2} y={38} textAnchor="middle" fill={COL.text} fontSize={11} fontWeight={600}>
-        Trafo istasyonu
+        {t("netz.station")}
       </text>
       <text x={12 + (X.trafoEnd - 4) / 2} y={51} textAnchor="middle" fill={COL.mut} fontSize={9}>
         Ortsnetzstation
@@ -87,7 +92,7 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
       {sys !== "it" ? (
         <>
           <line x1={80} y1={144} x2={80} y2={185} stroke={COL.pe} strokeWidth={2} />
-          <Earth x={80} y={185} label="Betriebserdung (işletme topr.)" />
+          <Earth x={80} y={185} label={t("netz.opEarth")} />
         </>
       ) : (
         <>
@@ -97,7 +102,7 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
             Z
           </text>
           <text x={80} y={196} textAnchor="middle" fill={COL.mut} fontSize={9}>
-            izole / yüksek empedans
+            {t("netz.isolated")}
           </text>
         </>
       )}
@@ -138,10 +143,10 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
           <Label x={X.hak + 34} y={LY.n - 7} c={COL.n} t="N" />
           <Label x={X.hak + 60} y={LY.pe - 7} c={COL.pe} t="PE" />
           <text x={X.hak} y={LY.n + 30} textAnchor="middle" fill={COL.hot} fontSize={10} fontWeight={600}>
-            ⚡ PEN ayrım noktası
+            ⚡ {t("netz.split")}
           </text>
           <text x={X.hak} y={LY.n + 42} textAnchor="middle" fill={COL.mut} fontSize={8.5}>
-            bir kez ayrıldı mı bir daha birleşmez!
+            {t("netz.splitNote")}
           </text>
         </>
       )}
@@ -149,7 +154,7 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
       {/* ── Bina ── */}
       <rect x={X.hak - 60} y={20} width={W - (X.hak - 60) - 10} height={266} rx={10} fill="none" stroke={COL.box} strokeDasharray="5 4" opacity={0.5} />
       <text x={X.hak - 60 + (W - (X.hak - 60) - 10) / 2} y={38} textAnchor="middle" fill={COL.text} fontSize={11} fontWeight={600}>
-        Bina (Gebäude)
+        {t("netz.building")}
       </text>
       {/* HAK kutusu */}
       <rect x={X.hak - 22} y={200} width={44} height={30} rx={4} fill="#131c2a" stroke={COL.box} strokeWidth={1.5} />
@@ -168,10 +173,10 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
         M
       </text>
       <text x={X.dev + 55} y={126} textAnchor="middle" fill={COL.mut} fontSize={9}>
-        Verbraucher / gövde
+        {t("netz.load")}
       </text>
       <text x={X.dev + 55} y={138} textAnchor="middle" fill={COL.mut} fontSize={9}>
-        (metal gövdeli cihaz)
+        {t("netz.loadNote")}
       </text>
 
       {/* gövde koruma bağlantısı */}
@@ -179,7 +184,7 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
         <>
           <GY pen d={`M ${X.dev} ${LY.n} L ${X.dev + 20} ${LY.n} L ${X.dev + 20} ${170}`} />
           <text x={X.dev + 40} y={186} fill={COL.mut} fontSize={8.5}>
-            gövde PEN'e bağlı
+            {t("netz.bodyPen")}
           </text>
         </>
       )}
@@ -189,7 +194,7 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
       {localEarth && (
         <>
           <GY d={`M ${X.dev + 20} ${170} L ${X.dev + 20} ${226}`} />
-          <Earth x={X.dev + 20} y={226} label={sys === "tt" ? "Anlagenerder (bina toprağı)" : "koruma topraklaması"} />
+          <Earth x={X.dev + 20} y={226} label={sys === "tt" ? t("netz.siteEarth") : t("netz.protEarth")} />
         </>
       )}
       {sys === "it" && (
@@ -199,19 +204,14 @@ export function NetzDiagram({ sys }: { sys: NetzSystem }) {
             ISO-Wächter
           </text>
           <text x={X.hak} y={100} textAnchor="middle" fill={COL.mut} fontSize={8.5}>
-            izolasyon bekçisi: ilk hatada alarm
+            {t("netz.iso")}
           </text>
         </>
       )}
 
-      {/* alt bilgi: sistemin tek cümlelik özeti */}
-      <text x={16} y={H - 6} fill={COL.mut} fontSize={10}>
-        {sys === "tn-c" && "TN-C: PE + N tek iletkende (PEN) — trafodan cihaza kadar. Eski usul; PEN koparsa gövdeler gerilim altında kalır."}
-        {sys === "tn-s" && "TN-S: N ve PE trafodan itibaren ayrı yürür. Beş telli modern sistem — temiz, güvenli, EMC dostu."}
-        {sys === "tn-c-s" && "TN-C-S: Şebekede PEN, binada ayrım — HAK'taki sarı nokta ayrım noktası. Almanya'daki standart ev bağlantısı."}
-        {sys === "tt" && "TT: Trafo kendi toprağına, bina KENDİ toprağına. Metalik PE bağlantısı yok — RCD burada hayat sigortası."}
-        {sys === "it" && "IT: Şebeke toprağa bağlı değil. İlk hata devreyi durdurmaz, izolasyon bekçisi alarm verir — ameliyathane felsefesi."}
-      </text>
     </svg>
+    </div>
+    <p className="mt-2 text-xs leading-relaxed text-mut">{t(`netz.sum.${sys}`)}</p>
+    </div>
   );
 }

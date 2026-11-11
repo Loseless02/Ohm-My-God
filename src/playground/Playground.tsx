@@ -14,6 +14,8 @@ import { simulate, simulateLogic } from "./sim";
 import { buildGrid, routeWire } from "./route";
 import { MiniSymbol, PartSymbol } from "./parts";
 import { LOGIC_PRESETS, PRESETS, type Preset } from "./presets";
+import { PART_INFO } from "./info";
+import { rich, useI18n } from "../i18n";
 
 const LS2 = "omg-playground-v2";
 const MAIN_SWITCH = ["switch_no", "switch_nc", "taster_no", "taster_nc"];
@@ -52,42 +54,6 @@ const PALETTE_LOGIC: PartType[] = [
   "xor",
   "lamp",
 ];
-
-const PART_INFO: Record<PartType, string> = {
-  source:
-    "Gerilim kaynağı (şebeke). Gerilimi panelden değiştir; simülasyonda üzerine tıklayarak aç/kapa.",
-  source2:
-    "Dikey kaynak: L üstte, N altta. Panelden veya simülasyonda tıklayarak aktif/deaktif edilebilir.",
-  rail_l: "L rayı (Sammelschiene): fiziksel modda faz, Logik modunda mantık 1. Sabittir, silinmez.",
-  rail_n: "N rayı: dönüş / mantık 0. Devrenin bittiği yer.",
-  node: "Knotenpunkt: kablo dallanma noktası. Kablo çekerken boş alana tıklayınca otomatik oluşur; buradan istediğin kadar kol ayır.",
-  switch_no:
-    "Kalıcı şalter, kapayıcı (Schließer). Simülasyonda tıkla: konum değiştirir ve orada kalır.",
-  switch_nc: "Kalıcı şalter, açıcı (Öffner). Normalde KAPALI, tıklayınca açar.",
-  taster_no:
-    "Yaylı buton, kapayıcı (Taster). Sadece BASILI TUTTUĞUN sürece kapalı — zil butonu mantığı.",
-  taster_nc:
-    "Yaylı buton, açıcı. Normalde kapalı, bastığın sürece açık. Acil stoplar bu yüzden hep açıcıdır.",
-  pairc_no:
-    "Eş kontak (kapayıcı): panelden seçtiğin şalterin/butonun İKİNCİ kontağı. Aynı düğmeye basınca bu da onunla birlikte hareket eder. Her düğmenin 1 kapayıcı + 1 açıcı eş kontağı olabilir — gerçek düğmede daha fazlasına yer yok 😄",
-  pairc_nc:
-    "Eş kontak (açıcı): seçtiğin düğme basılınca BU AÇILIR. Tasterverriegelung'un anahtarı: S1'in açıcısını S2'nin yoluna koy, ikisi aynı anda çalışamasın. Turkuaz kesik çizgi = mekanik bağ işareti.",
-  lamp: "Lamba (H). Tam gerilimde parlar, seri bölünmüş gerilimde loş yanar. Logik modunda: giriş 1 ise yanar.",
-  motor: "Motor (M). Tam gerilim alınca döner (mavi ışıma), yarım gerilimde 'zayıf!' diye sızlanır.",
-  coil: "Kontaktör bobini (Schütz, K). A1–A2 gerilim görünce çeker ve aynı etiketli TÜM kontakları oynatır.",
-  contact_no: "Kontaktör kontağı, kapayıcı. Panelden hangi bobini (K1…) takip edeceğini seç.",
-  contact_nc: "Kontaktör kontağı, açıcı. Bobin çekince AÇILIR — kilitleme (Verriegelung) bununla yapılır.",
-  tcoil:
-    "Zaman rölesi (KT). Panelden modunu seç: EIN-verzögert (çekmede gecikme), AUS-verzögert (bırakmada gecikme), IMPULS (tek darbe), TAKT (yanıp sönme). Süre de ayarlanır.",
-  tcontact_no: "Zaman kontağı, kapayıcı: bağlı rölenin moduna göre hareket eder. Yarım daire = zaman işareti.",
-  tcontact_nc: "Zaman kontağı, açıcı: röle 'aktif' sayıldığında açılır.",
-  and: "UND (&): bütün girişler 1 ise çıkış 1. Seri kontakların elektronik ruh ikizi. Presin iki el butonu: ikisi birden basılı değilse inmez.",
-  or: "ODER (≥1): girişlerden HERHANGİ biri 1 ise çıkış 1. Paralel kontaklar. Kapı zili: alt kapı da üst kapı da çaldırır.",
-  not: "NICHT: girişi ters çevirir. Öffner'in elektronik hali. Çıkıştaki yuvarlak = 'değil' şapkası.",
-  nand: "NAND: UND + değil. Üniversal kapı — sadece NAND'lerle her devre kurulabilir; elektroniğin İsviçre çakısı.",
-  nor: "NOR: ODER + değil. İki NOR'u çaprazlarsan RS-Flipflop olur — Selbsthaltung'un dijital dedesi. Dene!",
-  xor: "XOR / Antivalenz (=1): girişler FARKLIYSA 1. Koridordaki iki Wechselschalter tam olarak budur.",
-};
 
 type Sel = { kind: "part" | "wire"; id: string } | null;
 type Drag =
@@ -141,6 +107,15 @@ function loadStore(): Record<Domain, StoredCircuit> {
   return defaults;
 }
 
+const mq = (q: string) => typeof window !== "undefined" && window.matchMedia(q).matches;
+const clampW = (w: number) => Math.min(6000, Math.max(240, w));
+
+/** Başlangıç görünümü: dar ekranda devrenin olduğu bölgeye yakınlaş. */
+function homeView(narrow: boolean, railed: boolean) {
+  if (!narrow) return { x: 0, y: 0, w: CANVAS_W };
+  return railed ? { x: 30, y: 0, w: 900 } : { x: 100, y: 0, w: 640 };
+}
+
 // zaman rölesi: moduna göre kontaklar şu an "çekili" mi?
 interface TState {
   onSince: number | null;
@@ -162,6 +137,7 @@ function timedActive(p: Part, t: TState | undefined, now: number): boolean {
 }
 
 export default function Playground() {
+  const { t, tx, deTerm } = useI18n();
   const [initialStore] = useState(loadStore);
   const storeRef = useRef(initialStore);
   const [domain, setDomainState] = useState<Domain>("phys");
@@ -172,7 +148,17 @@ export default function Playground() {
   const [sel, setSel] = useState<Sel>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
-  const [view, setView] = useState({ x: 0, y: 0, w: CANVAS_W });
+  // dar ekran: daha dik tuval + yakın başlangıç görünümü; dokunmatik: büyük hedefler
+  const [narrow, setNarrow] = useState(() => mq("(max-width: 640px)"));
+  const [coarse] = useState(() => mq("(pointer: coarse)"));
+  const ratio = narrow ? 0.82 : CANVAS_W / CANVAS_H; // tuval en/boy
+  const [view, setView] = useState(() =>
+    homeView(mq("(max-width: 640px)"), (initialStore.phys.orient ?? "v") === "h"),
+  );
+  const [placing, setPlacing] = useState<PartType | null>(null); // dokunmatik: önce parça seç, sonra tuvale dokun
+  const lastPointer = useRef("mouse");
+  const touches = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ d: number; w: number; wx: number; wy: number } | null>(null);
   const [actuated, setActuated] = useState<Record<string, boolean>>({});
   const [tick, setTick] = useState(0);
   const [drag, setDrag] = useState<Drag>(null);
@@ -187,6 +173,23 @@ export default function Playground() {
   useEffect(() => {
     partsRef.current = parts;
   }, [parts]);
+
+  const railed = domain === "logic" || orient === "h";
+  useEffect(() => {
+    const m = window.matchMedia("(max-width: 640px)");
+    const on = () => setNarrow(m.matches);
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, []);
+  // dar ekranda mod/yön değişince devre görünür kalsın
+  const firstView = useRef(true);
+  useEffect(() => {
+    if (firstView.current) {
+      firstView.current = false;
+      return;
+    }
+    setView(homeView(narrow, railed));
+  }, [narrow, railed]);
 
   // ── kalıcılık ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -256,6 +259,7 @@ export default function Playground() {
     energizedRef.current = {};
     lastDoneRef.current = "";
     setPending(null);
+    setPlacing(null);
     setSel(null);
   };
 
@@ -305,7 +309,7 @@ export default function Playground() {
   }
 
   // ── koordinatlar (zoom/pan dahil) ──────────────────────────────────────
-  const viewH = (view.w * CANVAS_H) / CANVAS_W;
+  const viewH = view.w / ratio;
   const toSvg = useCallback(
     (cx: number, cy: number) => {
       const el = svgRef.current;
@@ -313,17 +317,17 @@ export default function Playground() {
       const r = el.getBoundingClientRect();
       return {
         x: view.x + ((cx - r.left) / r.width) * view.w,
-        y: view.y + ((cy - r.top) / r.height) * ((view.w * CANVAS_H) / CANVAS_W),
+        y: view.y + ((cy - r.top) / r.height) * (view.w / ratio),
       };
     },
-    [view],
+    [view, ratio],
   );
 
   const zoomAt = useCallback(
     (f: number, cx: number, cy: number) => {
       const pt = toSvg(cx, cy);
       setView((v) => {
-        const w = Math.min(6000, Math.max(240, v.w * f));
+        const w = clampW(v.w * f);
         const k = w / v.w;
         const nv = { w, x: pt.x - (pt.x - v.x) * k, y: pt.y - (pt.y - v.y) * k };
         if (panRef.current)
@@ -335,9 +339,9 @@ export default function Playground() {
   );
   const zoomBy = (f: number) =>
     setView((v) => {
-      const w = Math.min(6000, Math.max(240, v.w * f));
-      const vhOld = (v.w * CANVAS_H) / CANVAS_W;
-      const vhNew = (w * CANVAS_H) / CANVAS_W;
+      const w = clampW(v.w * f);
+      const vhOld = v.w / ratio;
+      const vhNew = w / ratio;
       return { x: v.x + (v.w - w) / 2, y: v.y + (vhOld - vhNew) / 2, w };
     });
 
@@ -407,6 +411,19 @@ export default function Playground() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drag, toSvg]);
+
+  /** Süren taşımayı iptal et: parça eski yerine döner. */
+  const cancelDrag = () =>
+    setDrag((d) => {
+      if (d?.kind === "move")
+        setParts((ps) => ps.map((p) => (p.id === d.id ? { ...p, x: d.ox, y: d.oy } : p)));
+      return null;
+    });
+
+  function rotateSelected() {
+    if (!sel || sel.kind !== "part") return;
+    setParts((ps) => ps.map((q) => (q.id === sel.id ? { ...q, rot: ((q.rot ?? 0) + 1) % 4 } : q)));
+  }
 
   // ── parça işlemleri ────────────────────────────────────────────────────
   function nextLabel(type: PartType, list: Part[]): string {
@@ -518,12 +535,9 @@ export default function Playground() {
       if (e.key === "Delete" || e.key === "Backspace") removeSelected();
       if (e.key === "Escape") {
         setPending(null);
+        setPlacing(null);
         setSel(null);
-        setDrag((d) => {
-          if (d?.kind === "move")
-            setParts((ps) => ps.map((p) => (p.id === d.id ? { ...p, x: d.ox, y: d.oy } : p)));
-          return null;
-        });
+        cancelDrag();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -568,8 +582,10 @@ export default function Playground() {
     const up = () => {
       setActuated((a) => ({ ...a, [id]: false }));
       window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
     };
     window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
   }
 
   function partPointerDown(p: Part, e: React.PointerEvent) {
@@ -643,26 +659,25 @@ export default function Playground() {
 
   return (
     <div>
-      <h1 className="font-disp text-3xl font-bold text-ink">🎛️ Playground</h1>
-      <p className="mb-4 mt-1 italic text-mut">
-        Kendi devreni kur, simüle et, patlat (güvenli tarafta). Fiziksel devreler ya da mantık
-        kapıları — toggle senin.
+      <h1 className="font-disp text-2xl font-bold text-ink sm:text-3xl">🎛️ Playground</h1>
+      <p className="mb-4 mt-1 text-sm italic text-mut sm:text-base">
+        {t("pg.lead")}
       </p>
 
       {/* mod seçimi */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="flex rounded-2xl border border-line bg-panel p-1">
           {(
             [
-              ["phys", "⚡ Fiziksel"],
-              ["logic", "🔢 Logik"],
+              ["phys", `⚡ ${t("pg.phys")}`],
+              ["logic", `🔢 ${t("pg.logic")}`],
             ] as [Domain, string][]
           ).map(([d, txt]) => (
             <button
               key={d}
               type="button"
               onClick={() => switchDomain(d)}
-              className={`rounded-xl px-4 py-2 font-disp text-sm font-semibold transition ${
+              className={`rounded-xl px-3 py-1.5 font-disp text-sm font-semibold transition sm:px-4 sm:py-2 ${
                 domain === d ? "bg-volt text-black shadow-[0_0_16px_rgba(251,191,36,0.25)]" : "text-mut hover:text-ink"
               }`}
             >
@@ -674,8 +689,8 @@ export default function Playground() {
           <div className="flex rounded-2xl border border-line bg-panel p-1">
             {(
               [
-                ["v", "⬇ Dikey"],
-                ["h", "➡ Yatay (raylı)"],
+                ["v", `⬇ ${t("pg.vert")}`],
+                ["h", `➡ ${t("pg.horiz")}`],
               ] as [Orient, string][]
             ).map(([o, txt]) => (
               <button
@@ -700,7 +715,7 @@ export default function Playground() {
               : "bg-volt text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:brightness-110"
           }`}
         >
-          {mode === "sim" ? "■ Durdur & Düzenle" : "▶ Simülasyonu Başlat"}
+          {mode === "sim" ? `■ ${t("pg.stop")}` : `▶ ${t("pg.start")}`}
         </button>
         <select
           onChange={(e) => {
@@ -709,14 +724,15 @@ export default function Playground() {
             e.target.value = "";
           }}
           defaultValue=""
-          className="rounded-xl border border-line bg-panel px-3 py-2 text-sm text-mut outline-none focus:border-volt/60"
+          aria-label={t("pg.loadPreset")}
+          className="min-w-0 max-w-full rounded-xl border border-line bg-panel px-3 py-2 text-sm text-mut outline-none focus:border-volt/60"
         >
           <option value="" disabled>
-            📦 Hazır devre yükle…
+            📦 {t("pg.loadPreset")}
           </option>
           {presets.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name}
+              {tx(p.name)}
             </option>
           ))}
         </select>
@@ -730,34 +746,49 @@ export default function Playground() {
           }}
           className="rounded-xl border border-line px-3 py-2 text-sm text-mut transition hover:border-rose-400/50 hover:text-rose-300"
         >
-          🗑 Temizle
+          🗑 {t("pg.clear")}
         </button>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[200px_minmax(0,1fr)_220px] xl:gap-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[200px_minmax(0,1fr)_220px] xl:gap-4">
         {/* ── palet (sol) ── */}
-        <div className="order-1">
-          <div className="card p-3">
+        <div className="order-1 min-w-0">
+          <div className="card p-2 lg:p-3">
             <p className="mb-2 px-1 font-disp text-xs uppercase tracking-widest text-mut/70">
-              {domain === "phys" ? "Parçalar" : "Logik parçaları"}
-              {mode === "sim" && " · düzenlemek için durdur"}
+              {domain === "phys" ? t("pg.parts") : t("pg.logicParts")}
+              {mode === "sim" && ` · ${t("pg.stopToEdit")}`}
             </p>
-            <div className={`space-y-1 ${mode === "sim" ? "pointer-events-none opacity-40" : ""}`}>
-              {palette.map((t) => (
+            <div
+              className={`flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0 ${
+                mode === "sim" ? "pointer-events-none opacity-40" : ""
+              }`}
+            >
+              {palette.map((pt_) => (
                 <div
-                  key={t}
+                  key={pt_}
                   onPointerDown={(e) => {
+                    lastPointer.current = e.pointerType;
+                    if (e.pointerType !== "mouse") return; // dokunmatik: şerit kaydırılabilsin, yerleştirme dokunuşla
                     e.preventDefault();
                     const pt = toSvg(e.clientX, e.clientY);
-                    setDrag({ kind: "new", type: t, x: pt.x, y: pt.y });
+                    setDrag({ kind: "new", type: pt_, x: pt.x, y: pt.y });
                   }}
-                  className="flex cursor-grab select-none items-center gap-2 rounded-lg px-2 py-1 text-xs text-mut transition hover:bg-panel2 hover:text-ink active:cursor-grabbing"
-                  title={SPEC[t].de}
+                  onClick={() => {
+                    if (lastPointer.current === "mouse") return;
+                    setPending(null);
+                    setPlacing((cur) => (cur === pt_ ? null : pt_));
+                  }}
+                  className={`flex w-[76px] shrink-0 cursor-grab select-none flex-col items-center gap-1 rounded-lg px-1 py-1.5 text-center text-[10px] leading-tight transition hover:bg-panel2 hover:text-ink active:cursor-grabbing lg:w-auto lg:flex-row lg:gap-2 lg:px-2 lg:py-1 lg:text-left lg:text-xs lg:leading-normal ${
+                    placing === pt_ ? "bg-volt/15 text-ink ring-1 ring-volt/70" : "text-mut"
+                  }`}
+                  title={SPEC[pt_].de}
                 >
-                  <MiniSymbol type={t} />
+                  <MiniSymbol type={pt_} />
                   <span>
-                    {SPEC[t].name}
-                    <span className="block text-[10px] text-mut/60">{SPEC[t].de}</span>
+                    {tx(SPEC[pt_].name)}
+                    {deTerm(SPEC[pt_].de) && (
+                      <span className="hidden text-[10px] text-mut/60 lg:block">{SPEC[pt_].de}</span>
+                    )}
                   </span>
                 </div>
               ))}
@@ -768,26 +799,28 @@ export default function Playground() {
         {/* ── özellikler (sağ) ── */}
         <div className="order-3 w-full self-start lg:sticky lg:top-4">
           <div className="card p-4">
-            <p className="mb-2 font-disp text-xs uppercase tracking-widest text-mut/70">Özellikler</p>
-            {!sel && <p className="text-xs text-mut">Bir parça ya da kablo seç.</p>}
+            <p className="mb-2 font-disp text-xs uppercase tracking-widest text-mut/70">{t("pg.props")}</p>
+            {!sel && <p className="text-xs text-mut">{t("pg.selectHint")}</p>}
             {sel?.kind === "wire" && (
               <button
                 type="button"
                 onClick={removeSelected}
                 className="rounded-lg border border-rose-400/40 px-3 py-1.5 text-xs text-rose-300 hover:bg-rose-500/10"
               >
-                Kabloyu sil
+                {t("pg.delWire")}
               </button>
             )}
             {selPart && (
               <div className="space-y-3 text-sm">
                 <p className="font-disp font-semibold text-ink">
-                  {SPEC[selPart.type].name}
-                  <span className="block text-[11px] font-normal text-mut">{SPEC[selPart.type].de}</span>
+                  {tx(SPEC[selPart.type].name)}
+                  {deTerm(SPEC[selPart.type].de) && (
+                    <span className="block text-[11px] font-normal text-mut">{SPEC[selPart.type].de}</span>
+                  )}
                 </p>
                 {SPEC[selPart.type].kind !== "node" && (
                   <label className="block text-xs text-mut">
-                    Etiket
+                    {t("pg.label")}
                     <input
                       value={selPart.label}
                       onChange={(e) => updateSel({ label: e.target.value })}
@@ -798,7 +831,7 @@ export default function Playground() {
                 {SPEC[selPart.type].kind === "source" && (
                   <>
                     <label className="block text-xs text-mut">
-                      Gerilim (V)
+                      {t("pg.volts")}
                       <input
                         type="number"
                         value={selPart.volts ?? 230}
@@ -813,27 +846,27 @@ export default function Playground() {
                         onChange={(e) => updateSel({ enabled: e.target.checked })}
                         className="accent-[#fbbf24]"
                       />
-                      Aktif — simülasyonda tıklayarak da açıp kapatabilirsin
+                      {t("pg.active")}
                     </label>
                   </>
                 )}
                 {selPart.type === "tcoil" && (
                   <>
                     <label className="block text-xs text-mut">
-                      Çalışma şekli
+                      {t("pg.tmode")}
                       <select
                         value={selPart.tmode ?? "ein"}
                         onChange={(e) => updateSel({ tmode: e.target.value as TimerMode })}
                         className="mt-1 w-full rounded-lg border border-line bg-bg/60 px-2 py-1.5 text-ink outline-none focus:border-volt/60"
                       >
-                        <option value="ein">Einschaltverzögert — çekmede gecikme</option>
-                        <option value="aus">Ausschaltverzögert — bırakmada gecikme</option>
-                        <option value="impuls">Impuls / Wischrelais — tek darbe</option>
-                        <option value="blink">Blink / Taktrelais — yanıp sönme</option>
+                        <option value="ein">{t("pg.tm.ein")}</option>
+                        <option value="aus">{t("pg.tm.aus")}</option>
+                        <option value="impuls">{t("pg.tm.impuls")}</option>
+                        <option value="blink">{t("pg.tm.blink")}</option>
                       </select>
                     </label>
                     <label className="block text-xs text-mut">
-                      Süre (saniye)
+                      {t("pg.delay")}
                       <input
                         type="number"
                         min={0.5}
@@ -846,23 +879,34 @@ export default function Playground() {
                   </>
                 )}
                 {(selPart.type === "contact_no" || selPart.type === "contact_nc") && (
-                  <GroupSelect label="Bağlı bobin" value={selPart.group} options={coilLabels} onChange={(g) => updateSel({ group: g })} />
+                  <GroupSelect label={t("pg.grp.coil")} value={selPart.group} options={coilLabels} onChange={(g) => updateSel({ group: g })} />
                 )}
                 {(selPart.type === "tcontact_no" || selPart.type === "tcontact_nc") && (
-                  <GroupSelect label="Bağlı zaman rölesi" value={selPart.group} options={tcoilLabels} onChange={(g) => updateSel({ group: g })} />
+                  <GroupSelect label={t("pg.grp.timer")} value={selPart.group} options={tcoilLabels} onChange={(g) => updateSel({ group: g })} />
                 )}
                 {(selPart.type === "pairc_no" || selPart.type === "pairc_nc") && (
-                  <GroupSelect label="Bağlı düğme/şalter" value={selPart.group} options={switchLabels} onChange={(g) => updateSel({ group: g })} />
+                  <GroupSelect label={t("pg.grp.switch")} value={selPart.group} options={switchLabels} onChange={(g) => updateSel({ group: g })} />
                 )}
-                <button
-                  type="button"
-                  onClick={removeSelected}
-                  className="rounded-lg border border-rose-400/40 px-3 py-1.5 text-xs text-rose-300 hover:bg-rose-500/10"
-                >
-                  Parçayı sil (Del)
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  {SPEC[selPart.type].kind !== "node" && (
+                    <button
+                      type="button"
+                      onClick={rotateSelected}
+                      className="rounded-lg border border-line px-3 py-1.5 text-xs text-mut hover:border-spark/50 hover:text-spark"
+                    >
+                      ↺ {t("pg.rotate")}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={removeSelected}
+                    className="rounded-lg border border-rose-400/40 px-3 py-1.5 text-xs text-rose-300 hover:bg-rose-500/10"
+                  >
+                    {t("pg.delPart")}
+                  </button>
+                </div>
                 <p className="rounded-lg border border-line bg-bg/50 p-2 text-[11px] leading-relaxed text-mut">
-                  💡 {PART_INFO[selPart.type]}
+                  💡 {tx(PART_INFO[selPart.type])}
                 </p>
               </div>
             )}
@@ -875,9 +919,27 @@ export default function Playground() {
             <svg
               ref={svgRef}
               viewBox={`${view.x} ${view.y} ${view.w} ${viewH}`}
-              style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}`, touchAction: "none" }}
+              style={{ aspectRatio: String(ratio), touchAction: "none", WebkitTouchCallout: "none" }}
               className="w-full select-none rounded-xl border border-line bg-[#0c1220]"
               onContextMenu={(e) => e.preventDefault()}
+              onPointerDownCapture={(e) => {
+                if (e.pointerType !== "touch") return;
+                touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                if (touches.current.size === 2) {
+                  // iki parmak: yakınlaştır/kaydır — süren taşıma ya da kaydırma iptal
+                  const [a, b] = [...touches.current.values()];
+                  const mid = toSvg((a.x + b.x) / 2, (a.y + b.y) / 2);
+                  pinchRef.current = {
+                    d: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+                    w: view.w,
+                    wx: mid.x,
+                    wy: mid.y,
+                  };
+                  panRef.current = null;
+                  cancelDrag();
+                  e.stopPropagation();
+                }
+              }}
               onPointerDown={(e) => {
                 if (e.button === 2) {
                   if (pending) {
@@ -886,6 +948,14 @@ export default function Playground() {
                   }
                   if (drag) return;
                   panRef.current = { px: e.clientX, py: e.clientY, vx: view.x, vy: view.y };
+                  return;
+                }
+                if (placing && mode === "edit") {
+                  // dokunmatik yerleştirme: paletten seçilen parça dokunulan yere konur
+                  const pt = toSvg(e.clientX, e.clientY);
+                  const spec = SPEC[placing];
+                  addPart(placing, snap(pt.x - spec.w / 2), snap(pt.y - spec.h / 2));
+                  setPlacing(null);
                   return;
                 }
                 if (pending && mode === "edit") {
@@ -898,8 +968,28 @@ export default function Playground() {
                 }
                 setSel(null);
                 setPending(null);
+                // dokunmatik: boş alanda tek parmak = kaydır
+                if (e.pointerType === "touch")
+                  panRef.current = { px: e.clientX, py: e.clientY, vx: view.x, vy: view.y };
               }}
               onPointerMove={(e) => {
+                if (e.pointerType === "touch" && touches.current.has(e.pointerId)) {
+                  touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                  const pz = pinchRef.current;
+                  const el = svgRef.current;
+                  if (pz && el && touches.current.size >= 2) {
+                    const [a, b] = [...touches.current.values()];
+                    const r = el.getBoundingClientRect();
+                    const w = clampW((pz.w * pz.d) / (Math.hypot(a.x - b.x, a.y - b.y) || 1));
+                    // başlangıçta parmakların ortasındaki nokta, parmakların altında kalsın
+                    setView({
+                      w,
+                      x: pz.wx - (((a.x + b.x) / 2 - r.left) / r.width) * w,
+                      y: pz.wy - (((a.y + b.y) / 2 - r.top) / r.height) * (w / ratio),
+                    });
+                    return;
+                  }
+                }
                 if (panRef.current) {
                   const el = svgRef.current;
                   if (el) {
@@ -916,10 +1006,18 @@ export default function Playground() {
                 }
                 if (pending) setCursor(toSvg(e.clientX, e.clientY));
               }}
-              onPointerUp={() => {
+              onPointerUp={(e) => {
+                touches.current.delete(e.pointerId);
+                if (touches.current.size < 2) pinchRef.current = null;
                 panRef.current = null;
               }}
-              onPointerLeave={() => {
+              onPointerCancel={(e) => {
+                touches.current.delete(e.pointerId);
+                if (touches.current.size < 2) pinchRef.current = null;
+                panRef.current = null;
+              }}
+              onPointerLeave={(e) => {
+                if (e.pointerType === "touch") return; // dokunmatikte bitişi up/cancel belirler
                 panRef.current = null;
               }}
             >
@@ -1029,6 +1127,7 @@ export default function Playground() {
                       setParts((ps) =>
                         ps.map((q) => (q.id === p.id ? { ...q, rot: ((q.rot ?? 0) + 1) % 4 } : q)),
                       );
+                      cancelDrag();
                     }}
                     style={{ cursor: mode === "edit" ? "move" : simClickable ? "pointer" : "default" }}
                   >
@@ -1103,7 +1202,7 @@ export default function Playground() {
                         setSel({ kind: "part", id: p.id });
                       }}
                     >
-                      <circle cx={t.x} cy={t.y} r={12} fill="transparent" />
+                      <circle cx={t.x} cy={t.y} r={coarse ? 17 : 12} fill="transparent" />
                       <circle
                         className="dot"
                         cx={t.x}
@@ -1163,63 +1262,80 @@ export default function Playground() {
 
             {/* büyüteç */}
             <div className="absolute right-2 top-2 flex flex-col gap-1">
-              <button type="button" onClick={() => zoomBy(1 / 1.3)} title="Yakınlaştır" className="pg-zoom">
+              <button type="button" onClick={() => zoomBy(1 / 1.3)} title={t("pg.zoomIn")} aria-label={t("pg.zoomIn")} className="pg-zoom">
                 +
               </button>
-              <button type="button" onClick={() => zoomBy(1.3)} title="Uzaklaştır" className="pg-zoom">
+              <button type="button" onClick={() => zoomBy(1.3)} title={t("pg.zoomOut")} aria-label={t("pg.zoomOut")} className="pg-zoom">
                 −
               </button>
               <button
                 type="button"
-                onClick={() => setView({ x: 0, y: 0, w: CANVAS_W })}
-                title="Görünümü sıfırla"
+                onClick={() => setView(homeView(narrow, railed))}
+                title={t("pg.zoomReset")}
+                aria-label={t("pg.zoomReset")}
                 className="pg-zoom text-sm"
               >
                 ⤢
               </button>
             </div>
+
+            {/* seçim araç çubuğu: dokunmatikte çift tık / Del yerine */}
+            {mode === "edit" && sel && (
+              <div className="absolute bottom-2 left-2 flex gap-1">
+                {selPart && SPEC[selPart.type].kind !== "node" && (
+                  <button
+                    type="button"
+                    onClick={rotateSelected}
+                    title={t("pg.rotate")}
+                    aria-label={t("pg.rotate")}
+                    className="pg-zoom"
+                  >
+                    ↺
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={removeSelected}
+                  title={sel.kind === "wire" ? t("pg.delWire") : t("pg.delPart")}
+                  aria-label={sel.kind === "wire" ? t("pg.delWire") : t("pg.delPart")}
+                  className="pg-zoom hover:!border-rose-400/60 hover:!text-rose-300"
+                >
+                  🗑
+                </button>
+              </div>
+            )}
           </div>
 
           {/* durum çubuğu */}
           <div className="mt-3 space-y-2 text-sm">
             {sim?.short && (
               <p className="rounded-xl border border-rose-400/50 bg-rose-500/15 px-4 py-2.5 font-semibold text-rose-300">
-                💥 KISA DEVRE! L'den N'ye yük olmadan giden bir yol var (kırmızı hat).
-                {domain === "logic" && " Logik'te L'yi N'ye bağlamak da aynı kapıya çıkar."} Araya bir
-                şey koy.
+                💥 {t("pg.short")}
+                {domain === "logic" && ` ${t("pg.shortLogic")}`} {t("pg.shortFix")}
               </p>
             )}
             {sim?.chatter && !sim.short && (
               <p className="rounded-xl border border-volt/40 bg-volt/10 px-4 py-2.5 text-volt">
-                🌀 Kararsızlık:{" "}
-                {domain === "logic"
-                  ? "bir kapı kendi girişini kovalıyor (geri besleme salınımı) — NOT'un çıkışını kendi girişine mi bağladın? 😄"
-                  : "bir bobin kendi kontağı üzerinden kendini açıp kapatıyor (flatter). Gerçekte kontaklar erir — devreyi gözden geçir."}
+                🌀 {domain === "logic" ? t("pg.chatterLogic") : t("pg.chatterPhys")}
               </p>
             )}
             {sim && !sim.hasSource && (
               <p className="rounded-xl border border-line bg-panel px-4 py-2.5 text-mut">
-                🔌 Kaynak yok. {domain === "logic" ? "L rayı gerekli — preset yükle." : "Paletten kaynak sürükle."}
+                🔌 {domain === "logic" ? t("pg.noSourceLogic") : t("pg.noSourcePhys")}
               </p>
             )}
             {sim && sim.hasSource && !sim.short && !sim.chatter && (
               <p className="rounded-xl border border-line bg-panel px-4 py-2.5 text-mut">
-                ⚡ Simülasyon çalışıyor. Şalterlere <b className="text-ink">tıkla</b>, butonları{" "}
-                <b className="text-ink">basılı tut</b>
-                {domain === "phys" && ", kaynağa tıklayıp şebekeyi kes"}. Sarı hat = {domain === "phys" ? "akım geçiyor" : "mantık 1"}.
+                ⚡ {rich(domain === "phys" ? t("pg.runningPhys") : t("pg.runningLogic"))}
               </p>
             )}
             {mode === "edit" && (
               <p className="rounded-xl border border-line bg-panel px-4 py-2.5 text-xs leading-relaxed text-mut">
-                🛠️ <b className="text-ink">Düzenleme:</b> paletten sürükle-bırak · parçaya{" "}
-                <b className="text-ink">çift tık = döndür</b> ·{" "}
-                <span className="text-spark">uçlara</span> tıklayıp bağla — kablo çekerken boş alana
-                tıklarsan orada otomatik <b className="text-ink">Knotenpunkt</b> oluşur ve devam
-                edersin; mevcut kabloya bırakırsan köprü (Brücke) olur · kablo çekerken{" "}
-                <b className="text-ink">sağ tık = iptal</b> · kabloya çift tık = araya Knoten ·
-                kablo/parça seç + Del = sil · sağ tık + sürükle = kaydır,{" "}
-                <b className="text-ink">sağ tık basılıyken scroll = zoom</b> · Esc iptal.
-                {pending && <span className="ml-1 text-spark"> Şimdi: ikinci ucu seç ya da boş alana Knoten bırak…</span>}
+                🛠️ {rich(coarse ? t("pg.editTouch") : t("pg.editMouse"))}
+                {pending && <span className="ml-1 text-spark"> {t("pg.pendingHint")}</span>}
+                {placing && (
+                  <span className="ml-1 text-volt"> {t("pg.placeHint", { name: tx(SPEC[placing].name) })}</span>
+                )}
               </p>
             )}
           </div>
@@ -1228,15 +1344,9 @@ export default function Playground() {
 
       {/* mini rehber */}
       <div className="card mt-6 p-5 text-sm leading-relaxed text-mut">
-        <h3 className="mb-2 font-disp text-sm uppercase tracking-widest text-mut">🎓 Mini rehber</h3>
+        <h3 className="mb-2 font-disp text-sm uppercase tracking-widest text-mut">🎓 {t("pg.guideTitle")}</h3>
         <p>
-          <b className="text-ink">Fizikselde:</b> Selbsthaltung ve{" "}
-          <b className="text-ink">Tasterverriegelung</b> preset'lerini dene — ikincisinde her butonun
-          eş (açıcı) kontağı rakip yolu keser; ikisine aynı anda basınca ikisi de çalışmaz.{" "}
-          <b className="text-ink">Zaman rölesinde</b> modu panelden değiştir: TAKT seçersen lamba
-          yanıp söner. <b className="text-ink">Logik'te:</b> soldaki L rayından beslen, kapılardan
-          geçir, sağdaki N rayında bitir. XOR preset'i koridor lambasının ta kendisi; iki NOR'u
-          çaprazlayıp RS-Flipflop kurmayı da dene — Selbsthaltung'un dijital hali.
+          {rich(t("pg.guide"))}
         </p>
       </div>
     </div>
@@ -1254,6 +1364,7 @@ function GroupSelect({
   options: string[];
   onChange: (v: string | undefined) => void;
 }) {
+  const choose = useI18n().t("pg.choose");
   return (
     <label className="block text-xs text-mut">
       {label}
@@ -1262,7 +1373,7 @@ function GroupSelect({
         onChange={(e) => onChange(e.target.value || undefined)}
         className="mt-1 w-full rounded-lg border border-line bg-bg/60 px-2 py-1.5 text-ink outline-none focus:border-volt/60"
       >
-        <option value="">— seç —</option>
+        <option value="">{choose}</option>
         {options.map((l) => (
           <option key={l}>{l}</option>
         ))}

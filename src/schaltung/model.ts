@@ -31,9 +31,15 @@ export interface Quantities {
 
 export type Given = Record<string, { R?: number; U?: number; I?: number }>;
 
+// Çelişki: metin arayüzde üretilir (çok dilli) — model yalnızca türü ve parametreleri bildirir.
+export interface Conflict {
+  code: "twoWays" | "negative" | "equalI" | "equalU" | "parallelR" | "ohm";
+  p: Record<string, string>;
+}
+
 export interface SolveResult {
   vals: Record<string, Quantities>;
-  conflict: string | null;
+  conflict: Conflict | null;
 }
 
 export function collectNodes(n: CNode, out: CNode[] = []): CNode[] {
@@ -44,7 +50,7 @@ export function collectNodes(n: CNode, out: CNode[] = []): CNode[] {
 
 export function solveCircuit(root: CNode, given: Given): SolveResult {
   const vals: Record<string, Quantities> = {};
-  let conflict: string | null = null;
+  let conflict: Conflict | null = null;
 
   for (const [id, q] of Object.entries(given)) {
     vals[id] = {};
@@ -56,8 +62,8 @@ export function solveCircuit(root: CNode, given: Given): SolveResult {
   const get = (id: string) => (vals[id] ??= {});
   const close = (a: number, b: number) =>
     Math.abs(a - b) <= 1e-5 * Math.max(1, Math.abs(a), Math.abs(b));
-  const flag = (msg: string) => {
-    if (!conflict) conflict = msg;
+  const flag = (code: Conflict["code"], p: Record<string, string>) => {
+    if (!conflict) conflict = { code, p };
   };
   const set = (id: string, k: "R" | "U" | "I", v: number, label: string): boolean => {
     if (!Number.isFinite(v)) return false;
@@ -65,9 +71,7 @@ export function solveCircuit(root: CNode, given: Given): SolveResult {
     const ex = o[k];
     if (ex !== undefined) {
       if (!close(ex, v))
-        flag(
-          `${label} için ${k} iki farklı yoldan iki farklı değere çıkıyor (${ex.toPrecision(4)} ≠ ${v.toPrecision(4)}). Girdiğin değerler birbiriyle kavgalı — birini sil, barışsınlar.`,
-        );
+        flag("twoWays", { label, k, a: ex.toPrecision(4), b: v.toPrecision(4) });
       return false;
     }
     o[k] = v;
@@ -92,9 +96,7 @@ export function solveCircuit(root: CNode, given: Given): SolveResult {
       const rest = known.reduce((a, k) => a + (k.v as number), 0);
       const v = gv - rest;
       if (v < -1e-9)
-        flag(
-          `${labelOf.get(miss.id)} için negatif ${key} çıkıyor — toplam, parçalarından küçük olamaz. Bir değer fazla iddialı.`,
-        );
+        flag("negative", { label: labelOf.get(miss.id) ?? miss.id, k: key });
       else changed = set(miss.id, key, v, labelOf.get(miss.id) ?? miss.id) || changed;
     }
     return changed;
@@ -109,9 +111,7 @@ export function solveCircuit(root: CNode, given: Given): SolveResult {
     for (const m of members)
       if (get(m.id)[key] === undefined) changed = set(m.id, key, knownVal, m.label) || changed;
       else if (!close(get(m.id)[key]!, knownVal))
-        flag(
-          `${g.label} içinde ${key} herkes için aynı olmalı ama ${m.label} farklı bir değer taşıyor. ${key === "I" ? "Seri devrede akım tektir" : "Paralel devrede gerilim ortaktır"} — pazarlık yok.`,
-        );
+        flag(key === "I" ? "equalI" : "equalU", { group: g.label, label: m.label });
     return changed;
   };
 
@@ -130,9 +130,7 @@ export function solveCircuit(root: CNode, given: Given): SolveResult {
       const rest = known.reduce((a, k) => a + 1 / (k.v as number), 0);
       const inv = 1 / gv - rest;
       if (inv <= 0)
-        flag(
-          `${labelOf.get(miss.id)} hesaplanamıyor: paralel toplam direnç, her koldan KÜÇÜK olmalı. Girdiğin R_toplam bu kollarla matematiksel olarak imkânsız.`,
-        );
+        flag("parallelR", { label: labelOf.get(miss.id) ?? miss.id });
       else changed = set(miss.id, "R", 1 / inv, labelOf.get(miss.id) ?? miss.id) || changed;
     }
     return changed;
@@ -155,9 +153,7 @@ export function solveCircuit(root: CNode, given: Given): SolveResult {
         o.I !== undefined &&
         !close(o.U, o.R * o.I)
       )
-        flag(
-          `${n.label}: U = R·I tutmuyor (${o.U.toPrecision(4)} ≠ ${(o.R * o.I).toPrecision(4)}). Ohm amca bu üçlüyü onaylamadı.`,
-        );
+        flag("ohm", { label: n.label, a: o.U.toPrecision(4), b: (o.R * o.I).toPrecision(4) });
 
       if (n.kind === "R") continue;
       if (n.kind === "series") {

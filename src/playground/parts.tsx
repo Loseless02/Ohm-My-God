@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import type { Part, PartType } from "./types";
 import { RAIL_H } from "./types";
+import { useI18n } from "../i18n";
 
 // Sembol renkleri
 const C = {
@@ -80,6 +81,7 @@ const TMODE_TXT: Record<string, string> = {
 };
 
 export function PartSymbol({ part, closed = false, level = 0, energized = false, sim }: SymProps) {
+  const offText = useI18n().t("pg.off");
   const on = level > 0.8;
   const dim = level > 0.15 && level <= 0.8;
   switch (part.type) {
@@ -124,7 +126,7 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
             N
           </text>
           <text x={20} y={34} fill={off ? C.mut : C.volt} fontSize={9}>
-            {off ? "kapalı" : `${part.volts ?? 230} V`}
+            {off ? offText : `${part.volts ?? 230} V`}
           </text>
         </>
       );

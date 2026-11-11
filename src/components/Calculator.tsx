@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { FormulaDef, UnitOption } from "../data/types";
 import { collectVars, evalExpr } from "../lib/expr";
 import { bestUnit, fmt, parseNum } from "../lib/format";
+import { useI18n } from "../i18n";
 
 const NO_UNIT: UnitOption[] = [{ label: "", mult: 1 }];
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function Calculator({ formula, solveFor }: Props) {
+  const { t, tx } = useI18n();
   const [values, setValues] = useState<Record<string, string>>({});
   const [unitSel, setUnitSel] = useState<Record<string, number>>({});
   const [resUnit, setResUnit] = useState<number | "auto">("auto");
@@ -42,23 +44,23 @@ export function Calculator({ formula, solveFor }: Props) {
   const shown = result !== null ? result / resUnits[resIdx].mult : null;
 
   const verdict = !allFilled
-    ? { cls: "text-mut", text: "Değerleri gir, gerisini Ohm halletsin ⚡" }
+    ? { cls: "text-mut", text: t("calc.enter") }
     : result !== null && Number.isNaN(result)
       ? {
           cls: "text-rose-400",
-          text: "Bu değerler matematiği kızdırdı — negatif kök ya da tutarsız girdi olabilir 🤔",
+          text: t("calc.nan"),
         }
       : result !== null && !Number.isFinite(result)
         ? {
             cls: "text-rose-400",
-            text: "Sıfıra bölme tespit edildi. Evren çökmeden değerleri gözden geçir 🕳️",
+            text: t("calc.div0"),
           }
         : null;
 
   return (
-    <div className="card p-5">
+    <div className="card p-4 sm:p-5">
       <h3 className="font-disp text-sm uppercase tracking-widest text-mut mb-4">
-        🧮 Hesapla — aranan:{" "}
+        🧮 {t("calc.title")}{" "}
         <span className="text-volt font-semibold normal-case text-base">
           {solveVar.sym}
           {solveVar.sub && <sub>{solveVar.sub}</sub>}
@@ -70,22 +72,23 @@ export function Calculator({ formula, solveFor }: Props) {
           const units = vd.units ?? NO_UNIT;
           return (
             <label key={id} className="flex items-center gap-3">
-              <span className="eq-v eq-v-static w-14 shrink-0 text-right text-lg" title={vd.name}>
+              <span className="eq-v eq-v-static w-12 shrink-0 text-right text-lg sm:w-14" title={tx(vd.name)}>
                 {vd.sym}
                 {vd.sub && <sub className="eq-sub">{vd.sub}</sub>}
               </span>
               <input
                 inputMode="decimal"
-                placeholder={vd.name}
+                placeholder={tx(vd.name)}
+                aria-label={tx(vd.name)}
                 value={values[id] ?? ""}
                 onChange={(e) => setValues((s) => ({ ...s, [id]: e.target.value }))}
-                className="w-full min-w-0 rounded-xl border border-line bg-bg/60 px-3 py-2 text-ink outline-none transition focus:border-volt/60 focus:ring-2 focus:ring-volt/20"
+                className="w-full min-w-0 rounded-xl border border-line bg-bg/60 px-3 py-2.5 text-ink outline-none transition focus:border-volt/60 focus:ring-2 focus:ring-volt/20"
               />
               {units.length > 1 ? (
                 <select
                   value={unitSel[id] ?? 0}
                   onChange={(e) => setUnitSel((s) => ({ ...s, [id]: Number(e.target.value) }))}
-                  className="shrink-0 rounded-xl border border-line bg-bg/60 px-2 py-2 text-sm text-mut outline-none focus:border-volt/60"
+                  className="shrink-0 rounded-xl border border-line bg-bg/60 px-2 py-2.5 text-sm text-mut outline-none focus:border-volt/60"
                 >
                   {units.map((u, i) => (
                     <option key={i} value={i}>
@@ -94,8 +97,8 @@ export function Calculator({ formula, solveFor }: Props) {
                   ))}
                 </select>
               ) : (
-                <span className="w-20 shrink-0 text-sm text-mut">
-                  {units[0].label || vd.unitNote || ""}
+                <span className="w-14 shrink-0 text-sm text-mut sm:w-20">
+                  {units[0].label || (vd.unitNote ? tx(vd.unitNote) : "")}
                 </span>
               )}
             </label>
@@ -129,7 +132,7 @@ export function Calculator({ formula, solveFor }: Props) {
                 ))}
               </select>
             ) : (
-              <span className="text-lg text-volt">{resUnits[0].label || solveVar.unitNote || ""}</span>
+              <span className="text-lg text-volt">{resUnits[0].label || (solveVar.unitNote ? tx(solveVar.unitNote) : "")}</span>
             )}
           </div>
         )}
@@ -142,9 +145,9 @@ export function Calculator({ formula, solveFor }: Props) {
             setValues({});
             setResUnit("auto");
           }}
-          className="mt-3 text-xs text-mut underline-offset-2 hover:text-ink hover:underline"
+          className="mt-3 py-1 text-xs text-mut underline-offset-2 hover:text-ink hover:underline"
         >
-          Temizle
+          {t("calc.clear")}
         </button>
       )}
     </div>

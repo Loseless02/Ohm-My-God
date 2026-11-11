@@ -7,7 +7,7 @@ export function SchutzklasseSymbol({ k }: { k: SkKind }) {
   if (k === "sk1") {
     // Sınıf I: koruma iletkeni (toprak) işareti
     return (
-      <svg viewBox="0 0 64 64" className="h-16 w-16" role="img" aria-label="Schutzklasse I sembolü">
+      <svg viewBox="0 0 64 64" className="h-16 w-16" role="img" aria-label="Schutzklasse I">
         <circle cx={32} cy={32} r={27} fill="none" stroke={C} strokeWidth={2.5} />
         <line x1={32} y1={16} x2={32} y2={32} stroke={C} strokeWidth={2.5} />
         <line x1={19} y1={32} x2={45} y2={32} stroke={C} strokeWidth={2.5} />
@@ -19,7 +19,7 @@ export function SchutzklasseSymbol({ k }: { k: SkKind }) {
   if (k === "sk2") {
     // Sınıf II: iç içe iki kare (çift izolasyon)
     return (
-      <svg viewBox="0 0 64 64" className="h-16 w-16" role="img" aria-label="Schutzklasse II sembolü">
+      <svg viewBox="0 0 64 64" className="h-16 w-16" role="img" aria-label="Schutzklasse II">
         <rect x={10} y={10} width={44} height={44} fill="none" stroke={C} strokeWidth={2.5} />
         <rect x={21} y={21} width={22} height={22} fill="none" stroke={C} strokeWidth={2.5} />
       </svg>
@@ -27,7 +27,7 @@ export function SchutzklasseSymbol({ k }: { k: SkKind }) {
   }
   // Sınıf III: eşkenar dörtgen içinde III (SELV/PELV)
   return (
-    <svg viewBox="0 0 64 64" className="h-16 w-16" role="img" aria-label="Schutzklasse III sembolü">
+    <svg viewBox="0 0 64 64" className="h-16 w-16" role="img" aria-label="Schutzklasse III">
       <polygon points="32,6 58,32 32,58 6,32" fill="none" stroke={C} strokeWidth={2.5} />
       <text
         x={32}

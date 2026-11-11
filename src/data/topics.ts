@@ -259,14 +259,58 @@ export const TOPICS: TopicDef[] = [
     de: "Schaltzeichen & Zeichnungen",
     icon: "✍️",
     tagline: "Elektrikçinin hiyeroglifleri.",
-    stub: true,
     sections: [
       {
-        body: "Şemalar, elektrikçilerin ortak dili — ve her dilde olduğu gibi, alfabeyi bilmeyen cümleyi de okuyamaz. Öffner mi Schließer mi, Wechsler mi Taster mi; hangi kutu sayaç, hangi çizgi PE… Bu bölümde sembol kütüphanesi, devre şeması türleri (Stromlaufplan, Installationsplan, Übersichtsschaltplan) ve okuma alıştırmaları olacak.",
+        body: "Şemalar, elektrikçilerin ortak dili — ve her dilde olduğu gibi, alfabeyi bilmeyen cümleyi de okuyamaz. Öffner mi Schließer mi, Taster mı Schalter mı; hangi kutu bobin, hangi çizgi PE… Aşağıda en sık karşılaşacağın semboller, şema türleri ve harf kodları var. Sembollerin hepsi Playground'da canlı: sürükle, bağla, çalıştır.",
       },
       {
-        h: "🚧 Yakında",
-        body: "İnteraktif sembol kartları (üzerine gel, ne olduğunu söylesin), çizim kuralları ve 'bu şemada hata var, bul' oyunları. SVG'ler çiziliyor, sabır.",
+        h: "Şema türleri",
+        body: "Aynı tesisat üç farklı şekilde çizilir; hangisine baktığını bilmezsen yanlış soruya cevap ararsın. Sınavda da işte de en çok Stromlaufplan okursun.",
+        table: {
+          head: ["Şema", "Ne gösterir?", "Ne zaman kullanılır?"],
+          rows: [
+            ["Übersichtsschaltplan", "Tek hatlı, sadeleştirilmiş genel bakış; iletken sayısı çentiklerle belirtilir", "Dağıtım panosu, tesisin bütünü"],
+            ["Stromlaufplan (aufgelöste Darstellung)", "Her akım yolu ayrı ayrı, yukarıdan aşağıya; bobin ve kontakları ayrı yerlerde çizilir", "Kontaktör devreleri, arıza arama"],
+            ["Stromlaufplan (zusammenhängende Darstellung)", "Cihazlar bütün halinde, tüm bağlantılarıyla", "Basit tesisat devreleri"],
+            ["Installationsplan", "Kat planı üzerinde priz, şalter ve lamba konumları", "Şantiye: neyin nereye monte edileceği"],
+          ],
+        },
+      },
+      {
+        h: "Şalterler ve butonlar",
+        body: "Schließer (kapayıcı) basılınca devreyi kapatır, Öffner (açıcı) basılınca açar. Schalter konumunda kalır; Taster yaylıdır, bırakınca geri döner. Semboller her zaman BASILMAMIŞ ve GERİLİMSİZ halde çizilir — şemayı okurken ilk kural budur. Kontak numaraları da konuşur: sonu 3-4 ile biten (13-14, 23-24) kapayıcı, 1-2 ile biten (11-12, 21-22) açıcıdır.",
+        symbols: ["switch_no", "switch_nc", "taster_no", "taster_nc"],
+      },
+      {
+        h: "Kontaktör ve zaman rölesi",
+        body: "Bobin (A1–A2) gerilim alınca çeker ve aynı etiketi taşıyan bütün kontakları birlikte oynatır. Aufgelöste Darstellung'da bobin bir akım yolunda, kontakları bambaşka yollarda durur; onları birbirine bağlayan tek şey etikettir (K1). Zaman kontaklarındaki yarım daire gecikmeyi gösterir.",
+        symbols: ["coil", "contact_no", "contact_nc", "tcoil", "tcontact_no", "tcontact_nc"],
+      },
+      {
+        h: "Yükler ve kaynak",
+        body: "Devrenin işi yapan kısmı. Lamba çarpı işaretli daire, motor içinde M yazan dairedir. Yük olmadan L'den N'ye giden her yol kısa devredir — şemada bunu görebilmek, sigortadan önce senin işin.",
+        symbols: ["lamp", "motor", "source2"],
+      },
+      {
+        h: "Harf kodları (Betriebsmittelkennzeichnung)",
+        body: "Her elemanın yanındaki harf, onun ne iş yaptığını söyler (DIN EN 81346-2). Eski şemalarda ve birçok okul kitabında hâlâ eski harfler geçer: sinyal lambası için H, ana kontaktör için K. İkisini de tanımak zorundasın; sınav hangisini kullanıyorsa onu yaz.",
+        table: {
+          head: ["Harf", "Görev", "Örnek"],
+          rows: [
+            ["B", "Fiziksel büyüklüğü sinyale çevirir", "Sensör, hareket dedektörü, termostat"],
+            ["E", "Işık veya ısı üretir", "Aydınlatma lambası, ısıtıcı"],
+            ["F", "Korur", "Sigorta, LS-Schalter, RCD, motor koruma"],
+            ["G", "Enerji üretir", "Jeneratör, akü, güç kaynağı"],
+            ["K", "Sinyal işler", "Yardımcı kontaktör, röle, zaman rölesi"],
+            ["M", "Mekanik hareket üretir", "Motor"],
+            ["P", "Bilgi gösterir", "Sinyal lambası, sayaç, ölçü aleti (eski: H)"],
+            ["Q", "Enerji akışını anahtarlar", "Ana kontaktör, güç şalteri (eski: K)"],
+            ["S", "El hareketini sinyale çevirir", "Şalter, buton"],
+            ["T", "Enerjiyi dönüştürür", "Trafo, frekans konvertörü"],
+            ["W", "Enerji veya sinyal iletir", "Kablo, bara"],
+            ["X", "Bağlar", "Klemens, priz, fiş"],
+          ],
+        },
       },
     ],
   },
@@ -276,14 +320,64 @@ export const TOPICS: TopicDef[] = [
     de: "Verlegearten",
     icon: "🛠️",
     tagline: "Kablonun nerede yattığı, ne kadar taşıyacağını belirler.",
-    stub: true,
     sections: [
       {
-        body: "Aynı kablo, duvarın içinde başka, kablo kanalında başka, açık havada bambaşka akım taşır — mesele ısının kaçıp kaçamadığıdır. DIN VDE 0298-4'ün harf sistemi: A1/A2 (ısı yalıtımlı duvar içinde boru — en bunalanı), B1/B2 (duvar üstü boru/kanal), C (doğrudan duvara), D (toprak altına), E/F (havada, kablo rafında — en rahatı). Harf ilerledikçe kablo nefes alır, taşıyabildiği akım (Strombelastbarkeit) artar.",
+        body: "Aynı kablo, duvarın içinde başka, kablo kanalında başka, açık havada bambaşka akım taşır — mesele ısının kaçıp kaçamadığıdır. DIN VDE 0298-4 bunu harflerle sınıflandırır. Harf ilerledikçe kablo nefes alır, taşıyabildiği akım (Strombelastbarkeit, I_z) artar.",
       },
       {
-        h: "🚧 Yakında",
-        body: "Görselli döşeme türü kataloğu, akım taşıma kapasitesi tabloları ve 'kesit + döşeme türü + sigorta' üçlüsünü birlikte seçtiren interaktif asistan. Spannungsfall kartlarıyla el ele çalışacak.",
+        h: "Referans döşeme türleri",
+        body: "Tabloda aradığın şey kablonun KENDİSİ değil, etrafındaki ortamdır. Bir hat yolu boyunca birden fazla tür varsa en kötüsü belirleyicidir: 20 metre duvar üstünden gidip 1 metre yalıtımın içinden geçen kablo, A türüne göre hesaplanır.",
+        table: {
+          head: ["Tür", "Nasıl döşenir?", "Tipik örnek"],
+          rows: [
+            ["A1", "Tek damarlı iletkenler, ısı yalıtımlı duvar içindeki boruda", "Ahşap karkas / alçıpan duvarda boru içinde H07V-U"],
+            ["A2", "Çok damarlı kablo, ısı yalıtımlı duvar içindeki boruda", "Yalıtımlı duvarda boru içinde NYM"],
+            ["B1", "Tek damarlı iletkenler, duvar üstü boru veya kanalda", "Sıva üstü boruda H07V-U"],
+            ["B2", "Çok damarlı kablo, duvar üstü boru veya kanalda", "Kablo kanalında NYM"],
+            ["C", "Doğrudan duvarın üstünde veya sıvanın içinde", "Sıva altı NYM, kroşeyle sıva üstü NYM"],
+            ["D", "Toprak altında (boru içinde veya doğrudan)", "Bahçe hattı, NYY"],
+            ["E", "Çok damarlı kablo, havada serbest (duvardan mesafeli)", "Kablo rafında NYM / NYY"],
+            ["F / G", "Tek damarlı kablolar, havada (F: birbirine değerek, G: aralıklı)", "Endüstride büyük kesitli besleme hatları"],
+          ],
+        },
+      },
+      {
+        h: "Akım taşıma kapasitesi I_z (A)",
+        body: "Bakır iletken, PVC yalıtım (izin verilen iletken sıcaklığı 70 °C), ortam sıcaklığı 30 °C. Her hücrede ilk değer 2 yüklü damar (tek fazlı devre), ikinci değer 3 yüklü damar (trifaze devre) içindir. PE yüklü damar sayılmaz.",
+        table: {
+          head: ["mm²", "A1", "A2", "B1", "B2", "C"],
+          rows: [
+            ["1,5", "15,5 / 13,5", "15,5 / 13", "17,5 / 15,5", "16,5 / 15", "19,5 / 17,5"],
+            ["2,5", "19,5 / 18", "18,5 / 17,5", "24 / 21", "23 / 20", "27 / 24"],
+            ["4", "26 / 24", "25 / 23", "32 / 28", "30 / 27", "36 / 32"],
+            ["6", "34 / 31", "32 / 29", "41 / 36", "38 / 34", "46 / 41"],
+            ["10", "46 / 42", "43 / 39", "57 / 50", "52 / 46", "63 / 57"],
+            ["16", "61 / 56", "57 / 52", "76 / 68", "69 / 62", "85 / 76"],
+          ],
+        },
+      },
+      {
+        h: "Düzeltme faktörleri",
+        body: "Tablo değerleri ideal koşullar içindir. Ortam 30 °C'den sıcaksa ya da aynı boruda/kanalda birden fazla devre yan yana ısınıyorsa, tablo değeri faktörlerle çarpılır: I_z = I_tablo · f_sıcaklık · f_yığılma. İkisi birden geçerliyse ikisi de çarpılır — kablo için kötü günler üst üste gelir.",
+        table: {
+          head: ["Ortam sıcaklığı (PVC)", "Sıcaklık faktörü", "Yan yana devre sayısı", "Yığılma faktörü"],
+          rows: [
+            ["25 °C", "1,06", "1", "1,00"],
+            ["30 °C", "1,00", "2", "0,80"],
+            ["35 °C", "0,94", "3", "0,70"],
+            ["40 °C", "0,87", "4", "0,65"],
+            ["45 °C", "0,79", "5", "0,60"],
+            ["50 °C", "0,71", "6", "0,57"],
+          ],
+        },
+      },
+      {
+        h: "Seçim zinciri: I_b ≤ I_n ≤ I_z",
+        body: "Önce yükün çektiği akım (I_b), sonra onu karşılayan sigorta (I_n), en son da o sigortayı taşıyabilen kablo (I_z). Sigorta kabloyu korur, tersi değil. Örnek: 3 yüklü damar, 1,5 mm². C türünde I_z = 17,5 A → B16 uygun. Aynı kablo A1 türünde yalnızca 13,5 A taşır → B16 OLMAZ; ya B13'e inersin ya da 2,5 mm²'ye çıkarsın (18 A). Kesiti seçtikten sonra iş bitmez: uzun hatlarda gerilim düşümünü de kontrol et — Spannungsfall kartları bunun için var.",
+      },
+      {
+        h: "⚠️ Bu tablolar ne kadar bağlayıcı?",
+        body: "Buradaki değerler öğrenmek ve hızlı kontrol içindir; sık kullanılan kesitleri ve türleri kapsar. Gerçek projede ve sınavda güncel norm (DIN VDE 0298-4, DIN VDE 0100-520) ile elindeki Tabellenbuch geçerlidir. Farklı yalıtım (ör. VPE/XLPE, 90 °C), alüminyum iletken veya toprak altı döşemede değerler değişir.",
       },
     ],
   },

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { CNode, GNode, Given, Quantities } from "../schaltung/model";
 import { collectNodes, solveCircuit } from "../schaltung/model";
 import { fmt, parseNum } from "../lib/format";
+import { rich, useI18n } from "../i18n";
 
 type Tpl = "reihe" | "parallel" | "gruppe";
 
@@ -116,32 +117,43 @@ function draw(n: CNode, x: number, cy: number, vals: Record<string, Quantities>)
 }
 
 // ── Sayfa ────────────────────────────────────────────────────────────────────
+// etiketler ("Seri grup"…) ağaç durumunda saklanır; dil değişince sayfa sıfırdan kurulsun
 export default function SchaltungPage() {
+  const { lang } = useI18n();
+  return <Solver key={lang} />;
+}
+
+function Solver() {
+  const { t } = useI18n();
   const idc = useRef(0);
   const rc = useRef(0);
   const mkR = (): CNode => ({ id: `n${++idc.current}`, kind: "R", label: `R${++rc.current}` });
   const mkG = (kind: "series" | "parallel", children: CNode[]): GNode => ({
     id: `n${++idc.current}`,
     kind,
-    label: kind === "series" ? "Seri grup" : "Paralel grup",
+    label: kind === "series" ? t("sch.seriesGroup") : t("sch.parallelGroup"),
     children,
   });
 
-  const initTree = (t: Tpl): GNode => {
+  const initTree = (tp: Tpl): GNode => {
     rc.current = 0;
-    if (t === "reihe") return { ...mkG("series", [mkR(), mkR(), mkR()]), label: "Toplam (Reihe)" };
-    if (t === "parallel")
-      return { ...mkG("parallel", [mkR(), mkR()]), label: "Toplam (Parallel)" };
-    return { ...mkG("series", [mkR(), mkG("parallel", [mkR(), mkR()])]), label: "Toplam (kaynak)" };
+    if (tp === "reihe")
+      return { ...mkG("series", [mkR(), mkR(), mkR()]), label: t("sch.totalSeries") };
+    if (tp === "parallel")
+      return { ...mkG("parallel", [mkR(), mkR()]), label: t("sch.totalParallel") };
+    return {
+      ...mkG("series", [mkR(), mkG("parallel", [mkR(), mkR()])]),
+      label: t("sch.totalSource"),
+    };
   };
 
   const [tpl, setTpl] = useState<Tpl>("reihe");
   const [tree, setTree] = useState<GNode>(() => initTree("reihe"));
   const [inputs, setInputs] = useState<Record<string, Entry>>({});
 
-  const switchTpl = (t: Tpl) => {
-    setTpl(t);
-    setTree(initTree(t));
+  const switchTpl = (tp: Tpl) => {
+    setTpl(tp);
+    setTree(initTree(tp));
     setInputs({});
   };
 
@@ -154,9 +166,9 @@ export default function SchaltungPage() {
     };
   };
   const addChild = (gid: string, child: CNode) =>
-    setTree((t) => mapGroups(t, (g) => (g.id === gid ? { ...g, children: [...g.children, child] } : g)));
+    setTree((tr) => mapGroups(tr, (g) => (g.id === gid ? { ...g, children: [...g.children, child] } : g)));
   const removeChild = (id: string) =>
-    setTree((t) => mapGroups(t, (g) => ({ ...g, children: g.children.filter((c) => c.id !== id) })));
+    setTree((tr) => mapGroups(tr, (g) => ({ ...g, children: g.children.filter((c) => c.id !== id) })));
 
   // ── çözüm ──────────────────────────────────────────────────────────────
   const given = useMemo(() => {
@@ -199,7 +211,7 @@ export default function SchaltungPage() {
                 className={`rounded-md px-1.5 py-0.5 font-mono text-[11px] ${
                   giv ? "bg-panel2 text-mut" : "bg-volt/15 font-semibold text-volt"
                 }`}
-                title={giv ? "senin girdiğin" : "hesaplanan"}
+                title={giv ? t("sch.given") : t("sch.computed")}
               >
                 {k}={fmtQ(val, base)}
               </span>
@@ -220,13 +232,14 @@ export default function SchaltungPage() {
           inputMode="decimal"
           value={val}
           placeholder="?"
+          aria-label={k}
           onChange={(ev) => setField(id, { [k]: ev.target.value } as Partial<Entry>)}
-          className="w-16 rounded-lg border border-line bg-bg/60 px-2 py-1 text-sm text-ink outline-none focus:border-volt/60"
+          className="w-16 rounded-lg border border-line bg-bg/60 px-2 py-1.5 text-sm text-ink outline-none focus:border-volt/60"
         />
         <select
           value={uIdx}
           onChange={(ev) => setField(id, { [(k + "u") as "Ru"]: Number(ev.target.value) } as Partial<Entry>)}
-          className="rounded-lg border border-line bg-bg/60 px-1 py-1 text-xs text-mut outline-none"
+          className="rounded-lg border border-line bg-bg/60 px-1 py-1.5 text-xs text-mut outline-none"
         >
           {units.map((u, i) => (
             <option key={i} value={i}>
@@ -251,8 +264,9 @@ export default function SchaltungPage() {
             <button
               type="button"
               onClick={() => removeChild(n.id)}
-              className="ml-auto text-xs text-mut transition hover:text-rose-300"
-              title="Direnci sil"
+              className="ml-auto px-2 py-1 text-sm text-mut transition hover:text-rose-300"
+              title={t("sch.delR")}
+              aria-label={t("sch.delR")}
             >
               ✕
             </button>
@@ -275,8 +289,9 @@ export default function SchaltungPage() {
             <button
               type="button"
               onClick={() => removeChild(n.id)}
-              className="ml-auto text-xs text-mut transition hover:text-rose-300"
-              title="Grubu sil"
+              className="ml-auto px-2 py-1 text-sm text-mut transition hover:text-rose-300"
+              title={t("sch.delGroup")}
+              aria-label={t("sch.delGroup")}
             >
               ✕
             </button>
@@ -289,9 +304,9 @@ export default function SchaltungPage() {
           <button
             type="button"
             onClick={() => addChild(n.id, mkR())}
-            className="rounded-lg border border-line px-2.5 py-1 text-xs text-mut transition hover:border-volt/50 hover:text-volt"
+            className="rounded-lg border border-line px-2.5 py-1.5 text-xs text-mut transition hover:border-volt/50 hover:text-volt"
           >
-            + Direnç
+            + {t("sch.addR")}
           </button>
           {tpl === "gruppe" && (
             <>
@@ -300,14 +315,14 @@ export default function SchaltungPage() {
                 onClick={() => addChild(n.id, mkG("series", [mkR(), mkR()]))}
                 className="rounded-lg border border-line px-2.5 py-1 text-xs text-mut transition hover:border-spark/50 hover:text-spark"
               >
-                + Seri grup
+                + {t("sch.seriesGroup")}
               </button>
               <button
                 type="button"
                 onClick={() => addChild(n.id, mkG("parallel", [mkR(), mkR()]))}
                 className="rounded-lg border border-line px-2.5 py-1 text-xs text-mut transition hover:border-spark/50 hover:text-spark"
               >
-                + Paralel grup
+                + {t("sch.parallelGroup")}
               </button>
             </>
           )}
@@ -323,28 +338,27 @@ export default function SchaltungPage() {
 
   return (
     <div>
-      <h1 className="font-disp text-3xl font-bold text-ink">🧮 Devre Çözücü</h1>
+      <h1 className="font-disp text-2xl font-bold text-ink sm:text-3xl">🧮 {t("nav.solver")}</h1>
       <p className="mb-6 mt-1 italic text-mut">
-        Devreni kur, bildiğin değerleri gir — bulunabilecek <b className="text-ink">her şeyi</b> biz
-        bulalım. Sarı değerler hesap, grisi senin.
+        {rich(t("sch.lead"))}
       </p>
 
       {/* şablonlar */}
       <div className="mb-4 flex flex-wrap gap-2">
         {(
           [
-            ["reihe", "⛓ Reihenschaltung", "Seri devre: akım tek, gerilim paylaşılır"],
-            ["parallel", "🔀 Parallelschaltung", "Paralel devre: gerilim ortak, akım bölüşülür"],
-            ["gruppe", "🧩 Gruppenschaltung", "Karma: grupları iç içe kur"],
+            ["reihe", "⛓ Reihenschaltung", t("sch.tipSeries")],
+            ["parallel", "🔀 Parallelschaltung", t("sch.tipParallel")],
+            ["gruppe", "🧩 Gruppenschaltung", t("sch.tipGroup")],
           ] as [Tpl, string, string][]
-        ).map(([t, label, tip]) => (
+        ).map(([tp, label, tip]) => (
           <button
-            key={t}
+            key={tp}
             type="button"
             title={tip}
-            onClick={() => switchTpl(t)}
-            className={`rounded-xl px-4 py-2 font-disp text-sm font-semibold transition ${
-              tpl === t
+            onClick={() => switchTpl(tp)}
+            className={`rounded-xl px-3 py-2 font-disp text-sm font-semibold transition sm:px-4 ${
+              tpl === tp
                 ? "bg-volt text-black shadow-[0_0_16px_rgba(251,191,36,0.25)]"
                 : "border border-line bg-panel text-mut hover:text-ink"
             }`}
@@ -356,7 +370,7 @@ export default function SchaltungPage() {
 
       {conflict && (
         <p className="mb-4 rounded-xl border border-rose-400/50 bg-rose-500/15 px-4 py-2.5 text-sm text-rose-300">
-          ⚠️ {conflict}
+          ⚠️ {t(`sch.err.${conflict.code}`, conflict.p)}
         </p>
       )}
 
@@ -365,16 +379,15 @@ export default function SchaltungPage() {
         <div className="space-y-3">
           {renderNode(tree, 0, false)}
           <p className="text-xs text-mut">
-            💡 Bir alanı boş bırak = "bunu sen bul". {solvedCount > 0 && (
-              <span className="text-volt">Şu an {solvedCount} değer hesaplandı.</span>
-            )}
-            {solvedCount === 0 && "Yeterli veri girince sonuçlar sarı rozetlerle belirir."}
+            💡 {t("sch.blank")}{" "}
+            {solvedCount > 0 && <span className="text-volt">{t("sch.solved", { n: solvedCount })}</span>}
+            {solvedCount === 0 && t("sch.waiting")}
           </p>
         </div>
 
         {/* önizleme */}
         <div className="card self-start p-4">
-          <h3 className="mb-3 font-disp text-xs uppercase tracking-widest text-mut">Şema</h3>
+          <h3 className="mb-3 font-disp text-xs uppercase tracking-widest text-mut">{t("sch.diagram")}</h3>
           <div className="overflow-x-auto">
             <svg
               viewBox={`-12 -14 ${size.w + 24} ${size.h + 44}`}
@@ -385,20 +398,15 @@ export default function SchaltungPage() {
             </svg>
           </div>
           <p className="mt-2 text-center text-[11px] text-mut">
-            Uçlar arası kaynak bağlı varsay — toplam satırına U girmen yeter.
+            {t("sch.sourceNote")}
           </p>
         </div>
       </div>
 
       <div className="card mt-6 p-5 text-sm leading-relaxed text-mut">
-        <h3 className="mb-2 font-disp text-sm uppercase tracking-widest text-mut">🎓 Nasıl çalışır?</h3>
+        <h3 className="mb-2 font-disp text-sm uppercase tracking-widest text-mut">🎓 {t("sch.howTitle")}</h3>
         <p>
-          Çözücü, senin girdiklerinden türetilebilen her değeri kurallar sabitlenene kadar zincirleme
-          hesaplar: <b className="text-ink">Ohm</b> (U=R·I), <b className="text-ink">seri</b> (I ortak,
-          U ve R toplanır), <b className="text-ink">paralel</b> (U ortak, I toplanır, 1/R toplanır).
-          Örnek: Reihe'de R₁=100 Ω, R₂=200 Ω ve U_toplam=30 V gir — I, tüm kısmi gerilimler ve güçler
-          kendiliğinden gelir. Çelişkili değer girersen kavgayı biz haber veririz; hakemlik Ohm
-          amcanın.
+          {rich(t("sch.how"))}
         </p>
       </div>
     </div>

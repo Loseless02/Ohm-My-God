@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { motion, LayoutGroup } from "motion/react";
 import type { Expr } from "../lib/expr";
 import type { FormulaDef, VariableDef } from "../data/types";
+import { useI18n } from "../i18n";
 
 interface Ctx {
   vars: Record<string, VariableDef>;
@@ -14,6 +15,7 @@ interface Ctx {
 const SPRING = { type: "spring", stiffness: 420, damping: 34 } as const;
 
 function VarTok({ id, k, ctx }: { id: string; k?: string; ctx: Ctx }) {
+  const { tx, deTerm } = useI18n();
   const vd = ctx.vars[id];
   const sel = ctx.interactive && ctx.selected === id;
   const inner = (
@@ -32,7 +34,7 @@ function VarTok({ id, k, ctx }: { id: string; k?: string; ctx: Ctx }) {
       transition={SPRING}
       className={`eq-v ${sel ? "eq-v-sel" : ""}`}
       onClick={() => ctx.onSelect?.(id)}
-      title={vd ? `${vd.name}${vd.de ? ` (${vd.de})` : ""}` : id}
+      title={vd ? `${tx(vd.name)}${deTerm(vd.de) ? ` (${vd.de})` : ""}` : id}
     >
       {inner}
     </motion.button>

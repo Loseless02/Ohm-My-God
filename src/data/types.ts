@@ -47,6 +47,7 @@ export interface TopicSection {
   symbol?: string; // SchutzklasseSymbol ("sk1" | "sk2" | "sk3") — başlığın yanında gösterilir
   gate?: string; // GateSymbol ("and" | "or" | …) — başlığın yanında gösterilir
   table?: { head: string[]; rows: string[][] }; // doğruluk tablosu vb.
+  symbols?: string[]; // Playground parça tipleri — sembol kartları olarak çizilir
 }
 
 export interface TopicDef {

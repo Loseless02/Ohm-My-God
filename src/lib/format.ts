@@ -1,22 +1,31 @@
 import type { UnitOption } from "../data/types";
 
-// "3,5" da "3.5" da kabul et — Türk klavyesine saygı.
+// "3,5" da "3.5" da kabul et — Türk ve Alman klavyesine saygı.
 export function parseNum(s: string): number {
   const clean = s.trim().replace(/\s/g, "").replace(",", ".");
   if (clean === "" || clean === "-" || clean === ".") return NaN;
   return Number(clean);
 }
 
-const fmtCache = new Intl.NumberFormat("tr-TR", { maximumSignificantDigits: 5 });
+const LOCALES: Record<string, string> = { tr: "tr-TR", de: "de-DE", en: "en-US" };
+let nf = new Intl.NumberFormat("tr-TR", { maximumSignificantDigits: 5 });
+let decimalComma = true;
+
+/** Sayı biçimini arayüz diline uydur (TR/DE: 3,5 · EN: 3.5). */
+export function setNumberLocale(lang: string): void {
+  nf = new Intl.NumberFormat(LOCALES[lang] ?? "en-US", { maximumSignificantDigits: 5 });
+  decimalComma = lang !== "en";
+}
 
 export function fmt(x: number): string {
   if (!Number.isFinite(x)) return "—";
   // Çok büyük/küçük sayılarda bilimsel gösterime düş
   const ax = Math.abs(x);
   if (ax !== 0 && (ax >= 1e9 || ax < 1e-4)) {
-    return x.toExponential(3).replace(".", ",");
+    const e = x.toExponential(3);
+    return decimalComma ? e.replace(".", ",") : e;
   }
-  return fmtCache.format(x);
+  return nf.format(x);
 }
 
 // Sonuç için en okunaklı birimi seç (değer/mult 1–1000 aralığına düşsün)
