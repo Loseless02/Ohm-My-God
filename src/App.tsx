@@ -155,6 +155,16 @@ export default function App() {
         </main>
         <footer className="border-t border-line px-4 py-6 text-center text-xs text-mut/70">
           {t("footer")} ⚡ 2026
+          <p className="mt-3">
+            made and owned by Atherion also known as Loseless, for more{" "}
+            <a href="https://github.com/loseless02" className="text-mut underline-offset-2 hover:text-volt hover:underline">
+              github.com/loseless02
+            </a>
+            , to contact{" "}
+            <a href="mailto:vet-physic0l@icloud.com" className="text-mut underline-offset-2 hover:text-volt hover:underline">
+              vet-physic0l@icloud.com
+            </a>
+          </p>
         </footer>
       </div>
     </div>
