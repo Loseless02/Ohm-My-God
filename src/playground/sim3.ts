@@ -196,8 +196,8 @@ export function simulate3(
   const bRe = new Array(n).fill(0);
   const bIm = new Array(n).fill(0);
   const pinned = new Set<string>();
-  const src = [phasor(U_PH, 0), phasor(U_PH, -120), phasor(U_PH, 120), { re: 0, im: 0 }];
-  for (const s of nets)
+  for (const s of nets) {
+    const src = [phasor(pn(s, "U1"), 0), phasor(pn(s, "U2"), -120), phasor(pn(s, "U3"), 120), { re: 0, im: 0 }];
     terminalsOf(s).forEach((t, i) => {
       const k = id(t.id);
       for (let c = 0; c < n; c++) {
@@ -209,6 +209,7 @@ export function simulate3(
       bIm[k] = src[i].im;
       pinned.add(t.id);
     });
+  }
   const sol = csolve(n, Ar, Ai, bRe, bIm);
   const V = (tid: string): C => ({ re: sol.re[id(tid)], im: sol.im[id(tid)] });
   for (const [tid, k] of nodeIdx) res.phasor[tid] = [sol.re[k], sol.im[k]];
@@ -270,6 +271,7 @@ export function simulate3(
     if (a === undefined || b === undefined) continue;
     const d = Math.hypot(sol.re[a] - sol.re[b], sol.im[a] - sol.im[b]) * G_WIRE;
     res.flow[w.id] = d > 1e-3 ? 1 : 0;
+    res.dir[w.id] = 0; // trifaze AC
     if (pinned.has(w.a) !== pinned.has(w.b)) iSrc = Math.max(iSrc, d);
   }
   if (iSrc > 2000) {

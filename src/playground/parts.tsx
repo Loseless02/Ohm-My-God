@@ -3,6 +3,7 @@ import type { LedColor, Part, PartType } from "./types";
 import { RAIL_H } from "./types";
 import type { MotorState } from "./sim";
 import { EL_TYPES, EL_VIEWBOX, ElSymbol } from "./parts-el";
+import { pn } from "./params";
 import { useI18n } from "../i18n";
 
 // Sembol renkleri
@@ -442,7 +443,11 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
         <>
           <rect x={-14} y={-42} width={148} height={30} rx={7} fill="#131c2a" stroke={c} strokeWidth={1.5} />
           <text x={60} y={-31} textAnchor="middle" fill={c} fontSize={9} fontWeight={600}>
-            3/N ~ 50 Hz 400/230 V
+            {(() => {
+              const u = [1, 2, 3].map((k) => pn(part, `U${k}`));
+              const same = u.every((x) => x === u[0]);
+              return same ? `3/N ~ ${pn(part, "f")} Hz ${Math.round(u[0] * Math.sqrt(3))}/${u[0]} V` : `L1 ${u[0]} · L2 ${u[1]} · L3 ${u[2]} V`;
+            })()}
           </text>
           {["L1", "L2", "L3", "N"].map((l, i) => (
             <g key={l}>
@@ -452,9 +457,9 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
               </text>
             </g>
           ))}
-          {off && (
-            <text x={140} y={-24} fill={C.mut} fontSize={9}>
-              {offText}
+          {(off || (sim && burnt)) && (
+            <text x={140} y={-24} fill={burnt ? "#f87171" : C.mut} fontSize={9}>
+              {burnt ? "⚡ LS" : offText}
             </text>
           )}
         </>

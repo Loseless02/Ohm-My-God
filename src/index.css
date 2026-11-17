@@ -392,3 +392,18 @@ input::placeholder {
 .pg-input:focus {
   border-color: color-mix(in srgb, var(--color-volt) 60%, transparent);
 }
+
+/* AC akımı: yön her yarım periyotta değişir → ileri-geri salınan çizgiler */
+.wire-flow-ac {
+  stroke-dasharray: 7 7;
+  animation: wire-ac 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes wire-ac {
+  from {
+    stroke-dashoffset: 7;
+  }
+  to {
+    stroke-dashoffset: -7;
+  }
+}

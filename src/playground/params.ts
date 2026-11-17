@@ -135,6 +135,13 @@ export const PARAMS: Partial<Record<PartType, ParamDef[]>> = {
     { k: "R25", label: "Direnç @25 °C", unit: "Ω", def: 10000, min: 1, max: 1e7 },
     { k: "B", label: "B sabiti", unit: "K", def: 3950, min: 500, max: 10000 },
   ],
+  netz3: [
+    { k: "U1", label: "L1 gerilimi (N'ye karşı)", unit: "V", def: 230, min: 0, max: 1e6 },
+    { k: "U2", label: "L2 gerilimi (N'ye karşı)", unit: "V", def: 230, min: 0, max: 1e6 },
+    { k: "U3", label: "L3 gerilimi (N'ye karşı)", unit: "V", def: 230, min: 0, max: 1e6 },
+    { k: "f", label: "Frekans", unit: "Hz", def: 50, min: 0.1, max: 1000 },
+    { k: "In", label: "Koruma (LS) anma akımı", unit: "A", def: 32, min: 0.01, max: 5000 },
+  ],
   motor3: [
     { k: "Pn", label: "Anma gücü (mil)", unit: "W", def: 4000, min: 10, max: 1e7 },
     { k: "Un", label: "Anma gerilimi (Δ)", unit: "V", def: 400, min: 1, max: 1e5 },

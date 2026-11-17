@@ -19,7 +19,7 @@ const G_SW = 1e3; // kapalı kontak: 1 mΩ
 const R_GRID = 0.25; // şebeke iç empedansı (≈ ev tesisatı Z_S)
 const R_DC = 0.05; // laboratuvar güç kaynağı iç direnci
 const WIN = 0.02; // ölçüm penceresi (bir 50 Hz periyodu)
-const RING = 400; // osiloskop için saklanan örnek sayısı
+const RING = 4000; // osiloskop için saklanan örnek sayısı (AC'de 1 s)
 const T_AMB = 25;
 
 // ── küçük matematik ─────────────────────────────────────────────────────────
@@ -156,6 +156,8 @@ export class Engine {
   private winT = 0;
   // düğüm istatistikleri
   private ring: Float32Array = new Float32Array(0);
+  private iRing: Float32Array = new Float32Array(0); // eleman akımları (osiloskop 2. kanal)
+  private selfHeld: Record<string, boolean> = {}; // motor koruma rölesinin kendi atması
   private ringPos = 0;
   private ringFill = 0;
   // kablo akımları (ağaç akışı)
@@ -316,6 +318,23 @@ export class Engine {
             fastF = Math.max(fastF, p.type === "rail_l" ? 50 : pn(p, "f"));
           }
           break;
+        case "netz3":
+          mk(p, "v3", [t[0], t[1], t[2], t[3]]);
+          hasAC = true;
+          fastF = Math.max(fastF, pn(p, "f"));
+          break;
+        case "q3":
+        case "contact3":
+        case "ol3":
+          mk(p, "p3", t.slice(0, 6));
+          break;
+        case "motor3": {
+          const m0 = n++;
+          const m1 = n++;
+          const m2 = n++;
+          mk(p, "m3", [...t.slice(0, 6), m0, m1, m2]);
+          break;
+        }
         case "fgen":
           mk(p, "fg", [t[0], t[1]]);
           if (ps(p, "wave") !== "dc") {
@@ -423,6 +442,7 @@ export class Engine {
     const dynamic = els.some((e) => ["c", "l", "tr", "mot", "dcm", "mcu"].includes(e.k));
     this.dt = hasAC ? Math.min(2.5e-4, 1 / (fastF * 40)) : dynamic ? 1e-3 : 2e-3;
     this.ring = new Float32Array(n * RING);
+    this.iRing = new Float32Array(els.length * RING);
     this.ringPos = 0;
     this.ringFill = 0;
     this.dirty = true;
@@ -437,8 +457,48 @@ export class Engine {
     return !e.st.burnt;
   }
 
+  private heldEff() {
+    return { ...this.inputs.held, ...this.selfHeld };
+  }
+
   private closed(e: El): boolean {
-    return isClosed(e.p, this.energized, this.inputs.act, this.inputs.timerDone, this.inputs.held);
+    return isClosed(e.p, this.energized, this.inputs.act, this.inputs.timerDone, this.heldEff());
+  }
+
+  /** 3 kutuplu anahtar iletiyor mu? */
+  private closed3(e: El): boolean {
+    const p = e.p;
+    if (p.type === "q3") return !this.inputs.act[p.id] && !e.st.trip;
+    if (p.type === "contact3") {
+      const g = p.group ?? "";
+      const h = this.heldEff();
+      return g in h ? !!h[g] : !!this.energized[g];
+    }
+    return true; // ol3: termik eleman hep iletir
+  }
+
+  private emf3(e: El, k: number) {
+    const p = e.p;
+    if (p.enabled === false || e.st.trip) return 0;
+    const U = pn(p, `U${k + 1}`);
+    const ph = (-2 * Math.PI * k) / 3;
+    return U * Math.SQRT2 * Math.sin(2 * Math.PI * pn(p, "f") * this.t + ph);
+  }
+
+  /** Trifaze motor sargı empedansı (üçgen anma değerlerinden), hızla değişir. */
+  private m3Z(e: El) {
+    const p = e.p;
+    const P = pn(p, "Pn");
+    const U = pn(p, "Un");
+    const cos = pn(p, "cos");
+    const IN = P / (Math.sqrt(3) * U * cos * pn(p, "eta"));
+    const Z = (U / (IN / Math.sqrt(3))) * (0.2 + 0.8 * Math.min(1, e.st.w ?? 0));
+    return { R: Math.max(0.01, Z * cos), L: Math.max(1e-6, (Z * Math.sqrt(1 - cos * cos)) / (2 * Math.PI * 50)), IN };
+  }
+  private m3Bridges(e: El): [number, number][] {
+    if (e.p.conn === "Y") return [[3, 4], [4, 5]];
+    if (e.p.conn === "D") return [[0, 5], [1, 3], [2, 4]];
+    return [];
   }
 
   /** Bu elemanın doğrusal iletkenliği (topolojiye bağlı, adım boyunca sabit). */
@@ -566,6 +626,21 @@ export class Engine {
         case "vs":
           if (!this.srcOpen(e)) this.stampG(M, a, b, 1 / this.srcR(e));
           break;
+        case "v3":
+          if (e.p.enabled !== false && !e.st.trip) for (let k = 0; k < 3; k++) this.stampG(M, e.n[k], e.n[3], 1 / R_GRID);
+          break;
+        case "p3":
+          if (this.closed3(e)) for (let k = 0; k < 3; k++) this.stampG(M, e.n[k], e.n[k + 3], G_SW);
+          break;
+        case "m3": {
+          const { R, L } = this.m3Z(e);
+          for (let k = 0; k < 3; k++) {
+            this.stampG(M, e.n[k], e.n[6 + k], 1 / R);
+            this.stampG(M, e.n[6 + k], e.n[k + 3], dt / L);
+          }
+          for (const [x, y] of this.m3Bridges(e)) this.stampG(M, e.n[x], e.n[y], G_SW);
+          break;
+        }
         case "fg":
           this.stampG(M, a, b, 1 / 50);
           break;
@@ -792,6 +867,12 @@ export class Engine {
         case "vs":
           if (!this.srcOpen(e)) this.stampI(b, a, this.srcEmf(e) / this.srcR(e));
           break;
+        case "v3":
+          for (let k = 0; k < 3; k++) this.stampI(e.n[3], e.n[k], this.emf3(e, k) / R_GRID);
+          break;
+        case "m3":
+          for (let k = 0; k < 3; k++) this.stampI(e.n[6 + k], e.n[k + 3], e.st[`i${k}`] ?? 0);
+          break;
         case "fg":
           this.stampI(b, a, this.fgEmf(e) / 50);
           break;
@@ -895,7 +976,19 @@ export class Engine {
       e.st.su = (e.st.su ?? 0) + u;
       e.st.su2 = (e.st.su2 ?? 0) + u * u;
       // durum güncellemeleri
+      this.iRing[ei * RING + this.ringPos] = e.k === "bjt" || e.k === "mos" || e.k === "reg" ? I[1] : I[0];
       switch (e.k) {
+        case "m3": {
+          const { L } = this.m3Z(e);
+          const wt = 2 * Math.PI * 50 * this.t;
+          for (let k = 0; k < 3; k++) {
+            e.st[`i${k}`] = (e.st[`i${k}`] ?? 0) + (dt / L) * (V[6 + k] - V[k + 3]);
+            const u = V[k] - V[k + 3];
+            e.st[`c${k}`] = (e.st[`c${k}`] ?? 0) + u * Math.cos(wt);
+            e.st[`s${k}`] = (e.st[`s${k}`] ?? 0) + u * Math.sin(wt);
+          }
+          break;
+        }
         case "c":
           e.st.v = V[0] - V[1];
           break;
@@ -928,7 +1021,7 @@ export class Engine {
     for (const tr of this.tree) {
       const c = sub[tr.child];
       if (tr.wire >= 0) {
-        const iw = -tr.sign * c; // çocuk tarafı akım çekiyorsa akım ebeveynden çocuğa akar
+        const iw = tr.sign * c; // çocuk tarafı akım çekiyorsa akım ebeveynden çocuğa akar (a→b pozitif)
         this.wS[tr.wire] += iw;
         this.wS2[tr.wire] += iw * iw;
       }
@@ -955,6 +1048,37 @@ export class Engine {
         if (this.srcOpen(e)) return [0, 0];
         const i = (a - b - this.srcEmf(e)) / this.srcR(e);
         return [i, -i];
+      }
+      case "v3": {
+        const vn = v(e.n[3]);
+        const I = [0, 1, 2].map((k) => (e.p.enabled === false || e.st.trip ? 0 : (v(e.n[k]) - vn - this.emf3(e, k)) / R_GRID));
+        return [...I, -(I[0] + I[1] + I[2])];
+      }
+      case "p3": {
+        const I = [0, 0, 0, 0, 0, 0];
+        if (this.closed3(e))
+          for (let k = 0; k < 3; k++) {
+            const i = (v(e.n[k]) - v(e.n[k + 3])) * G_SW;
+            I[k] = i;
+            I[k + 3] = -i;
+          }
+        return I;
+      }
+      case "m3": {
+        const { R } = this.m3Z(e);
+        const I = new Array(9).fill(0);
+        for (let k = 0; k < 3; k++) {
+          const i = (v(e.n[k]) - v(e.n[6 + k])) / R;
+          I[k] += i;
+          I[k + 3] -= i;
+        }
+        // köprüler
+        for (const [x, y] of this.m3Bridges(e)) {
+          const i = (v(e.n[x]) - v(e.n[y])) * G_SW;
+          I[x] += i;
+          I[y] -= i;
+        }
+        return I;
       }
       case "fg": {
         const i = (a - b - this.fgEmf(e)) / 50;
@@ -1096,6 +1220,65 @@ export class Engine {
     };
     const I = e.Irms[0] ?? 0;
     switch (e.k) {
+      case "v3": {
+        if (p.enabled === false || st.trip) break;
+        const r = Math.max(e.Irms[0], e.Irms[1], e.Irms[2]) / pn(p, "In");
+        st.H = Math.max(0, (st.H ?? 0) * 0.995 + Math.max(0, r * r - 1.3) * W);
+        if (r > 5 || st.H > 25) {
+          st.trip = 1;
+          this.short = r > 5;
+          this.dirty = true;
+        }
+        break;
+      }
+      case "p3": {
+        const Imax = Math.max(e.Irms[0], e.Irms[1], e.Irms[2]);
+        if (p.type === "q3" && !st.trip && Imax > 13 * pn(p, "In")) {
+          st.trip = 1;
+          this.dirty = true;
+        }
+        if (p.type === "ol3" && !this.selfHeld[p.label]) {
+          const r = Imax / pn(p, "Ie");
+          st.H = Math.max(0, (st.H ?? 0) * Math.exp(-W / 60) + Math.max(0, r * r - 1.1) * W);
+          if (st.H > 120) {
+            this.selfHeld[p.label] = true;
+            st.H = 0;
+            this.dirty = true;
+          }
+        }
+        break;
+      }
+      case "m3": {
+        const N = Math.max(1, W / this.dt);
+        const ph = [0, 1, 2].map((k) => ({ re: (2 * (st[`c${k}`] ?? 0)) / N, im: (-2 * (st[`s${k}`] ?? 0)) / N }));
+        for (let k = 0; k < 3; k++) {
+          st[`c${k}`] = 0;
+          st[`s${k}`] = 0;
+        }
+        const m = ph.map((q) => Math.hypot(q.re, q.im) / Math.SQRT2);
+        const max = Math.max(...m);
+        const min = Math.min(...m);
+        let target = 0;
+        st.fault = 0;
+        if (max < 23) target = 0;
+        else if (min < 0.6 * max) st.fault = 1;
+        else {
+          const cross = ph[0].im * ph[1].re - ph[0].re * ph[1].im;
+          st.dir = cross >= 0 ? 1 : -1;
+          target = Math.min(1.2, min / pn(p, "Un"));
+        }
+        const w = st.w ?? 0;
+        const nw = st.fault ? Math.max(0, w - W / 1.5) : w + (target - w) * Math.min(1, W / (target > w ? 0.8 : 1.5));
+        if (Math.abs(nw - w) > 0.01) this.dirty = true;
+        st.w = nw;
+        st.tgt = target;
+        const { IN } = this.m3Z(e);
+        const r = Math.max(e.Irms[0], e.Irms[1], e.Irms[2]) / IN;
+        const Tt = T_AMB + 75 * r * r;
+        st.T = (st.T ?? T_AMB) + (Tt - (st.T ?? T_AMB)) * Math.min(1, W / 20);
+        heat("hot", st.T > 180, 1);
+        break;
+      }
       case "vs": {
         if (this.srcOpen(e)) break;
         const In = p.type === "rail_l" ? 16 : pn(p, "In");
@@ -1277,6 +1460,11 @@ export class Engine {
         e.st.smoke = 0;
         any = true;
       }
+    for (const e of this.byPart.get(partId) ?? [])
+      if (e.p.type === "ol3" && this.selfHeld[e.p.label]) {
+        delete this.selfHeld[e.p.label];
+        any = true;
+      }
     if (any) {
       this.dirty = true;
       this.short = false;
@@ -1285,7 +1473,22 @@ export class Engine {
   }
 
   isBroken(partId: string) {
-    return (this.byPart.get(partId) ?? []).some((e) => e.st.burnt || e.st.trip);
+    return (this.byPart.get(partId) ?? []).some((e) => e.st.burnt || e.st.trip || (e.p.type === "ol3" && this.selfHeld[e.p.label]));
+  }
+
+  /** Osiloskop: iki düğüm arası gerilim ve (varsa) parçanın akımı, en eski → en yeni. */
+  waveData(a: number, b: number, partId?: string): { v: Float32Array; i: Float32Array | null; dt: number } {
+    const n = this.n;
+    const cnt = this.ringFill;
+    const v = new Float32Array(cnt);
+    const ei = partId ? this.els.findIndex((e) => e.p.id === partId) : -1;
+    const i = ei >= 0 ? new Float32Array(cnt) : null;
+    for (let s = 0; s < cnt; s++) {
+      const pos = (this.ringPos - cnt + s + RING) % RING;
+      v[s] = (a < 0 ? 0 : this.ring[pos * n + a]) - (b < 0 ? 0 : this.ring[pos * n + b]);
+      if (i) i[s] = this.iRing[ei * RING + pos];
+    }
+    return { v, i, dt: this.dt };
   }
 
   nodeOf(tid: string): number | undefined {
@@ -1354,6 +1557,7 @@ export class Engine {
     if (e.k === "pot") r.R = pn(p, "R");
     if (e.st.T !== undefined) r.T = e.st.T;
     if (e.k === "mot") r.rpm = (e.st.w ?? 0) * pn(p, "nn");
+    if (e.k === "m3") r.rpm = ((e.st.tgt ?? 0) > 0 && !e.st.fault ? (e.st.w ?? 0) : 0) * pn(p, "nn");
     if (e.k === "dcm") r.rpm = ((e.st.w ?? 0) * 60) / (2 * Math.PI);
     r.state = e.st.burnt
       ? p.type === "fuse"
@@ -1393,6 +1597,12 @@ export class Engine {
       const id = p.id;
       if (e.k === "sw" || e.k === "co") res.closed[id] = this.closed(e);
       if (e.k === "vs") res.closed[id] = !this.srcOpen(e);
+      if (e.k === "p3") res.closed[id] = p.type === "ol3" ? !this.heldEff()[p.label] : this.closed3(e);
+      if (e.k === "m3") {
+        const w = e.st.w ?? 0;
+        res.motor[id] = e.st.fault ? { speed: 0, dir: 0, fault: "phase" } : { speed: (e.st.tgt ?? 0) > 0 ? w : 0, dir: w > 0.02 ? (e.st.dir ?? 1) : 0 };
+        res.rpm[id] = (res.motor[id].speed ?? 0) * pn(p, "nn");
+      }
       if (e.st.burnt) res.burnt[id] = true;
       const rd = this.partReading(id);
       if (rd?.state) res.state[id] = rd.state;
@@ -1438,7 +1648,8 @@ export class Engine {
     this.wires.forEach((w, i) => {
       const I = this.wRms[i];
       res.flow[w.id] = this.short && I > 100 ? 100 : I > 2e-4 ? 1 : 0;
-      res.dir[w.id] = Math.abs(this.wMean[i]) > 0.3 * I ? Math.sign(this.wMean[i]) : 1;
+      // DC: ortalama yön; AC: 0 (çizim tarafında ileri-geri salınan animasyon)
+      res.dir[w.id] = Math.abs(this.wMean[i]) > 0.3 * I ? Math.sign(this.wMean[i]) : 0;
     });
     return res;
   }

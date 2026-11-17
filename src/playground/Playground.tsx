@@ -12,7 +12,8 @@ import { MAIN_SWITCH, removeItem } from "./ops";
 import { PANES, downloadCircuit, parseCircuitFile, type Circuit, type Domain, type Orient } from "./file";
 import { PARAMS, pn, ps, si, type ParamDef } from "./params";
 import FloatPanel, { type PanelPos } from "./FloatPanel";
-import Meter, { fmt3, type MeterData, type MeterMode } from "./Meter";
+import MeterDevice, { JACK, METER_H, METER_W, fmt3, type MeterData, type MeterMode } from "./Meter";
+import Scope, { type ScopeData } from "./Scope";
 import Calc from "./Calc";
 import type { Pt } from "./route";
 import { adminToken, savePresetAsAdmin } from "../lib/admin";
@@ -25,17 +26,18 @@ const LSP = "omg-pg-panels-v1";
 type Store = Record<Domain, { panes: Record<string, Circuit>; orient: Orient; free: boolean }>;
 type GroupKey = "src" | "sw" | "relay" | "load" | "gate" | "power" | "passive" | "semi" | "ic" | "prot";
 type Palette = [GroupKey, PartType[]][];
-type PanelId = "parts" | "props" | "meter" | "calc" | "guide";
+type PanelId = "parts" | "props" | "meter" | "calc" | "guide" | "scope";
 
 const SW: PartType[] = ["switch_no", "switch_nc", "taster_no", "taster_nc", "pairc_no", "pairc_nc"];
 const RELAY: PartType[] = ["coil", "contact_no", "contact_nc", "contact_co", "relay_ss", "tcoil", "tcontact_no", "tcontact_nc"];
 
 const PALETTES: Record<string, Palette> = {
   phys: [
-    ["src", ["source", "source2"]],
+    ["src", ["source", "source2", "netz3"]],
     ["sw", SW],
     ["relay", RELAY],
-    ["load", ["lamp", "led", "fluo", "heater", "motor"]],
+    ["load", ["lamp", "led", "fluo", "heater", "motor", "motor3"]],
+    ["power", ["q3", "contact3", "ol3"]],
     ["prot", ["fuse"]],
   ],
   el: [
@@ -173,7 +175,8 @@ function defaultPanels(w: number, h: number): Record<PanelId, PanelPos> {
   return {
     parts: { x: 8, y: 8, w: 236, h: Math.min(h - 16, 620), open: true },
     props: { x: Math.max(260, w - 276), y: 8, w: 268, h: Math.min(h - 16, 440), open: true },
-    meter: { x: Math.max(260, w - 276), y: Math.min(h - 200, 456), w: 268, h: Math.max(180, Math.min(h - 470, 480)), open: false },
+    meter: { x: Math.max(260, w - 500), y: Math.max(0, h - METER_H - 8), w: METER_W, open: false },
+    scope: { x: Math.max(250, w / 2 - 230), y: Math.max(8, h - 330), w: 460, h: 320, open: false },
     calc: { x: Math.max(260, w - 560), y: 8, w: 270, open: false },
     guide: { x: 256, y: 8, w: 440, h: Math.min(h - 16, 360), open: false },
   };
@@ -192,7 +195,9 @@ export default function Playground() {
   const [sel, setSel] = useState<Sel>(null);
   const [placing, setPlacing] = useState<PartType | null>(null);
   const [ghost, setGhost] = useState<Ghost | null>(null);
-  const [hoverType, setHoverType] = useState<PartType | null>(null);
+  const [tip, setTip] = useState<{ type: PartType; x: number; y: number; left: boolean } | null>(null);
+  const [tails, setTails] = useState<{ red: Pt; black: Pt } | null>(null);
+  const scopeSrc = useRef<(() => ScopeData | null) | null>(null);
   const [actuated, setActuated] = useState<Record<string, boolean>>({});
   const [held, setHeld] = useState<Record<string, boolean>>({});
   const [fitKey, setFitKey] = useState(0);
@@ -204,15 +209,21 @@ export default function Playground() {
   const [panels, setPanels] = useState<Record<PanelId, PanelPos> | null>(() => {
     try {
       const r = localStorage.getItem(LSP);
-      return r ? JSON.parse(r) : null;
+      if (!r) return null;
+      // eski sürümün kaydında olmayan paneller varsayılanla tamamlanır
+      const saved = JSON.parse(r) as Partial<Record<PanelId, PanelPos>>;
+      const d = defaultPanels(window.innerWidth - 300, window.innerHeight - 100);
+      const merged = { ...d, ...saved } as Record<PanelId, PanelPos>;
+      if (merged.meter.w !== METER_W) merged.meter = d.meter;
+      return merged;
     } catch {
       return null;
     }
   });
-  const [zs, setZs] = useState<PanelId[]>(["guide", "calc", "meter", "props", "parts"]);
+  const [zs, setZs] = useState<PanelId[]>(["scope", "guide", "calc", "meter", "props", "parts"]);
   const [probes, setProbes] = useState<(Probes & { pane: string }) | null>(null);
   const [contacts, setContacts] = useState<Record<Which, Contact | null>>({ red: null, black: null });
-  const [meterMode, setMeterMode] = useState<MeterMode>("V");
+  const [meterMode, setMeterMode] = useState<MeterMode>("V~");
   const [meterData, setMeterData] = useState<MeterData>({ red: null, black: null, v: null, part: null, wire: null, same: false });
   const [live, setLive] = useState<ReturnType<Engine["partReading"]>>(null);
   const [slow, setSlow] = useState(1);
@@ -251,9 +262,10 @@ export default function Playground() {
 
   // panel yerleşimi: ilk açılışta çalışma alanının boyutuna göre
   useEffect(() => {
-    if (panels || !areaRef.current) return;
+    if (!areaRef.current) return;
     const r = areaRef.current.getBoundingClientRect();
-    setPanels(defaultPanels(r.width, r.height));
+    const d = defaultPanels(r.width, r.height);
+    if (!panels) setPanels(d);
   }, [panels]);
 
   useEffect(() => {
@@ -326,6 +338,7 @@ export default function Playground() {
     const red = c.red;
     const black = c.black;
     const out: MeterData = { red, black, v: null, part: null, wire: null, same: false };
+    scopeSrc.current = null;
     if (!red || !black || !pr) return out;
     const paneParts = pp[pr.pane]?.parts ?? [];
     const samePart = red.part && red.part === black.part && red.tid !== black.tid ? paneParts.find((p) => p.id === red.part) : undefined;
@@ -345,6 +358,16 @@ export default function Playground() {
         }
       }
       if (red.wire && red.wire === black.wire) out.wire = eng.wireReading(red.wire);
+      if (na !== undefined && nb !== undefined) {
+        // osiloskop: CH1 = kırmızı − siyah, CH2 = parçanın akımı (kırmızı uçtan giren yönde)
+        const flip = samePart && red.tid > black.tid ? -1 : 1;
+        const pid = samePart?.id;
+        scopeSrc.current = () => {
+          const w = eng.waveData(na, nb, pid);
+          if (w.i && flip < 0) for (let k = 0; k < w.i.length; k++) w.i[k] = -w.i[k];
+          return w;
+        };
+      }
     } else if (pr.pane === "last" && red.tid && black.tid) {
       // trifaze güç devresi: fazörlerden
       const s3 = next.last as (SimResult & { phasor?: Record<string, [number, number]> }) | null;
@@ -358,6 +381,12 @@ export default function Playground() {
         const wave = Array.from({ length: 160 }, (_, i) => rms * Math.SQRT2 * Math.cos(2 * Math.PI * 50 * i * 2.5e-4 + ph));
         out.v = { dc: 0, rms, ac: rms, min: -rms * Math.SQRT2, max: rms * Math.SQRT2, f: rms > 1e-3 ? 50 : 0, wave, dt: 2.5e-4 };
         out.same = rms < 1e-9;
+        scopeSrc.current = () => {
+          const t0 = performance.now() / 1000;
+          const v = new Float32Array(2000);
+          for (let k = 0; k < 2000; k++) v[k] = rms * Math.SQRT2 * Math.cos(2 * Math.PI * 50 * (t0 + (k - 2000) * 2.5e-4) + ph);
+          return { v, i: null, dt: 2.5e-4 };
+        };
       }
     }
     return out;
@@ -403,7 +432,7 @@ export default function Playground() {
           }
         }
       }
-      if (now - lastUi > 60) {
+      if (now - lastUi > 33) {
         const next: Record<string, Snap | null> = {};
         if (eng) next[ctlPane] = eng.snapshot();
         if (cur.domain === "power" && cur.panes.last) {
@@ -688,7 +717,11 @@ export default function Playground() {
     };
   }, []);
 
-  const info = hoverType ?? placing ?? selPart?.type ?? null;
+  function showTip(type: PartType, el: HTMLElement) {
+    const r = el.getBoundingClientRect();
+    const left = r.right + 300 > window.innerWidth;
+    setTip({ type, x: left ? r.left - 8 : r.right + 8, y: Math.min(r.top, window.innerHeight - 170), left });
+  }
 
   // ── paneller ───────────────────────────────────────────────────────────
   const P = panels;
@@ -712,6 +745,7 @@ export default function Playground() {
   };
   const onProbeMove = useCallback((w: Which, pt: Pt) => setProbes((p) => (p ? { ...p, [w]: pt } : p)), []);
   const onProbeContact = useCallback((w: Which, c: Contact | null) => setContacts((cs) => ({ ...cs, [w]: c })), []);
+  const noop = useCallback(() => {}, []);
   const resetLayout = () => {
     const r = areaRef.current?.getBoundingClientRect();
     if (r) setPanels(defaultPanels(r.width, r.height));
@@ -742,9 +776,9 @@ export default function Playground() {
     <button
       type="button"
       onClick={() => togglePanel(id)}
-      aria-pressed={!!P?.[id].open}
+      aria-pressed={!!P?.[id]?.open}
       title={label}
-      className={`rounded-lg border px-2 py-1 text-xs transition ${P?.[id].open ? "border-volt/50 bg-volt/10 text-volt" : "border-line bg-panel text-mut hover:text-ink"}`}
+      className={`rounded-lg border px-2 py-1 text-xs transition ${P?.[id]?.open ? "border-volt/50 bg-volt/10 text-volt" : "border-line bg-panel text-mut hover:text-ink"}`}
     >
       {icon} <span className="hidden 2xl:inline">{label}</span>
     </button>
@@ -845,6 +879,7 @@ export default function Playground() {
         {panelBtn("parts", "🧩", t("pg.parts"))}
         {panelBtn("props", "⚙️", t("pg.props"))}
         {panelBtn("meter", "🔌", t("pg.meter"))}
+        {panelBtn("scope", "📈", t("pg.scope"))}
         {panelBtn("calc", "🧮", t("pg.calc"))}
         {panelBtn("guide", "❓", t("pg.guideTitle"))}
         <button type="button" onClick={resetLayout} className={tool} title={t("pg.resetLayout")}>
@@ -854,6 +889,18 @@ export default function Playground() {
           {full ? "🗗" : "⛶"}
         </button>
       </div>
+
+      {tip && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed z-[90] w-72 rounded-xl border border-line bg-panel/95 p-3 text-xs leading-relaxed text-mut shadow-2xl backdrop-blur"
+          style={{ left: tip.left ? undefined : tip.x, right: tip.left ? window.innerWidth - tip.x : undefined, top: tip.y }}
+        >
+          <p className="font-disp text-sm font-semibold text-ink">{tx(SPEC[tip.type].name)}</p>
+          {deTerm(SPEC[tip.type].de) && <p className="text-[11px] text-spark/80">{SPEC[tip.type].de}</p>}
+          <p className="mt-1.5">{tx(PART_INFO[tip.type])}</p>
+        </div>
+      )}
 
       {/* çalışma alanı */}
       <div ref={areaRef} className="relative min-h-0 flex-1">
@@ -888,6 +935,7 @@ export default function Playground() {
                 probes={probes?.pane === k ? probes : null}
                 onProbeMove={onProbeMove}
                 onProbeContact={onProbeContact}
+                onProbeTails={probes?.pane === k ? setTails : noop}
               />
             </div>
           ))}
@@ -943,10 +991,10 @@ export default function Playground() {
                           if (e.detail > 0 && !coarse && (e.nativeEvent as PointerEvent).pointerType !== "touch") return;
                           setPlacing((cur) => (cur === ty ? null : ty));
                         }}
-                        onPointerEnter={() => setHoverType(ty)}
-                        onPointerLeave={() => setHoverType((h) => (h === ty ? null : h))}
-                        onFocus={() => setHoverType(ty)}
-                        onBlur={() => setHoverType(null)}
+                        onPointerEnter={(e) => showTip(ty, e.currentTarget)}
+                        onPointerLeave={() => setTip((h) => (h?.type === ty ? null : h))}
+                        onFocus={(e) => showTip(ty, e.currentTarget)}
+                        onBlur={() => setTip(null)}
                         aria-pressed={placing === ty}
                         title={`${tx(SPEC[ty].name)} — ${SPEC[ty].de}`}
                         className={`flex cursor-grab select-none flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-center text-[10px] leading-tight transition hover:bg-panel2 hover:text-ink ${
@@ -961,19 +1009,7 @@ export default function Playground() {
                 </div>
               ))}
             </div>
-            <div className="sticky bottom-0 mt-1 rounded-lg border border-line bg-panel p-2 text-[11px] leading-relaxed text-mut">
-              {info ? (
-                <>
-                  <p className="font-semibold text-ink">
-                    {tx(SPEC[info].name)}
-                    {deTerm(SPEC[info].de) && <span className="block text-[10px] font-normal text-mut">{SPEC[info].de}</span>}
-                  </p>
-                  <p className="mt-1">{tx(PART_INFO[info])}</p>
-                </>
-              ) : (
-                <p>{t("pg.paletteHint")}</p>
-              )}
-            </div>
+            <p className="mt-1 px-1 text-[10px] leading-relaxed text-mut/70">{t("pg.paletteHint")}</p>
           </>,
         )}
 
@@ -1100,16 +1136,45 @@ export default function Playground() {
           </>,
         )}
 
-        {panel(
-          "meter",
-          t("pg.meter"),
-          <>
-            <Meter data={meterData} mode={meterMode} setMode={setMeterMode} onRecall={recallProbes} />
-            {mode === "edit" && <p className="mt-2 text-[11px] text-mut">{t("pg.meterEdit")}</p>}
-          </>,
+        {panel("calc", t("pg.calc"), <Calc />)}
+
+        {panel("scope", t("pg.scope"), <Scope src={scopeSrc} running={mode === "sim"} />)}
+
+        {P && P.meter.open && (
+          <MeterDevice
+            data={meterData}
+            mode={meterMode}
+            setMode={setMeterMode}
+            x={P.meter.x}
+            y={P.meter.y}
+            onMove={(x, y) => setPanel("meter", { ...P.meter, x, y })}
+            onClose={() => togglePanel("meter")}
+            onRecall={recallProbes}
+            z={30}
+          />
         )}
 
-        {panel("calc", t("pg.calc"), <Calc />)}
+        {/* prob kabloları: ölçü aletinin soketlerinden probların kuyruğuna */}
+        {P && P.meter.open && tails && areaRef.current && (() => {
+          const ar = areaRef.current.getBoundingClientRect();
+          return (
+            <svg className="pointer-events-none absolute inset-0 z-[35] h-full w-full overflow-visible">
+              {(["black", "red"] as Which[]).map((w) => {
+                const j = { x: P.meter.x + JACK[w].x, y: P.meter.y + JACK[w].y };
+                const tl = { x: tails[w].x - ar.left, y: tails[w].y - ar.top };
+                const sag = Math.min(260, 80 + Math.hypot(tl.x - j.x, tl.y - j.y) * 0.35);
+                const d = `M ${j.x} ${j.y} C ${j.x} ${j.y + sag}, ${tl.x + 30} ${tl.y + sag * 0.6}, ${tl.x} ${tl.y}`;
+                return (
+                  <g key={w}>
+                    <path d={d} fill="none" stroke="#000" strokeOpacity={0.35} strokeWidth={6} strokeLinecap="round" />
+                    <path d={d} fill="none" stroke={w === "red" ? "#dc2626" : "#1f2937"} strokeWidth={3.5} strokeLinecap="round" />
+                    <circle cx={j.x} cy={j.y} r={6} fill={w === "red" ? "#dc2626" : "#111827"} stroke="#000" strokeWidth={1} />
+                  </g>
+                );
+              })}
+            </svg>
+          );
+        })()}
 
         {panel(
           "guide",

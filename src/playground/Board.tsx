@@ -75,6 +75,8 @@ interface Props {
   probes: Probes | null;
   onProbeMove: (w: Which, pt: Pt) => void;
   onProbeContact: (w: Which, c: Contact | null) => void;
+  /** Prob kuyruklarının ekran koordinatları (kablolar ölçü aletinden buraya çizilir). */
+  onProbeTails: (t: { red: Pt; black: Pt } | null) => void;
 }
 
 const clampW = (w: number) => Math.min(8000, Math.max(120, w));
@@ -584,6 +586,18 @@ export default function Board(props: Props) {
     }
   }, [probes, parts, wires, pick, onProbeContact]);
 
+  // prob kuyruklarının ekran konumu: kablolar ölçü aletinin soketlerinden buraya
+  const { onProbeTails } = props;
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!probes || !el) return onProbeTails(null);
+    const r = el.getBoundingClientRect();
+    const sc = view.w / r.width;
+    const toC = (p: Pt) => ({ x: r.left + (p.x - view.x) / sc, y: r.top + (p.y - view.y) / sc });
+    const tail = (p: Pt) => toC({ x: p.x + 44 * sc, y: p.y - 76 * sc });
+    onProbeTails({ red: tail(probes.red), black: tail(probes.black) });
+  }, [probes, view, ratio, measured, onProbeTails]);
+
   // ── çizim yardımcıları ───────────────────────────────────────────────────
   const s = pxScale();
   const pendingStart = pending ? termPos(parts, pending.from) : null;
@@ -703,12 +717,14 @@ export default function Board(props: Props) {
           const flow = sim?.flow[w.id] ?? 0;
           const isShortPath = sim?.short && flow > 50;
           const live = sim && flow > 0.1;
-          const rev = (sim?.dir[w.id] ?? 1) < 0;
+          const dirv = sim?.dir[w.id];
+          const rev = (dirv ?? 1) < 0;
+          const ac = dirv === 0; // AC: yön her yarım periyotta değişir → ileri-geri salınım
           const isSel = sel?.pane === pane && sel.kind === "wire" && sel.id === w.id;
           const stroke = isShortPath ? "#f87171" : live ? "#fbbf24" : isSel ? "#fbbf24" : "#3b4c63";
           return (
             <g key={w.id} className={mode === "edit" ? "pg-wire" : ""}>
-              <path d={d} fill="none" stroke={stroke} strokeWidth={free ? 2 : 2.4} strokeLinejoin="round" className={isShortPath ? "wire-short" : live ? (rev ? "wire-flow-rev" : "wire-flow") : ""} />
+              <path d={d} fill="none" stroke={stroke} strokeWidth={free ? 2 : 2.4} strokeLinejoin="round" className={isShortPath ? "wire-short" : live ? (ac ? "wire-flow-ac" : rev ? "wire-flow-rev" : "wire-flow") : ""} />
               <path
                 d={d}
                 fill="none"
@@ -991,8 +1007,6 @@ export default function Board(props: Props) {
             const hy = tip.y - 38 * k;
             const ex = tip.x + 44 * k;
             const ey = tip.y - 76 * k;
-            const ax = view.x + view.w + 30 * k;
-            const ay = view.y + viewH * (which === "red" ? 0.62 : 0.72);
             const grab = (e: React.PointerEvent) => {
               if (e.button !== 0) return;
               e.stopPropagation();
@@ -1001,14 +1015,6 @@ export default function Board(props: Props) {
             };
             return (
               <g key={which}>
-                <path
-                  d={`M ${ex} ${ey} C ${ex + 40 * k} ${ey + 140 * k}, ${ax - 120 * k} ${ay + 90 * k}, ${ax} ${ay}`}
-                  fill="none"
-                  stroke={which === "red" ? "#b91c1c" : "#111827"}
-                  strokeWidth={3.2 * k}
-                  strokeLinecap="round"
-                  pointerEvents="none"
-                />
                 <g style={{ cursor: "grab" }} onPointerDown={grab}>
                   <line x1={tip.x} y1={tip.y} x2={tip.x + 8 * k} y2={tip.y - 14 * k} stroke="#d1d5db" strokeWidth={1.6 * k} strokeLinecap="round" />
                   <line x1={tip.x + 8 * k} y1={tip.y - 14 * k} x2={ex} y2={ey} stroke={col} strokeWidth={9 * k} strokeLinecap="round" />
