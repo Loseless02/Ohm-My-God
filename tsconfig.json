@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "isolatedModules": true,
+    "resolveJsonModule": true,
     "useDefineForClassFields": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,

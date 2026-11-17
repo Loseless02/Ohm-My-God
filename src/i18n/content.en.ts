@@ -1311,6 +1311,928 @@ const dict: Record<string, string> = {
     "XOR — hallway light",
   "NAND — üniversal kapı":
     "NAND — universal gate",
+  "Kompanzasyon":
+    "Power factor correction",
+  "Reaktif gücü kondansatörle yerinde karşıla: daha iyi cos φ, daha rahat kablo, daha kısa fatura.":
+    "Supply reactive power on the spot with capacitors: better cos φ, relaxed cables, shorter bills.",
+  "Koruma Hesapları":
+    "Protection calculations",
+  "Çevrim empedansı, açma akımı, topraklama direnci: sigorta zamanında atacak mı?":
+    "Loop impedance, tripping current, earth resistance: will the breaker trip in time?",
+  "Motor Kalkışı & Sürücüler":
+    "Motor starting & drives",
+  "Kalkış akımı, yıldız-üçgen, U/f, doğrultucu — motoru şebekeyi üzmeden döndürmenin yolları.":
+    "Starting current, star-delta, V/f, rectifiers — ways to spin a motor without upsetting the grid.",
+  "Aydınlatma":
+    "Lighting",
+  "Lux, lümen, lm/W ve 'bu odaya kaç armatür lazım?' sorusunun cevabı.":
+    "Lux, lumen, lm/W and the answer to 'how many luminaires does this room need?'",
+  "Bina Tekniği & Enerji":
+    "Building services & energy",
+  "Fatura, boyler, güneş paneli ve 'her şey aynı anda açılırsa ne olur?' hesabı.":
+    "Bills, water heaters, solar panels and the 'what if everything is switched on at once?' calculation.",
+  "Kompanzasyon Gücü":
+    "Compensation power",
+  "Q_C = P·(tan φ₁ − tan φ₂) — reaktif gücü yerinde üret, şebekeden taşıma.":
+    "Q_C = P·(tan φ₁ − tan φ₂) — generate reactive power on the spot instead of hauling it from the grid.",
+  "Motorlar ve balastlar şebekeden reaktif güç çeker; bu güç iş yapmaz ama kabloyu ve trafoyu doldurur, enerji şirketi de faturaya yazar. Paralel bağlanan kondansatör bu reaktif gücü yerinde karşılar. P sabit kalır, sadece φ küçülür: φ₁'den hedef φ₂'ye inmek için gereken kondansatör gücü budur.":
+    "Motors and ballasts draw reactive power from the grid; it does no work, but it fills up cables and transformers, and the utility puts it on the bill. A capacitor connected in parallel supplies this reactive power locally. P stays the same, only φ gets smaller: this is the capacitor power needed to go from φ₁ down to the target φ₂.",
+  "Hedef genelde cos φ₂ = 0,95 civarı. Tam 1'e kompanze etme: yük değişince aşırı kompanzasyona (kapasitif) kayarsın, o da ayrı dert.":
+    "The usual target is around cos φ₂ = 0.95. Don't compensate all the way to 1: when the load changes you slide into over-compensation (capacitive), which is a headache of its own.",
+  "Kondansatör gücü":
+    "Capacitor power",
+  "Kondansatörün şebekeye 'geri verdiği' reaktif güç. Bobinin çektiği reaktif gücü yerinde karşılar, kablo da trafo da rahatlar.":
+    "The reactive power the capacitor 'gives back' to the grid. It covers the reactive power the coil draws right where it is needed, relieving both cable and transformer.",
+  "Kompanzasyon formülüyle hesaplanır; kondansatör etiketinde kvar olarak yazar.":
+    "Calculated with the compensation formula; printed in kvar on the capacitor label.",
+  "Tesisin aktif gücü (Wirkleistung). Kompanzasyon bunu değiştirmez.":
+    "Active power of the installation (Wirkleistung). Compensation doesn't change it.",
+  "Kompanzasyon öncesi tan φ":
+    "tan φ before compensation",
+  "Mevcut durumun tan φ'si. cos φ ne kadar kötüyse tan φ o kadar büyük.":
+    "The tan φ of the current situation. The worse the cos φ, the bigger the tan φ.",
+  "cos φ biliniyorsa: tan φ = √(1 − cos²φ) / cos φ. Örnek: cos φ 0,7 → 1,02 · 0,9 → 0,48 · 0,95 → 0,33.":
+    "If you know cos φ: tan φ = √(1 − cos²φ) / cos φ. Examples: cos φ 0.7 → 1.02 · 0.9 → 0.48 · 0.95 → 0.33.",
+  "Hedef tan φ":
+    "Target tan φ",
+  "Ulaşmak istediğin tan φ (ör. cos φ = 0,95 için 0,33).":
+    "The tan φ you want to reach (e.g. 0.33 for cos φ = 0.95).",
+  "Kompanzasyon Kondansatörü (1 faz)":
+    "Compensation capacitor (single-phase)",
+  "C = Q_C / (U²·2π·f) — kvar'ı mikrofarada çevir.":
+    "C = Q_C / (U²·2π·f) — turn kvar into microfarads.",
+  "Gereken reaktif gücü bulduktan sonra sıra kondansatörün kapasitesinde. Kondansatörün reaktif gücü Q_C = U²·ω·C olduğundan C bundan çekilir. Floresan armatürlerdeki paralel kondansatör tam olarak bu hesapla seçilir.":
+    "Once you know the reactive power needed, it's the capacitor's turn. Since a capacitor's reactive power is Q_C = U²·ω·C, C follows from it. The parallel capacitor in fluorescent luminaires is chosen with exactly this calculation.",
+  "Kompanzasyon Kondansatörü (üçgen)":
+    "Compensation capacitor (delta)",
+  "C_Δ = Q_C / (3·U²·2π·f) — üç kondansatör, her biri 400 V'ta.":
+    "C_Δ = Q_C / (3·U²·2π·f) — three capacitors, each at 400 V.",
+  "Trifaze kompanzasyonda üç kondansatör çoğunlukla üçgen bağlanır: her biri hat gerilimini (400 V) görür ve toplam Q_C'nin üçte birini taşır. Üçgen bağlantı, yıldıza göre üç kat daha küçük kapasite ister — bu yüzden pratikte hep üçgen.":
+    "In three-phase compensation the three capacitors are usually connected in delta: each one sees the line voltage (400 V) and carries a third of the total Q_C. Delta needs three times less capacitance than star — which is why in practice it's always delta.",
+  "U burada hat gerilimi (400 V). Hesaplanan C, TEK kondansatörün kapasitesidir.":
+    "Here U is the line voltage (400 V). The calculated C is the capacitance of ONE capacitor.",
+  "Kondansatör başına kapasite":
+    "Capacitance per capacitor",
+  "Hata Akımı & Çevrim Empedansı":
+    "Fault current & loop impedance",
+  "I_k = U₀ / Z_S — kısa devre akımı ne kadar büyükse o kadar iyi (evet, gerçekten).":
+    "I_k = U₀ / Z_S — the bigger the short-circuit current, the better (yes, really).",
+  "Gövdeye kaçak olduğunda akımın büyüklüğünü çevrim empedansı belirler. Otomatik kesme (Abschaltung) koruması ancak I_k, koruma elemanının açma akımından (I_a) büyükse çalışır. Yani uzun ve ince kablo burada iki kez cezalandırılır: hem gerilim düşer, hem sigorta zamanında atmaz.":
+    "When a live conductor touches an exposed part, the loop impedance decides how big the current gets. Automatic disconnection only works if I_k is larger than the tripping current I_a of the protective device. So a long, thin cable gets punished twice here: the voltage drops and the breaker doesn't trip in time.",
+  "Abschaltbedingung: Z_S · I_a ≤ U₀. I_a'yı yandaki 'Açma Akımı' kartından bul, I_k ≥ I_a mı diye karşılaştır.":
+    "Disconnection condition: Z_S · I_a ≤ U₀. Find I_a with the 'Tripping current' card and check whether I_k ≥ I_a.",
+  "Hata akımı":
+    "Fault current",
+  "Faz ile PE arasında tam kısa devrede akan akım. Sigortayı attıran şey.":
+    "The current that flows in a dead short between a phase and PE. The thing that trips the breaker.",
+  "Bu formülle hesaplanır; ölçüm cihazları Z_S'yi ölçüp I_k'yı da gösterir.":
+    "Calculated with this formula; test instruments measure Z_S and display I_k as well.",
+  "Faz-toprak gerilimi":
+    "Phase-to-earth voltage",
+  "Dış iletken ile toprak (PE) arasındaki anma gerilimi. Bizim şebekede 230 V.":
+    "Nominal voltage between a line conductor and earth (PE). 230 V in our grid.",
+  "TN sisteminde 230 V — sınavda da hep bu.":
+    "230 V in a TN system — and always in the exam.",
+  "Çevrim empedansı":
+    "Loop impedance",
+  "Hata akımının dolaştığı tüm yolun direnci: trafo sargısı + faz iletkeni + hata yeri + PE + dönüş. Ne kadar küçükse hata akımı o kadar büyük, sigorta o kadar hızlı atar.":
+    "Resistance of the whole path the fault current travels: transformer winding + phase conductor + fault point + PE + return. The smaller it is, the bigger the fault current and the faster the breaker trips.",
+  "Schleifenimpedanz ölçüm cihazıyla prizde ölçülür (VDE 0100-600 ilk muayene).":
+    "Measured at the socket with a loop impedance tester (initial verification per VDE 0100-600).",
+  "Açma Akımı (LS)":
+    "Tripping current (MCB)",
+  "I_a = k · I_n — B'de 5, C'de 10, D'de 20 kat.":
+    "I_a = k · I_n — 5 times for B, 10 for C, 20 for D.",
+  "LS sigortanın manyetik açıcısı, anma akımının belli bir katında anında (≤ 0,1 s) açar. Bu kat karakteristiğe bağlıdır. Çevrim empedansı kontrolünde I_a bu yüzden k·I_n olarak alınır.":
+    "An MCB's magnetic release trips instantly (≤ 0.1 s) at a certain multiple of the rated current. That multiple depends on the characteristic. That's why I_a is taken as k·I_n when checking the loop impedance.",
+  "B16 → I_a = 80 A, C16 → 160 A. Aynı kabloda C karakteristik daha büyük hata akımı ister — uzun hatta B seçmenin sebebi bu.":
+    "B16 → I_a = 80 A, C16 → 160 A. On the same cable, characteristic C needs a bigger fault current — which is why long runs get a B.",
+  "Açma akımı":
+    "Tripping current",
+  "Koruma elemanının istenen sürede (ör. 0,4 s) kesin açtığı akım. Hata akımı bunun altında kalırsa sigorta 'düşünür' — ve o arada gövde gerilim altında kalır.":
+    "The current at which the protective device reliably trips within the required time (e.g. 0.4 s). If the fault current stays below it, the breaker 'thinks about it' — and meanwhile the enclosure stays live.",
+  "LS için karakteristikten: B → 5·I_n, C → 10·I_n, D → 20·I_n.":
+    "From the MCB characteristic: B → 5·I_n, C → 10·I_n, D → 20·I_n.",
+  "Karakteristik katsayısı":
+    "Characteristic factor",
+  "birimsiz · B = 5, C = 10, D = 20":
+    "dimensionless · B = 5, C = 10, D = 20",
+  "Manyetik açıcının çalıştığı akım katı (üst sınır).":
+    "Current multiple at which the magnetic release operates (upper limit).",
+  "Sigortanın üstündeki harf: B, C, D.":
+    "The letter on the breaker: B, C, D.",
+  "Anma akımı":
+    "Rated current",
+  "Sigortanın üstünde yazan akım (B16 → 16 A).":
+    "The current printed on the breaker (B16 → 16 A).",
+  "Sigortanın üstünde yazar.":
+    "Printed on the breaker.",
+  "TT: Topraklama Direnci":
+    "TT: earth resistance",
+  "R_A ≤ U_L / I_Δn — 50 V'u geçmeyecek kadar iyi bir toprak.":
+    "R_A ≤ U_L / I_Δn — an earth good enough to stay under 50 V.",
+  "TT sisteminde gövdeler binanın kendi toprak elektroduna bağlıdır. Kaçak olduğunda gövdede oluşan dokunma gerilimi R_A · I_Δn'dir ve izin verilen sınırı (U_L = 50 V) aşmamalıdır. 30 mA'lik RCD ile bu sınır ~1667 Ω'a kadar çıkar — bu yüzden TT'de RCD hayat kurtarır.":
+    "In a TT system the exposed parts are connected to the building's own earth electrode. In a fault, the touch voltage on the enclosure is R_A · I_Δn and must not exceed the permitted limit (U_L = 50 V). With a 30 mA RCD the limit goes up to ~1667 Ω — which is why the RCD is a lifesaver in TT.",
+  "U_L: insanlar için 50 V AC (tarım hayvanları için 25 V). Hesaplanan R_A üst sınırdır, ölçülen değer bunun altında olmalı.":
+    "U_L: 50 V AC for people (25 V for livestock). The calculated R_A is an upper limit; the measured value must stay below it.",
+  "Topraklama direnci":
+    "Earth resistance",
+  "Toprak elektrodu ile toprak arasındaki direnç + PE iletkeni.":
+    "Resistance between the earth electrode and the ground, plus the PE conductor.",
+  "Topraklama ölçer (Erdungsmesser) ile ölçülür.":
+    "Measured with an earth resistance tester (Erdungsmesser).",
+  "İzin verilen dokunma gerilimi":
+    "Permitted touch voltage",
+  "Kalıcı olarak dokunulmasına izin verilen en büyük gerilim: 50 V AC.":
+    "Highest voltage that may be touched permanently: 50 V AC.",
+  "Normda: 50 V AC (hayvanlar için 25 V).":
+    "Per the standard: 50 V AC (25 V for animals).",
+  "RCD anma fark akımı":
+    "RCD rated residual current",
+  "RCD'nin açtığı kaçak akım: genelde 30 mA.":
+    "Leakage current at which the RCD trips: usually 30 mA.",
+  "RCD'nin üstünde yazar (I_Δn = 30 mA).":
+    "Printed on the RCD (I_Δn = 30 mA).",
+  "Kalkış Akımı":
+    "Starting current",
+  "I_A = k · I_N — motor uyanırken 6 kat fazla kahve içer.":
+    "I_A = k · I_N — a motor waking up drinks six times the coffee.",
+  "Asenkron motor dururken rotor kısa devre edilmiş bir trafo sekonderi gibidir: kalkışta anma akımının 5–8 katını çeker. Bu ani akım hattı düşürür, ışıkları titretir, sigortayı attırabilir. Büyük motorlarda yıldız-üçgen, yumuşak yolverici ya da frekans konvertörü bu yüzden var.":
+    "At standstill an induction motor's rotor is like a short-circuited transformer secondary: on start-up it draws 5–8 times its rated current. That surge pulls the line voltage down, makes the lights flicker and can trip the breaker. That's why big motors get star-delta, soft starters or frequency inverters.",
+  "k = I_A/I_N tip etiketinde ya da katalogda yazar. Sigorta seçerken bu akımı unutma — motor korumada 'gecikmeli' (träge) karakteristiklerin sebebi bu.":
+    "k = I_A/I_N is on the nameplate or in the catalogue. Don't forget this current when choosing the breaker — it's the reason motor protection uses 'slow' (träge) characteristics.",
+  "Kalkış akımı":
+    "Starting current",
+  "Motorun ilk anda çektiği akım.":
+    "The current the motor draws in the first moment.",
+  "Hesapla ya da pens ampermetrenin 'inrush' fonksiyonuyla ölç.":
+    "Calculate it, or measure with the 'inrush' function of a clamp meter.",
+  "Kalkış akımı oranı":
+    "Starting current ratio",
+  "birimsiz · tipik 5–8":
+    "dimensionless · typically 5–8",
+  "Kalkış akımının anma akımına oranı.":
+    "Ratio of starting current to rated current.",
+  "Motor kataloğu / tip etiketi (I_A/I_N).":
+    "Motor catalogue / nameplate (I_A/I_N).",
+  "Motorun tam yükte çektiği akım.":
+    "Current the motor draws at full load.",
+  "Tip etiketinde (bağlantı türüne göre: Δ 400 V / Y 690 V).":
+    "On the nameplate (depending on the connection: Δ 400 V / Y 690 V).",
+  "Yıldız-Üçgen Kalkış Akımı":
+    "Star-delta starting current",
+  "I_Y = I_Δ / 3 — yıldızda kalk, şebekeyi üzme.":
+    "I_Y = I_Δ / 3 — start in star, spare the grid.",
+  "Motor normalde üçgende çalışırken yıldızda kalkarsa her sargıya 400 V yerine 230 V düşer. Sargı akımı √3 azalır, hat akımı da üçgendeki √3 çarpanını kaybeder: toplamda şebekeden çekilen kalkış akımı ÜÇTE BİRE iner. Bedeli: moment de üçte bire düşer — yüklü kalkışlarda motor kalkamayabilir.":
+    "If a motor that normally runs in delta starts in star, each winding gets 230 V instead of 400 V. The winding current falls by √3, and the line current also loses the √3 factor it has in delta: all in all, the starting current drawn from the grid drops to ONE THIRD. The price: torque drops to a third as well — under heavy load the motor may not get going.",
+  "Sadece üçgende 400 V için yapılmış motorlarda (etiket: Δ 400 V / Y 690 V) kullanılır. M_Y = M_Δ / 3 — moment için de aynı formül geçerli. Playground'da 'Last + Steuer' modunda dene: pervanenin yıldızda yavaş döndüğünü gör.":
+    "Only for motors built for 400 V in delta (nameplate: Δ 400 V / Y 690 V). M_Y = M_Δ / 3 — the same formula applies to torque. Try it in the Playground's 'Power + Control' mode: watch the fan turn slowly in star.",
+  "Yıldızda kalkış akımı":
+    "Starting current in star",
+  "Yıldız kalkışta şebekeden çekilen akım.":
+    "The current drawn from the grid during a star start.",
+  "Bu formülle hesaplanır.":
+    "Calculated with this formula.",
+  "Üçgende (direkt) kalkış akımı":
+    "Starting current in delta (direct)",
+  "Motor direkt üçgende kalksaydı çekeceği akım.":
+    "The current the motor would draw if it started directly in delta.",
+  "I_A = k · I_N ile (Kalkış Akımı kartı).":
+    "With I_A = k · I_N (Starting current card).",
+  "Frekans Konvertörü: U/f Sabit":
+    "Frequency inverter: constant V/f",
+  "U₂ = U₁ · f₂ / f₁ — frekansı düşürürsen gerilimi de düşür.":
+    "U₂ = U₁ · f₂ / f₁ — lower the frequency, lower the voltage too.",
+  "Frekans konvertörü motoru yavaşlatmak için frekansı düşürür. Ama gerilim aynı kalırsa düşük frekansta sargının reaktansı azalır, akım ve mıknatıslanma şişer — motor doyuma gider ve ısınır. Çözüm: U/f oranını sabit tutmak. 400 V / 50 Hz = 8 V/Hz; 25 Hz'te 200 V.":
+    "A frequency inverter slows a motor down by lowering the frequency. But if the voltage stayed the same, the winding reactance would drop at low frequency, so current and magnetisation would balloon — the motor saturates and overheats. The fix: keep the V/f ratio constant. 400 V / 50 Hz = 8 V/Hz; at 25 Hz that's 200 V.",
+  "50 Hz'in üstünde (alan zayıflatma bölgesi) gerilim 400 V'ta sabit kalır, sadece frekans artar — moment düşer.":
+    "Above 50 Hz (field-weakening range) the voltage stays at 400 V and only the frequency rises — torque drops.",
+  "Yeni gerilim":
+    "New voltage",
+  "Konvertörün yeni frekansta vermesi gereken gerilim.":
+    "The voltage the inverter has to deliver at the new frequency.",
+  "Motorun anma gerilimi (genelde 400 V).":
+    "Rated voltage of the motor (usually 400 V).",
+  "Tip etiketi.":
+    "Nameplate.",
+  "Yeni frekans":
+    "New frequency",
+  "Ayarlanan çıkış frekansı.":
+    "The set output frequency.",
+  "Konvertör ayarı.":
+    "Inverter setting.",
+  "Anma frekansı":
+    "Rated frequency",
+  "Motorun anma frekansı (50 Hz).":
+    "Rated frequency of the motor (50 Hz).",
+  "Doğrultucu Çıkış Gerilimi":
+    "Rectifier output voltage",
+  "U_di = k · U — B2U'da 0,9, B6U'da 1,35.":
+    "U_di = k · U — 0.9 for B2U, 1.35 for B6U.",
+  "Köprü doğrultucunun çıkışındaki ideal ortalama DC gerilim (filtresiz). Tek fazlı köprüde (B2U) k = 0,9; trifaze köprüde (B6U) k = 1,35. Frekans konvertörünün ara devresindeki ~540 V tam olarak buradan gelir: 400 V · 1,35.":
+    "The ideal average DC voltage at the output of a bridge rectifier (unfiltered). For a single-phase bridge (B2U) k = 0.9; for a three-phase bridge (B6U) k = 1.35. The ~540 V in a frequency inverter's DC link comes from exactly here: 400 V · 1.35.",
+  "Kondansatörle filtrelenirse gerilim tepe değere (√2 · U) yaklaşır: 230 V → ~325 V. Formül filtresiz ortalama değer içindir.":
+    "With a smoothing capacitor the voltage approaches the peak value (√2 · U): 230 V → ~325 V. The formula is for the unfiltered average.",
+  "İdeal DC gerilim":
+    "Ideal DC voltage",
+  "Doğrultucu çıkışının ortalama değeri.":
+    "Average value of the rectifier output.",
+  "DC voltmetreyle ölçülür (ortalama değer).":
+    "Measured with a DC voltmeter (average value).",
+  "Doğrultucu katsayısı":
+    "Rectifier factor",
+  "birimsiz · M1U 0,45 · B2U 0,9 · B6U 1,35":
+    "dimensionless · M1U 0.45 · B2U 0.9 · B6U 1.35",
+  "Bağlantı tipine göre sabit.":
+    "A constant that depends on the circuit type.",
+  "Devre tipinden: B2U → 0,9, B6U → 1,35.":
+    "From the circuit type: B2U → 0.9, B6U → 1.35.",
+  "Giriş gerilimi (efektif)":
+    "Input voltage (RMS)",
+  "Doğrultucunun beslendiği AC gerilim: B2U'da faz gerilimi, B6U'da hat gerilimi.":
+    "AC voltage feeding the rectifier: phase voltage for B2U, line voltage for B6U.",
+  "230 V ya da 400 V.":
+    "230 V or 400 V.",
+  "Kısa Devre Gerilimi & Sürekli Kısa Devre Akımı":
+    "Short-circuit voltage & sustained short-circuit current",
+  "I_k = I_N · 100 / u_k — küçük u_k, büyük kısa devre akımı.":
+    "I_k = I_N · 100 / u_k — small u_k, big short-circuit current.",
+  "u_k, sekonder kısa devre edilmişken anma akımını akıtmak için primere uygulanması gereken gerilimin yüzdesidir. Trafonun iç 'sertliğini' anlatır: u_k küçükse trafo serttir, gerilimi yükte az düşer ama kısa devre akımı çok büyüktür. Dağıtım trafolarında tipik u_k %4–6.":
+    "u_k is the percentage of rated primary voltage needed to drive rated current with the secondary short-circuited. It describes how 'stiff' the transformer is: with a small u_k the transformer is stiff, its voltage barely sags under load, but the short-circuit current is huge. Distribution transformers typically have u_k = 4–6 %.",
+  "u_k = %4 → I_k = 25 · I_N. Şalt cihazlarının kesme kapasitesi bu akıma göre seçilir.":
+    "u_k = 4 % → I_k = 25 · I_N. The breaking capacity of switchgear is chosen for this current.",
+  "Sürekli kısa devre akımı":
+    "Sustained short-circuit current",
+  "Sekonder uçları kısa devre edilince akan akım.":
+    "Current that flows when the secondary terminals are short-circuited.",
+  "Trafonun sekonder anma akımı.":
+    "Rated secondary current of the transformer.",
+  "Tip etiketi ya da S / (√3 · U).":
+    "Nameplate, or S / (√3 · U).",
+  "Bağıl kısa devre gerilimi":
+    "Relative short-circuit voltage",
+  "Kısa devre deneyinde anma akımı için gereken primer gerilimin yüzdesi.":
+    "Percentage of primary voltage needed for rated current in the short-circuit test.",
+  "Tip etiketinde (ör. u_k = %4).":
+    "On the nameplate (e.g. u_k = 4 %).",
+  "Aydınlık Düzeyi":
+    "Illuminance",
+  "E = Φ / A — ışığı metrekareye bölüştür.":
+    "E = Φ / A — share the light out per square metre.",
+  "Bir yüzeye düşen ışık akısının o yüzeyin alanına oranı. 1 lux = 1 lümen / m². Normlar iş yerleri için en az aydınlık düzeyini belirler (DIN EN 12464-1): ofis 500 lx, koridor 100 lx, ince montaj işi 750 lx ve üstü.":
+    "The luminous flux falling on a surface divided by its area. 1 lux = 1 lumen / m². Standards set minimum illuminance for workplaces (DIN EN 12464-1): office 500 lx, corridor 100 lx, fine assembly work 750 lx and up.",
+  "Aydınlık düzeyi":
+    "Illuminance",
+  "Yüzeye düşen ışık miktarı.":
+    "Amount of light falling on the surface.",
+  "Luxmetre ile çalışma yüksekliğinde (≈ 0,75 m) ölçülür.":
+    "Measured with a lux meter at working height (≈ 0.75 m).",
+  "Işık akısı":
+    "Luminous flux",
+  "Kaynağın her yöne saldığı toplam ışık.":
+    "Total light emitted by the source in all directions.",
+  "Lamba ambalajında lümen olarak yazar.":
+    "Printed in lumens on the lamp packaging.",
+  "Alan":
+    "Area",
+  "Aydınlatılan yüzey.":
+    "The illuminated surface.",
+  "En × boy.":
+    "Length × width.",
+  "Işık Verimi":
+    "Luminous efficacy",
+  "η = Φ / P — watt başına kaç lümen?":
+    "η = Φ / P — how many lumens per watt?",
+  "Lambanın elektrik gücünü ne kadar ışığa çevirdiği. Akkor lamba ~12 lm/W (geri kalanı ısıtıcı), floresan ~80 lm/W, iyi bir LED 150 lm/W'ın üstü. Watt artık parlaklığın değil, faturanın birimi.":
+    "How much of a lamp's electrical power ends up as light. Incandescent ~12 lm/W (the rest is a heater), fluorescent ~80 lm/W, a good LED over 150 lm/W. Watts are no longer a unit of brightness — they're a unit of your bill.",
+  "Işık verimi":
+    "Luminous efficacy",
+  "Watt başına üretilen lümen.":
+    "Lumens produced per watt.",
+  "Ürün etiketi / veri sayfası.":
+    "Product label / data sheet.",
+  "Lambanın toplam ışık çıkışı.":
+    "Total light output of the lamp.",
+  "Ambalajda lümen olarak.":
+    "In lumens on the packaging.",
+  "Lambanın çektiği elektrik gücü.":
+    "Electrical power drawn by the lamp.",
+  "Ambalaj / tip etiketi.":
+    "Packaging / nameplate.",
+  "Armatür Sayısı (Verim Yöntemi)":
+    "Number of luminaires (efficiency method)",
+  "n = E·A / (Φ·η_B·WF) — kaç armatür lazım?":
+    "n = E·A / (Φ·η_B·WF) — how many luminaires do you need?",
+  "Wirkungsgradverfahren: istenen aydınlık düzeyi için gereken armatür sayısı. Armatürün tüm ışığı yere ulaşmaz (η_B, aydınlatma verimi: oda geometrisi + duvar yansıması), zamanla lambalar kirlenip zayıflar (WF, bakım faktörü). İkisini de hesaba katmazsan açılış günü güzel, bir yıl sonra loş bir oda teslim edersin.":
+    "Wirkungsgradverfahren: the number of luminaires needed for a required illuminance. Not all of a luminaire's light reaches the floor (η_B, utilisation factor: room geometry + wall reflection), and over time lamps get dirty and weaker (WF, maintenance factor). Ignore either and you hand over a room that's lovely on opening day and gloomy a year later.",
+  "Sonucu YUKARI yuvarla. Tipik değerler: η_B 0,5–0,8 · WF 0,8 (temiz oda), 0,67 (normal).":
+    "Round the result UP. Typical values: η_B 0.5–0.8 · WF 0.8 (clean room), 0.67 (normal).",
+  "Armatür sayısı":
+    "Number of luminaires",
+  "Gereken armatür (ya da lamba) adedi.":
+    "Required number of luminaires (or lamps).",
+  "Bu formülle hesaplanır, yukarı yuvarlanır.":
+    "Calculated with this formula, rounded up.",
+  "İstenen aydınlık düzeyi":
+    "Required illuminance",
+  "Normun istediği değer (ofis 500 lx).":
+    "The value the standard requires (office 500 lx).",
+  "DIN EN 12464-1 tabloları.":
+    "DIN EN 12464-1 tables.",
+  "Oda alanı":
+    "Room area",
+  "Aydınlatılacak zemin alanı.":
+    "Floor area to be lit.",
+  "Armatür başına ışık akısı":
+    "Luminous flux per luminaire",
+  "Bir armatürün toplam lümeni.":
+    "Total lumens of one luminaire.",
+  "Armatür veri sayfası.":
+    "Luminaire data sheet.",
+  "Aydınlatma verimi":
+    "Utilisation factor",
+  "birimsiz · 0,5–0,8":
+    "dimensionless · 0.5–0.8",
+  "Işığın ne kadarının çalışma yüzeyine ulaştığı.":
+    "How much of the light reaches the working plane.",
+  "Üretici tabloları (oda indeksi + yansıma).":
+    "Manufacturer tables (room index + reflectances).",
+  "Bakım faktörü":
+    "Maintenance factor",
+  "birimsiz · 0,67–0,8":
+    "dimensionless · 0.67–0.8",
+  "Kirlenme ve yaşlanma payı.":
+    "Allowance for dirt and ageing.",
+  "Ortama göre seçilir: temiz 0,8, normal 0,67.":
+    "Chosen by environment: clean 0.8, normal 0.67.",
+  "Motor Anma Akımı (trifaze)":
+    "Motor rated current (three-phase)",
+  "I = P / (√3 · U · cos φ · η) — kablo ve motor koruma bununla seçilir.":
+    "I = P / (√3 · U · cos φ · η) — cable and motor protection are chosen with this.",
+  "Tip etiketindeki güç milden ALINAN mekanik güçtür. Şebekeden çekilen elektrik gücü verim kadar daha büyüktür; akım da buna göre. Kablo kesiti, motor koruma rölesi ayarı ve sigorta hep bu akımdan başlar.":
+    "The power on the nameplate is the mechanical power DELIVERED at the shaft. The electrical power drawn from the grid is larger by the efficiency, and so is the current. Cable cross-section, overload relay setting and breaker all start from this current.",
+  "P'yi watt olarak gir (ya da birimi kW seç). Motor koruma rölesi genelde tam bu anma akımına ayarlanır.":
+    "Enter P in watts (or select kW as the unit). The overload relay is usually set to exactly this rated current.",
+  "Hat akımı (anma)":
+    "Line current (rated)",
+  "Motorun tam yükte şebekeden çektiği akım.":
+    "The current the motor draws from the grid at full load.",
+  "Tip etiketinde de yazar — hesapla karşılaştır.":
+    "Also on the nameplate — compare it with your calculation.",
+  "Mil gücü":
+    "Shaft power",
+  "Tip etiketindeki güç: milden alınan mekanik güç.":
+    "Power on the nameplate: mechanical power delivered at the shaft.",
+  "Tip etiketi (kW).":
+    "Nameplate (kW).",
+  "Akım Taşıma Kapasitesi (düzeltilmiş)":
+    "Current-carrying capacity (corrected)",
+  "I_z = I_r · f₁ · f₂ — tablo değeri ideal dünya içindir.":
+    "I_z = I_r · f₁ · f₂ — table values are for an ideal world.",
+  "Tablodaki akım taşıma değeri (I_r) 30 °C ortam ve tek başına döşenmiş kablo içindir. Gerçekte kablolar demet halinde yatar ve tavan arası yazın 40 °C olur. Her olumsuz koşul bir düşürme faktörü getirir; çarpılınca kablonun GERÇEKTE taşıyabileceği akım (I_z) çıkar. Sonra kural: I_b ≤ I_n ≤ I_z.":
+    "The table value (I_r) assumes 30 °C ambient and a cable laid on its own. In reality cables run in bundles and a loft hits 40 °C in summer. Every unfavourable condition brings a derating factor; multiply them and you get the current the cable can REALLY carry (I_z). Then the rule: I_b ≤ I_n ≤ I_z.",
+  "f₁: ortam sıcaklığı (ör. 40 °C → 0,87), f₂: demetleme (ör. 3 devre yan yana → 0,7). Değerler DIN VDE 0298-4 tablolarından.":
+    "f₁: ambient temperature (e.g. 40 °C → 0.87), f₂: grouping (e.g. 3 circuits side by side → 0.7). Values from the DIN VDE 0298-4 tables.",
+  "Düzeltilmiş taşıma akımı":
+    "Corrected current-carrying capacity",
+  "Kablonun bu döşeme koşullarında sürekli taşıyabileceği akım.":
+    "Current the cable can carry continuously under these installation conditions.",
+  "Tablo değeri":
+    "Table value",
+  "Döşeme türü ve kesite göre tablodaki akım.":
+    "Current from the table for the installation method and cross-section.",
+  "DIN VDE 0298-4 tablosu (döşeme türü + kesit + yüklü damar sayısı).":
+    "DIN VDE 0298-4 table (installation method + cross-section + loaded conductors).",
+  "birimsiz · 30 °C = 1":
+    "dimensionless · 30 °C = 1",
+  "Ortam sıcaklığı 30 °C'den farklıysa.":
+    "If the ambient temperature differs from 30 °C.",
+  "Tablo: 25 °C 1,06 · 35 °C 0,94 · 40 °C 0,87.":
+    "Table: 25 °C 1.06 · 35 °C 0.94 · 40 °C 0.87.",
+  "Demetleme faktörü":
+    "Grouping factor",
+  "birimsiz · tek devre = 1":
+    "dimensionless · single circuit = 1",
+  "Yan yana döşenen devre sayısına göre.":
+    "Depending on the number of circuits laid side by side.",
+  "Tablo: 2 devre 0,8 · 3 devre 0,7 · 4 devre 0,65.":
+    "Table: 2 circuits 0.8 · 3 circuits 0.7 · 4 circuits 0.65.",
+  "Aktif ve Reaktif Akım":
+    "Active and reactive current",
+  "I_w = I · cos φ — akımın sadece bir kısmı iş yapar.":
+    "I_w = I · cos φ — only part of the current does any work.",
+  "Ampermetre toplam (görünür) akımı gösterir. Bunun cos φ kadarı aktif akımdır (I_w) ve iş yapar; geri kalanı reaktif akımdır (I_b = I·sin φ) ve bobinle şebeke arasında gidip gelir. Kabloyu ikisi birlikte ısıtır — kompanzasyonun derdi tam olarak bu.":
+    "The ammeter shows the total (apparent) current. The cos φ share of it is the active current (I_w) and does the work; the rest is reactive current (I_b = I·sin φ), shuttling back and forth between the coil and the grid. Both heat the cable together — and that is exactly what compensation is about.",
+  "Aktif akım":
+    "Active current",
+  "Akımın gerilimle aynı fazdaki, iş yapan kısmı.":
+    "The part of the current in phase with the voltage — the part that does work.",
+  "Görünür akım":
+    "Apparent current",
+  "Ampermetrenin gösterdiği toplam akım.":
+    "Total current shown by the ammeter.",
+  "Pens ampermetreyle ölç.":
+    "Measure with a clamp meter.",
+  "Empedans (seri R + X)":
+    "Impedance (series R + X)",
+  "Z = √(R² + X²) — dirençler AC'de Pisagor'la toplanır.":
+    "Z = √(R² + X²) — in AC, resistances add up the Pythagoras way.",
+  "AC devresinde omik direnç ile reaktans aynı fazda değildir; düz toplanmazlar, dik üçgenin kenarları gibi birleşirler. Sonuç, devrenin AC'ye gösterdiği toplam direnç: empedans Z. I = U / Z ve cos φ = R / Z.":
+    "In an AC circuit, ohmic resistance and reactance are not in phase; they don't simply add, they combine like the sides of a right triangle. The result is the circuit's total opposition to AC: the impedance Z. I = U / Z and cos φ = R / Z.",
+  "Seri RL ve seri RC için geçerli. Hem bobin hem kondansatör varsa X = X_L − X_C al (biri diğerini götürür).":
+    "Valid for series RL and series RC. If there's both a coil and a capacitor, use X = X_L − X_C (one cancels the other).",
+  "Empedans":
+    "Impedance",
+  "AC'deki toplam direnç.":
+    "Total resistance in AC.",
+  "Z = U / I ile ölçümden ya da bu formülle.":
+    "From a measurement with Z = U / I, or with this formula.",
+  "Reaktans":
+    "Reactance",
+  "Bobinin ya da kondansatörün AC'ye gösterdiği 'ısıtmayan' direnç. Enerjiyi yakmaz, sadece ileri geri taşır.":
+    "The 'non-heating' resistance a coil or capacitor offers to AC. It doesn't burn energy, it just carries it back and forth.",
+  "X_L = 2π·f·L ya da X_C = 1/(2π·f·C) kartlarından.":
+    "From the X_L = 2π·f·L or X_C = 1/(2π·f·C) cards.",
+  "Rezonans Frekansı":
+    "Resonant frequency",
+  "f₀ = 1 / (2π·√(L·C)) — X_L ile X_C'nin eşit olduğu an.":
+    "f₀ = 1 / (2π·√(L·C)) — the moment X_L equals X_C.",
+  "Frekans arttıkça X_L büyür, X_C küçülür. Bir noktada ikisi eşitlenir ve birbirini götürür: rezonans. Seri devrede empedans minimuma iner (akım tavan yapar), paralel devrede maksimuma çıkar. Radyo istasyonu seçmek de, kompanzasyon tesislerinde harmonik sorunları da buradan çıkar.":
+    "As frequency rises, X_L grows and X_C shrinks. At some point they are equal and cancel out: resonance. In a series circuit the impedance drops to a minimum (current peaks), in a parallel circuit it rises to a maximum. Tuning in a radio station and harmonic trouble in compensation systems both come from here.",
+  "Rezonans frekansı":
+    "Resonant frequency",
+  "X_L = X_C olduğu frekans.":
+    "The frequency at which X_L = X_C.",
+  "Zaman Sabiti (RC)":
+    "Time constant (RC)",
+  "τ = R · C — 5τ sonra kondansatör 'dolu' sayılır.":
+    "τ = R · C — after 5τ the capacitor counts as 'full'.",
+  "Kondansatör bir direnç üzerinden dolarken gerilimi üstel artar. τ kadar sürede son değerin %63'üne, 5τ'da %99'una ulaşır. Zaman rölelerinin, yumuşak kalkış devrelerinin ve filtrelerin hepsi bu süreye göre tasarlanır. Bobinde aynı mantık: τ = L / R.":
+    "A capacitor charging through a resistor builds up its voltage exponentially. After τ it reaches 63 % of the final value, after 5τ 99 %. Time relays, soft-start circuits and filters are all designed around this time. Same logic for a coil: τ = L / R.",
+  "Zaman sabiti":
+    "Time constant",
+  "Dolma/boşalmanın hızı. 1τ → %63, 5τ → ~%100.":
+    "Speed of charging/discharging. 1τ → 63 %, 5τ → ~100 %.",
+  "Bu formülle hesaplanır; osiloskopla da ölçülür.":
+    "Calculated with this formula; can also be measured with an oscilloscope.",
+  "Trafo Verimi (kayıplarla)":
+    "Transformer efficiency (with losses)",
+  "η = P₂ / (P₂ + P_Fe + P_Cu) — demir ve bakırın faturası.":
+    "η = P₂ / (P₂ + P_Fe + P_Cu) — the bill for iron and copper.",
+  "Trafonun iki kaybı var: demir kaybı (P_Fe) çekirdekte, gerilim olduğu sürece hep vardır — yük olsun olmasın. Bakır kaybı (P_Cu) sargılarda, yük akımıyla artar. Verim, verilen gücün bunların toplamına oranıdır. Büyük trafolarda %98'i geçer; elektrikteki en verimli makineler bunlar.":
+    "A transformer has two losses: iron loss (P_Fe) in the core, present as long as there's voltage — load or no load. Copper loss (P_Cu) in the windings grows with the load current. Efficiency is the output power divided by output plus both losses. Large transformers exceed 98 %; they are the most efficient machines in electrical engineering.",
+  "Verilen güç":
+    "Output power",
+  "Sekonderden yüke verilen aktif güç.":
+    "Active power delivered from the secondary to the load.",
+  "Sekonder tarafta ölç: U₂ · I₂ · cos φ.":
+    "Measure on the secondary side: U₂ · I₂ · cos φ.",
+  "Demir kaybı":
+    "Iron loss",
+  "Çekirdekteki histerezis ve girdap akımı kayıpları — boşta da var.":
+    "Hysteresis and eddy-current losses in the core — present even at no load.",
+  "Boşta çalışma deneyi (Leerlaufversuch) / veri sayfası.":
+    "No-load test (Leerlaufversuch) / data sheet.",
+  "Bakır kaybı":
+    "Copper loss",
+  "Sargı dirençlerinde ısıya dönen güç — akımın karesiyle artar.":
+    "Power turned into heat in the winding resistances — rises with the square of the current.",
+  "Kısa devre deneyi (Kurzschlussversuch) / veri sayfası.":
+    "Short-circuit test (Kurzschlussversuch) / data sheet.",
+  "Yüke Göre Bakır Kaybı":
+    "Copper loss at partial load",
+  "P_Cu = P_CuN · (S / S_N)² — yarı yükte dörtte bir kayıp.":
+    "P_Cu = P_CuN · (S / S_N)² — half load, a quarter of the loss.",
+  "Bakır kaybı akımın karesiyle değişir. Trafo yarı yükte çalışıyorsa bakır kaybı anma değerinin dörtte birine iner. Bu yüzden trafoların verimi tam yükte değil, genelde %40–60 yük civarında en yüksektir (bakır kaybı demir kaybına eşit olduğunda).":
+    "Copper loss changes with the square of the current. At half load it drops to a quarter of the rated value. That's why a transformer's efficiency peaks not at full load but usually around 40–60 % load (where copper loss equals iron loss).",
+  "Bakır kaybı (anlık)":
+    "Copper loss (actual)",
+  "O anki yükte sargılarda kaybolan güç.":
+    "Power lost in the windings at the current load.",
+  "Anma bakır kaybı":
+    "Rated copper loss",
+  "Tam yükteki bakır kaybı.":
+    "Copper loss at full load.",
+  "Veri sayfası / kısa devre deneyi.":
+    "Data sheet / short-circuit test.",
+  "O anki görünür güç":
+    "Current apparent power",
+  "Trafonun şu an verdiği görünür güç.":
+    "Apparent power the transformer is delivering right now.",
+  "Ölç ya da hesapla: √3 · U · I.":
+    "Measure or calculate: √3 · U · I.",
+  "Anma görünür gücü":
+    "Rated apparent power",
+  "Trafonun etiket gücü.":
+    "The transformer's nameplate power.",
+  "Tip etiketi (kVA).":
+    "Nameplate (kVA).",
+  "Enerji Maliyeti":
+    "Energy cost",
+  "K = P · t · k — wattın cüzdandaki karşılığı.":
+    "K = P · t · k — what a watt means for your wallet.",
+  "Tüketilen enerji (kWh) ile birim fiyatın çarpımı. Bekleme modundaki 10 W'lık bir cihaz yılda 87,6 kWh yer — 30 ct/kWh ile ~26 €. 'Küçük şeyler' fatura üzerinde hiç de küçük değildir.":
+    "Energy consumed (kWh) times the unit price. A device idling on 10 W standby eats 87.6 kWh a year — about €26 at 30 ct/kWh. 'Little things' are anything but little on the bill.",
+  "Maliyet":
+    "Cost",
+  "Ödenecek tutar.":
+    "The amount to pay.",
+  "Cihazın çektiği güç.":
+    "Power drawn by the device.",
+  "Tip etiketi ya da enerji ölçer priz.":
+    "Nameplate, or an energy-meter plug.",
+  "Çalışma süresi.":
+    "Operating time.",
+  "Gün × saat. Yıl = 8760 h.":
+    "Days × hours. A year = 8760 h.",
+  "Birim fiyat":
+    "Unit price",
+  "Bir kWh'in fiyatı.":
+    "Price of one kWh.",
+  "Elektrik faturası (ct/kWh).":
+    "Electricity bill (ct/kWh).",
+  "Eş Zamanlılık Faktörü":
+    "Diversity (simultaneity) factor",
+  "P_max = g · ΣP — her şey aynı anda açılmaz (umarız).":
+    "P_max = g · ΣP — not everything is on at once (hopefully).",
+  "Bir binadaki tüm cihazların gücü toplanırsa absürt bir rakam çıkar; ama fırın, çamaşır makinesi, ısıtıcı ve kaynak makinesi aynı anda tam güçte çalışmaz. Eş zamanlılık faktörü g, gerçekte beklenen en yüksek gücü verir. Ana hat ve sayaç sigortası buna göre boyutlandırılır.":
+    "Add up the power of every device in a building and you get an absurd number; but the oven, washing machine, heater and welder don't all run flat out at the same moment. The simultaneity factor g gives the realistic peak. The supply line and meter fuse are sized for that.",
+  "Konutlarda g çoğunlukla 0,3–0,6. Daire sayısı arttıkça g düşer (DIN 18015-1 eğrileri).":
+    "In homes g is mostly 0.3–0.6. The more flats, the lower g gets (DIN 18015-1 curves).",
+  "Beklenen en yüksek güç":
+    "Expected peak power",
+  "Aynı anda çekilmesi beklenen güç.":
+    "Power expected to be drawn simultaneously.",
+  "Eş zamanlılık faktörü":
+    "Simultaneity factor",
+  "birimsiz · 0 ile 1 arası":
+    "dimensionless · between 0 and 1",
+  "Kurulu gücün ne kadarının aynı anda çalıştığı.":
+    "How much of the installed power runs at the same time.",
+  "Normlar / deneyim değerleri (DIN 18015).":
+    "Standards / empirical values (DIN 18015).",
+  "Kurulu toplam güç":
+    "Total installed power",
+  "Tüm cihazların toplam gücü.":
+    "Combined power of all devices.",
+  "Cihaz listesi topla.":
+    "Add up the device list.",
+  "Su Isıtma Süresi":
+    "Water heating time",
+  "t = m · c · Δϑ / (P · η) — boylerin sabır testi.":
+    "t = m · c · Δϑ / (P · η) — the water heater's patience test.",
+  "Boylerdeki suyu ısıtmak için gereken enerji m·c·Δϑ'dır; ısıtıcı gücüne (ve verime) bölünce süre çıkar. Su için c = 1,163 Wh/(kg·K): bir litre suyu 1 derece ısıtmak ~1,16 Wh ister. 80 litreyi 10'dan 60 °C'ye 2 kW ile ısıtmak ~2,5 saat sürer — sabah duşunu planlarken işe yarar.":
+    "The energy needed to heat the water in a tank is m·c·Δϑ; divide by the heater power (and efficiency) and you get the time. For water c = 1.163 Wh/(kg·K): heating one litre by one degree takes ~1.16 Wh. Heating 80 litres from 10 to 60 °C with 2 kW takes ~2.5 hours — handy when planning the morning shower.",
+  "Isıtma süresi":
+    "Heating time",
+  "Hedef sıcaklığa ulaşma süresi.":
+    "Time to reach the target temperature.",
+  "Su kütlesi":
+    "Mass of water",
+  "Isıtılacak su miktarı (1 litre ≈ 1 kg).":
+    "Amount of water to heat (1 litre ≈ 1 kg).",
+  "Boyler hacmi.":
+    "Tank volume.",
+  "Özgül ısı":
+    "Specific heat capacity",
+  "Su için 1,163 Wh/(kg·K).":
+    "1.163 Wh/(kg·K) for water.",
+  "Su: 1,163 — tablolardan.":
+    "Water: 1.163 — from tables.",
+  "Son sıcaklık − ilk sıcaklık.":
+    "Final temperature − initial temperature.",
+  "Ör. 60 °C − 10 °C = 50 K.":
+    "E.g. 60 °C − 10 °C = 50 K.",
+  "Isıtıcının elektrik gücü.":
+    "Electrical power of the heater.",
+  "Isıtma verimi (boylerde ~0,95).":
+    "Heating efficiency (~0.95 for a water heater).",
+  "Veri sayfası; bilinmiyorsa 0,9–0,95.":
+    "Data sheet; if unknown, 0.9–0.95.",
+  "Güneş Paneli Yıllık Üretimi":
+    "Annual solar yield",
+  "W = P_peak · y — kWp çarpı güneşin cömertliği.":
+    "W = P_peak · y — kWp times the sun's generosity.",
+  "PV sisteminin gücü kWp (kilowatt-peak) olarak verilir: standart test koşullarında (1000 W/m², 25 °C) verdiği güç. Yıllık üretimi bulmak için bunu bölgenin özgül verimiyle (kWh/kWp) çarp. Almanya'da güneye bakan bir çatıda yaklaşık 900–1100 kWh/kWp — yani 10 kWp'lik sistem yılda ~10.000 kWh.":
+    "A PV system's power is given in kWp (kilowatt-peak): its output under standard test conditions (1000 W/m², 25 °C). For the annual yield, multiply by the location's specific yield (kWh/kWp). In Germany a south-facing roof gives roughly 900–1100 kWh/kWp — so a 10 kWp system makes ~10,000 kWh a year.",
+  "Yıllık üretim":
+    "Annual yield",
+  "Bir yılda üretilen enerji.":
+    "Energy produced in one year.",
+  "Bu formülle tahmin edilir; inverter ekranında gerçek değer.":
+    "Estimated with this formula; the real value is on the inverter display.",
+  "Tepe güç":
+    "Peak power",
+  "Panellerin toplam STC gücü.":
+    "Total STC power of the modules.",
+  "Panel adedi × panel gücü (ör. 24 × 420 Wp = 10 kWp).":
+    "Number of modules × module power (e.g. 24 × 420 Wp = 10 kWp).",
+  "Özgül verim":
+    "Specific yield",
+  "Konum, yön ve eğime bağlı yıllık verim.":
+    "Annual yield depending on location, orientation and tilt.",
+  "Güneş haritaları / PVGIS. Almanya ≈ 950 kWh/kWp.":
+    "Solar maps / PVGIS. Germany ≈ 950 kWh/kWp.",
+  "Röle çeşitleri ve ışık kaynakları":
+    "Relay types and light sources",
+  "Wechsler (11-12-14) tek kontakla iki yolu yönetir: bobin düşükken 11-12, çekince 11-14. Darbe rölesi (Stromstoßrelais) her kısa darbede konum değiştirip orada kalır — koridordaki beş butonun tek röleyle lamba yakmasının sırrı. LED, ışık yayan diyottur (oklar dışarı bakar); floresan lamba uzun tüp sembolüyle çizilir.":
+    "A changeover contact (11-12-14) handles two paths with one contact: 11-12 while the coil is off, 11-14 once it picks up. An impulse relay (Stromstoßrelais) changes position on every short pulse and stays there — the secret behind five corridor buttons switching one light with a single relay. An LED is a light-emitting diode (arrows pointing outwards); a fluorescent lamp is drawn as a long tube.",
+  "Güç devresi (Laststromkreis)":
+    "Power circuit (Laststromkreis)",
+  "Güç devresinde her şey üç kutupludur: motor koruma şalteri (Q), kontaktörün ana kontakları (1-2, 3-4, 5-6), termik motor koruma rölesi (F) ve trifaze motor (U1 V1 W1 / U2 V2 W2). Kesik çizgi, üç kutbun mekanik olarak birlikte hareket ettiğini gösterir. Motor koruma rölesinin kendisi güç devresinde, yardımcı kontağı (95-96) kumanda devresindedir.":
+    "In the power circuit everything is three-pole: motor protection switch (Q), the contactor's main contacts (1-2, 3-4, 5-6), the thermal overload relay (F) and the three-phase motor (U1 V1 W1 / U2 V2 W2). The dashed line shows that the three poles move together mechanically. The overload relay itself sits in the power circuit; its auxiliary contact (95-96) sits in the control circuit.",
+  "Motor Kalkış Devreleri":
+    "Motor starting circuits",
+  "Direkt, ters yön, yıldız-üçgen — kontaktörlerin koreografisi.":
+    "Direct, reversing, star-delta — the choreography of contactors.",
+  "Kontaktör devresi her zaman iki parçadır. Steuerstromkreis (kumanda devresi) düşünen kısımdır: butonlar, bobinler, kilitlemeler, genelde 230 V ya da 24 V. Laststromkreis (güç devresi) iş yapan kısımdır: 400 V, ana kontaklar, motor. İkisi sadece etiketle bağlıdır — kumandadaki K1 bobini çekince güç devresindeki K1 ana kontakları kapanır. Playground'daki 'Last + Steuer' modu tam olarak bunu yan yana gösterir.":
+    "A contactor circuit always comes in two parts. The Steuerstromkreis (control circuit) is the thinking part: buttons, coils, interlocks, usually 230 V or 24 V. The Laststromkreis (power circuit) is the working part: 400 V, main contacts, motor. The two are linked only by labels — when coil K1 in the control circuit picks up, the K1 main contacts in the power circuit close. The Playground's 'Power + Control' mode shows exactly this side by side.",
+  "Direktanlauf":
+    "Direct-on-line start (Direktanlauf)",
+  "En basit yol: S1'e bas, K1 çeker ve kendi 13-14 kontağıyla kendini besler (Selbsthaltung), motor doğrudan şebekeye bağlanır. Ucuz ve sağlam, ama kalkışta anma akımının 5–8 katı çekilir. Küçük motorlar için ideal; büyüklerde şebeke işletmecisi kaşlarını çatar. Motor koruma rölesi (F) aşırı yükte 95-96 kontağını açar ve kumandayı keser — motoru koruyan o, sigorta değil.":
+    "The simplest way: press S1, K1 picks up and feeds itself through its own 13-14 contact (Selbsthaltung), and the motor is connected straight to the grid. Cheap and robust, but it draws 5–8 times the rated current when starting. Ideal for small motors; with big ones the grid operator frowns. The overload relay (F) opens its 95-96 contact on overload and cuts the control circuit — it protects the motor, not the fuse.",
+  "Wendeschützschaltung — dönüş yönü":
+    "Reversing contactor circuit — direction of rotation",
+  "Motorun yönünü değiştirmek için iki fazı yer değiştirmek yeter: döner alan ters döner. K1 sağa, K2 sola çalıştırır; K2 güç devresinde L1 ile L3'ü çaprazlar. İkisi aynı anda çekerse L1–L3 kısa devresi olur — bu yüzden kontaktörler birbirini açıcı kontaklarıyla kilitler (Schützverriegelung). Ciddi tesislerde buna bir de buton kilitlemesi (Tasterverriegelung) eklenir: çift dikiş.":
+    "To reverse a motor, swapping two phases is enough: the rotating field turns the other way. K1 runs it clockwise, K2 anticlockwise; in the power circuit K2 swaps L1 and L3. If both picked up at once, L1–L3 would be short-circuited — so the contactors lock each other out with their break contacts (Schützverriegelung). Serious installations add a push-button interlock (Tasterverriegelung) as well: belt and braces.",
+  "Stern-Dreieck-Anlauf":
+    "Star-delta starting",
+  "Normalde üçgende çalışan motor yıldızda kalkar: her sargıya 400 V yerine 230 V düşer, şebekeden çekilen kalkış akımı üçte bire iner. Bedeli, moment de üçte bire düşer. Sıra şöyle: K1 (şebeke) + K3 (yıldız) çeker, motor hızlanır; zaman rölesi KT1 dolunca K3 düşer, K2 (üçgen) çeker. K2 ile K3 asla birlikte çekmemeli — yıldız köprüsü ile üçgen bağlantısı aynı anda = kısa devre.":
+    "A motor that normally runs in delta starts in star: each winding gets 230 V instead of 400 V, and the starting current drawn from the grid drops to a third. The price is that torque drops to a third too. The sequence: K1 (mains) + K3 (star) pick up, the motor speeds up; when time relay KT1 runs out, K3 drops and K2 (delta) picks up. K2 and K3 must never be on together — star bridge and delta connection at the same time = short circuit.",
+  "Yıldız (Y)":
+    "Star (Y)",
+  "Üçgen (Δ)":
+    "Delta (Δ)",
+  "Sargı gerilimi":
+    "Winding voltage",
+  "Şebeke kalkış akımı":
+    "Grid starting current",
+  "I_A / 3":
+    "I_A / 3",
+  "I_A":
+    "I_A",
+  "Kalkış momenti":
+    "Starting torque",
+  "M_A / 3":
+    "M_A / 3",
+  "M_A":
+    "M_A",
+  "Ne zaman?":
+    "When?",
+  "Kalkış":
+    "Starting",
+  "Çalışma":
+    "Running",
+  "Yumuşak yolverici ve frekans konvertörü":
+    "Soft starter and frequency inverter",
+  "Sanftanlasser tristörlerle gerilimi yavaşça yükseltir: akım darbesi yok, ama devir ayarı da yok. Frekans konvertörü (Frequenzumrichter) hem kalkışı yumuşatır hem devri istediğin değere getirir: şebekeyi doğrultur (B6U, ~540 V DC), sonra istediği frekansta yeni bir trifaze üretir. U/f oranını sabit tutar ki motor doyuma gitmesin. Bugün yeni tesislerde yıldız-üçgenin yerini büyük ölçüde FU aldı — ama sınavda yıldız-üçgen hâlâ başrolde.":
+    "A soft starter (Sanftanlasser) ramps the voltage up gently with thyristors: no current surge, but no speed control either. A frequency inverter (Frequenzumrichter) softens the start AND sets any speed you want: it rectifies the grid (B6U, ~540 V DC), then builds a new three-phase supply at whatever frequency it needs, keeping V/f constant so the motor doesn't saturate. Today the inverter has largely replaced star-delta in new installations — but in the exam star-delta still plays the lead.",
+  "İlk Muayene (VDE 0100-600)":
+    "Initial verification (VDE 0100-600)",
+  "Gözle bak, dene, ölç — sonra imzala.":
+    "Look, test, measure — then sign.",
+  "Yeni ya da değiştirilmiş her tesisat, işletmeye alınmadan önce muayene edilir ve sonuç protokole yazılır. Sıra kutsaldır: önce Besichtigen (gözle kontrol), sonra Erproben (çalıştırarak deneme) ve Messen (ölçme). Gerilim vermeden yapılabilecek her şey gerilim vermeden yapılır — mantık basit: hatayı sen bul, müşteri değil.":
+    "Every new or modified installation is inspected before it goes into service, and the results are written into a report. The order is sacred: first Besichtigen (visual inspection), then Erproben (functional testing) and Messen (measuring). Everything that can be done without voltage is done without voltage — the logic is simple: you find the fault, not the customer.",
+  "1 · Besichtigen — gözle kontrol":
+    "1 · Besichtigen — visual inspection",
+  "Gerilimsiz yapılır. Doğru kablo ve kesit mi seçilmiş, koruma elemanları doğru mu, iletken renkleri (yeşil-sarı sadece PE!) doğru mu, klemensler sıkı mı, kapaklar ve dokunma koruması yerinde mi, banyo bölgeleri ve yangın önlemleri tutuyor mu, devreler panoda etiketli mi. Gözle görülen hatayı ölçü aletine bırakmak, sınavda da puan kaybettirir.":
+    "Done de-energised. Were the right cable and cross-section chosen, are the protective devices right, are the conductor colours right (green-yellow is PE only!), are terminals tight, are covers and shock protection in place, do bathroom zones and fire precautions hold, are the circuits labelled in the panel. Leaving a visible fault to the test instrument costs points in the exam too.",
+  "2 · Messen — ölçümler sırasıyla":
+    "2 · Messen — measurements in order",
+  "Ölçümler belli bir sırayla yapılır, çünkü her biri bir sonrakinin güvenliğini sağlar. Örneğin izolasyon ölçülmeden gerilim verilmez; PE sürekliliği doğrulanmadan çevrim empedansı ölçülmez.":
+    "The measurements follow a fixed order, because each one makes the next one safe. For example, no voltage is applied before insulation has been measured; loop impedance isn't measured before PE continuity is confirmed.",
+  "Ölçüm":
+    "Measurement",
+  "Ne kontrol edilir?":
+    "What does it check?",
+  "Tipik sınır":
+    "Typical limit",
+  "Durchgängigkeit PE / Potentialausgleich":
+    "PE continuity / equipotential bonding",
+  "Koruma iletkeni her gövdeye kesintisiz ulaşıyor mu":
+    "Does the protective conductor reach every exposed part without a break",
+  "Küçük, makul değer (≈ < 1 Ω)":
+    "Small, plausible value (≈ < 1 Ω)",
+  "Isolationswiderstand":
+    "Insulation resistance",
+  "Aktif iletkenler arası ve PE'ye karşı yalıtım":
+    "Insulation between live conductors and against PE",
+  "≥ 1 MΩ (500 V DC ölçüm gerilimi)":
+    "≥ 1 MΩ (500 V DC test voltage)",
+  "Schleifenimpedanz Z_S":
+    "Loop impedance Z_S",
+  "Hata akımı sigortayı zamanında attırır mı":
+    "Will the fault current trip the breaker in time",
+  "Z_S ≤ U₀ / I_a":
+    "Z_S ≤ U₀ / I_a",
+  "RCD testi":
+    "RCD test",
+  "Açma akımı ve açma süresi":
+    "Tripping current and tripping time",
+  "I_Δ ≤ I_Δn, t ≤ 300 ms (genel tip)":
+    "I_Δ ≤ I_Δn, t ≤ 300 ms (general type)",
+  "Erdungswiderstand (TT)":
+    "Earth resistance (TT)",
+  "Toprak elektrodu yeterli mi":
+    "Is the earth electrode good enough",
+  "R_A ≤ 50 V / I_Δn":
+    "R_A ≤ 50 V / I_Δn",
+  "Drehfeld":
+    "Rotating field",
+  "Prizlerde ve motorlarda faz sırası":
+    "Phase sequence at sockets and motors",
+  "Sağ döner alan":
+    "Clockwise rotating field",
+  "3 · Erproben — fonksiyon denemesi":
+    "3 · Erproben — functional testing",
+  "RCD'nin test butonu, acil durdurma, kilitlemeler, kontaktör devreleri, zaman röleleri: hepsi bir kez gerçekten çalıştırılır. Wendeschütz'te iki butona birlikte basmayı denemek dahil — kilitleme çalışmıyorsa bunu müşteriden önce sen öğren.":
+    "The RCD's test button, emergency stop, interlocks, contactor circuits, time relays: each is actually operated once. That includes pressing both buttons of a reversing circuit at the same time — if the interlock doesn't work, better you find out than the customer.",
+  "4 · Dokumentation — protokol":
+    "4 · Dokumentation — the report",
+  "Tüm ölçüm değerleri, kullanılan ölçü aletleri ve sonuç bir muayene protokolüne yazılır, imzalanır ve müşteriye verilir. Protokol yoksa hukuken muayene de yoktur. Sınavda 'neden ölçtün?' sorusu kadar 'nereye yazdın?' sorusu da gelir.":
+    "All measured values, the instruments used and the result go into an inspection report, which is signed and handed to the customer. No report, legally no inspection. In the exam, 'where did you write it down?' comes up as often as 'why did you measure it?'.",
+  "PLC Temelleri":
+    "PLC basics",
+  "Kablolarla değil, programla kurulan kontaktör devresi.":
+    "A contactor circuit built with a program instead of wires.",
+  "SPS (PLC), kontaktör mantığını kablolardan alıp yazılıma taşır. Butonlar ve sensörler girişlere (E / I), kontaktörler ve lambalar çıkışlara (A / Q) bağlanır; aradaki bütün 'eğer şuna basıldıysa ve şu kapalıysa' mantığı programdadır. Devreyi değiştirmek için tornavida değil klavye gerekir.":
+    "A PLC (SPS) takes contactor logic out of the wiring and puts it into software. Buttons and sensors go to the inputs (E / I), contactors and lamps to the outputs (A / Q); all the 'if this is pressed and that is closed' logic in between lives in the program. To change the circuit you need a keyboard, not a screwdriver.",
+  "EVA prensibi ve tarama döngüsü":
+    "IPO principle and scan cycle",
+  "Eingabe → Verarbeitung → Ausgabe. PLC döngü halinde çalışır: önce tüm girişlerin anlık görüntüsünü alır (Prozessabbild), sonra programı baştan sona bir kez işler, en sonda sonuçları çıkışlara yazar. Bir döngü birkaç milisaniye sürer ve sonsuza kadar tekrarlanır.":
+    "Eingabe → Verarbeitung → Ausgabe (input → processing → output). A PLC runs in a cycle: first it takes a snapshot of all inputs (process image), then runs through the program once from top to bottom, and finally writes the results to the outputs. One cycle takes a few milliseconds and repeats forever.",
+  "Programlama dilleri (IEC 61131-3)":
+    "Programming languages (IEC 61131-3)",
+  "Aynı mantık farklı kılıklarda yazılabilir. Elektrikçiler için en tanıdık olanı KOP'tur: Stromlaufplan'ın yan yatırılmış hali. FUP, Logik konusundaki kapı sembolleriyle çizilir — Playground'un Logik modu tam olarak bu.":
+    "The same logic can be written in different guises. The most familiar for electricians is LD (KOP): a circuit diagram turned on its side. FBD (FUP) is drawn with the gate symbols from the Logic topic — the Playground's Logic mode is exactly that.",
+  "Dil":
+    "Language",
+  "Görünüş":
+    "Looks like",
+  "Kime yakın?":
+    "Closest to?",
+  "KOP / LD (Kontaktplan)":
+    "LD / KOP (ladder diagram)",
+  "Kontak ve bobin sembolleri, raylar arasında":
+    "Contact and coil symbols between rails",
+  "Kontaktör devresi bilenlere":
+    "People who know contactor circuits",
+  "FUP / FBD (Funktionsplan)":
+    "FBD / FUP (function block diagram)",
+  "&, ≥1 kutuları":
+    "&, ≥1 boxes",
+  "Logik kapı bilenlere":
+    "People who know logic gates",
+  "Satır satır komutlar (U, O, =)":
+    "Line-by-line instructions (U, O, =)",
+  "Eski Siemens dünyası":
+    "The old Siemens world",
+  "ST (Strukturierter Text)":
+    "ST (Structured Text)",
+  "Pascal benzeri metin: IF … THEN":
+    "Pascal-like text: IF … THEN",
+  "Programcılara":
+    "Programmers",
+  "Altın kural: STOP butonu açıcıdır":
+    "Golden rule: the STOP button is a break contact",
+  "Durdurma butonu PLC girişine AÇICI (Öffner) olarak bağlanır ve programda '1 ise çalışabilir' diye sorgulanır. Neden? Kablo koparsa giriş 0 olur ve makine durur (Drahtbruchsicherheit). Kapayıcı bağlasaydın kopuk kablo fark edilmezdi — ta ki biri acil durumda butona basıp hiçbir şey olmadığını görene kadar. Acil durdurma (Not-Halt) zaten PLC'ye güvenmez: güç devresini donanımla da keser.":
+    "The stop button is wired to the PLC input as a BREAK contact (Öffner) and the program asks 'is it 1, then we may run'. Why? If the wire breaks, the input goes to 0 and the machine stops (Drahtbruchsicherheit, wire-break safety). Had you wired a make contact, a broken wire would go unnoticed — until someone presses the button in an emergency and nothing happens. The emergency stop (Not-Halt) doesn't trust the PLC anyway: it also cuts the power circuit in hardware.",
+  "Güneş Enerjisi Sistemleri":
+    "Solar power systems",
+  "Çatıda santral — ama DC tarafı şaka kaldırmaz.":
+    "A power plant on your roof — but the DC side is no joke.",
+  "PV hücresi ışığı doğrudan doğru akıma çevirir. Hücreler modülde, modüller seri bağlanarak string'de birleşir; string gerilimi kolayca 600–1000 V DC'ye çıkar. İnverter (Wechselrichter) bu DC'yi şebekeye uygun 230/400 V AC'ye çevirir. Üretilen enerji önce evde tüketilir, fazlası şebekeye ya da bataryaya gider.":
+    "A PV cell turns light directly into direct current. Cells are combined in modules, and modules connected in series form a string; string voltage easily reaches 600–1000 V DC. The inverter (Wechselrichter) turns this DC into grid-compatible 230/400 V AC. The energy produced is used in the house first; the surplus goes to the grid or a battery.",
+  "Önemli büyüklükler":
+    "Key quantities",
+  "Modül veri sayfasındaki değerler standart test koşullarında (STC: 1000 W/m², 25 °C) ölçülür. Soğuk kış sabahında modül gerilimi STC değerinin üstüne çıkar — inverterin giriş sınırı bu yüzden en düşük sıcaklığa göre kontrol edilir.":
+    "The values on a module data sheet are measured under standard test conditions (STC: 1000 W/m², 25 °C). On a cold winter morning the module voltage rises above its STC value — which is why the inverter's input limit is checked against the lowest temperature.",
+  "Kısaltma":
+    "Abbreviation",
+  "Anlamı":
+    "Meaning",
+  "P_MPP (Wp)":
+    "P_MPP (Wp)",
+  "En yüksek güç noktasındaki güç — modülün 'etiket gücü'":
+    "Power at the maximum power point — the module's 'label power'",
+  "U_OC":
+    "U_OC",
+  "Açık devre gerilimi (Leerlaufspannung) — yük yokken":
+    "Open-circuit voltage (Leerlaufspannung) — with no load",
+  "I_SC":
+    "I_SC",
+  "Kısa devre akımı — I_MPP'den sadece biraz büyük!":
+    "Short-circuit current — only slightly bigger than I_MPP!",
+  "U_MPP / I_MPP":
+    "U_MPP / I_MPP",
+  "En yüksek güç noktasındaki gerilim ve akım":
+    "Voltage and current at the maximum power point",
+  "MPP-Tracker":
+    "MPP tracker",
+  "İnverterin her an en verimli çalışma noktasını arayan beyni":
+    "The inverter's brain that keeps hunting for the most efficient operating point",
+  "DC tarafının tehlikesi":
+    "The danger on the DC side",
+  "Güneş varken modüller kapatılamaz: string'in uçlarında her zaman yüksek DC gerilim vardır. DC arkı sıfır geçişi olmadığı için kendiliğinden sönmez — yük altında DC fiş çekmek ark ve yangın demektir. Kısa devre akımı anma akımından sadece biraz büyük olduğundan sigorta da kurtarmaz. Bu yüzden DC tarafında yalnızca DC için onaylı ayırıcılar ve fişler kullanılır, bağlantı sırası kurallara göre yapılır.":
+    "While the sun shines, modules can't be switched off: there's always a high DC voltage at the ends of a string. A DC arc has no zero crossing, so it doesn't go out by itself — pulling a DC connector under load means an arc and a fire. And because the short-circuit current is only slightly above the rated current, a fuse won't save you either. That's why only DC-rated isolators and connectors are used on the DC side, and connections are made in the prescribed order.",
+  "AC tarafı ve koruma":
+    "AC side and protection",
+  "İnverter AC tarafta kendi devresiyle bağlanır, RCD tipi inverter üreticisinin istediği gibi seçilir (çoğu zaman Tip A yeter, bazen Tip B). Şebeke kesildiğinde inverter otomatik olarak ayrılmak zorundadır (NA-Schutz) — hat üzerinde çalışan teknisyen, çatından gelen sürpriz gerilime çarpılmasın diye.":
+    "On the AC side the inverter gets its own circuit, and the RCD type follows the inverter manufacturer's requirement (Type A is often enough, sometimes Type B). When the grid fails, the inverter must disconnect automatically (NA-Schutz) — so the technician working on the line doesn't get a surprise voltage from your roof.",
+  "Aşırı Gerilim Koruması":
+    "Surge protection",
+  "Yıldırım bir kez düşer, ama elektroniği tek seferde götürür.":
+    "Lightning strikes once, but it takes the electronics in one go.",
+  "Aşırı gerilimler iki yerden gelir: yıldırımdan (doğrudan ya da yakına düşüp hatta indüklenen) ve şebekedeki anahtarlama olaylarından. Mikrosaniyeler sürer ama binlerce volta ulaşır; bir televizyonun, ısı pompasının ya da inverterin elektroniği için bu kadarı yeter. Koruma, darbeyi kontrollü şekilde toprağa saptırmaktır.":
+    "Overvoltages come from two places: lightning (striking directly, or nearby and inducing into the lines) and switching events in the grid. They last microseconds but reach thousands of volts; that's enough for the electronics of a TV, a heat pump or an inverter. Protection means diverting the surge to earth in a controlled way.",
+  "Kademeli koruma: Tip 1 · 2 · 3":
+    "Staged protection: Type 1 · 2 · 3",
+  "Tek bir cihaz her şeyi yapamaz; koruma kademeli kurulur ve her kademe bir öncekinden kalan enerjiyi azaltır. Kaba koruma bina girişinde, ince koruma cihazın hemen yanında durur.":
+    "No single device can do everything; protection is built up in stages, and each stage reduces the energy left over from the previous one. Coarse protection sits at the building entrance, fine protection right next to the device.",
+  "Tip":
+    "Type",
+  "Yer":
+    "Location",
+  "Tip 1 (eski B)":
+    "Type 1 (formerly B)",
+  "Ana dağıtım / bina girişi":
+    "Main distribution / building entrance",
+  "Yıldırım akımı taşıyıcı — dış paratoner varsa şart":
+    "Lightning current arrester — mandatory if there's an external lightning protection system",
+  "Tip 2 (eski C)":
+    "Type 2 (formerly C)",
+  "Alt dağıtım panoları":
+    "Sub-distribution boards",
+  "Aşırı gerilimi sınırlar — konutlarda standart":
+    "Limits overvoltage — standard in homes",
+  "Tip 3 (eski D)":
+    "Type 3 (formerly D)",
+  "Cihazın yanında (priz, ara fiş)":
+    "Next to the device (socket, adapter plug)",
+  "Hassas elektroniğe ince ayar":
+    "Fine protection for sensitive electronics",
+  "Kombi Tip 1+2":
+    "Combined Type 1+2",
+  "Konut sayaç panosu":
+    "Domestic meter panel",
+  "İkisi bir arada — günümüzün pratik çözümü":
+    "Two in one — today's practical solution",
+  "Potansiyel dengeleme olmadan olmaz":
+    "Nothing works without equipotential bonding",
+  "Aşırı gerilim koruyucu (SPD) ancak iyi bir potansiyel dengeleme barasına (Haupterdungsschiene) kısa ve düz bir hatla bağlandığında işe yarar. Bağlantı kablosu uzarsa endüktansı darbe anında yüzlerce volt düşürür ve koruma seviyesi boşa gider. Kural: SPD bağlantıları mümkün olduğunca kısa, toplamda 0,5 m'nin altında.":
+    "A surge protective device (SPD) only works if it's connected to a good main earthing terminal (Haupterdungsschiene) with a short, straight conductor. If the connecting lead gets long, its inductance drops hundreds of volts during the surge and the protection level is wasted. Rule: keep SPD connections as short as possible, under 0.5 m in total.",
+  "Ne zaman zorunlu?":
+    "When is it mandatory?",
+  "DIN VDE 0100-443 ve -534'e göre yeni tesisatlarda aşırı gerilim koruması pratikte zorunludur: insan hayatını, kamu hizmetlerini veya çok sayıda kişiyi etkileyebilecek durumlarda kesin, konutlarda da artık genel kural. Kısacası: yeni sayaç panosu kuruyorsan Tip 1+2 için yer ayır.":
+    "Under DIN VDE 0100-443 and -534, surge protection is practically mandatory in new installations: definitely where human life, public services or many people could be affected, and by now as a general rule in homes too. In short: if you're building a new meter panel, leave room for a Type 1+2.",
+  "Kontak (Wechsler)":
+    "Contact (changeover)",
+  "Darbe rölesi":
+    "Impulse relay",
+  "Motor koruma kontağı (açıcı)":
+    "Overload contact (break)",
+  "Motor koruma kontağı (kapayıcı)":
+    "Overload contact (make)",
+  "Floresan lamba":
+    "Fluorescent lamp",
+  "Trifaze şebeke":
+    "Three-phase supply",
+  "Motor koruma şalteri":
+    "Motor protection switch",
+  "Kontaktör ana kontakları":
+    "Contactor main contacts",
+  "Motor koruma rölesi":
+    "Overload relay",
+  "Trifaze motor":
+    "Three-phase motor",
+  "Wechsler (11-12-14): ortak uç 11 bobin düşükken 12'ye, bobin çekince 14'e bağlanır. Tek kontakla iki yolu birden yönetir — 'ya şu ya bu' kontağı.":
+    "Changeover contact (11-12-14): the common terminal 11 connects to 12 while the coil is off and to 14 once the coil picks up. One contact running two paths — the 'either this or that' contact.",
+  "Darbe rölesi (Stromstoßrelais / Eltako): her kısa darbede konum değiştirir ve orada kalır. Koridordaki 5 butondan hangisine basarsan bas lamba aç/kapa — kablo yığını yerine tek röle. Kontakları panelden onu seçerek bağla.":
+    "Impulse relay (Stromstoßrelais / Eltako): changes position on every short pulse and stays there. Whichever of the five corridor buttons you press, the light toggles — one relay instead of a pile of cables. Link its contacts by selecting it in the panel.",
+  "Motor koruma rölesinin açıcı kontağı (95-96). Motor aşırı akım çekip termik röle (F) atınca AÇILIR ve kontaktörün bobinini düşürür. Kumanda devresine, durdurma butonuyla seri koy.":
+    "Break contact of the overload relay (95-96). When the motor draws too much current and the thermal relay (F) trips, it OPENS and drops the contactor coil. Put it in the control circuit, in series with the stop button.",
+  "Motor koruma rölesinin kapayıcı kontağı (97-98): röle atınca kapanır. Genelde 'arıza' ikaz lambası buna bağlanır.":
+    "Make contact of the overload relay (97-98): closes when the relay trips. A 'fault' indicator lamp is usually connected to it.",
+  "LED (Leuchtdiode). Rengini panelden seç. Az akımla parlak ışık; gerçekte ön direnç ister ve yönü önemlidir — burada şebeke dostu bir LED lamba gibi davranır.":
+    "LED (light-emitting diode). Pick its colour in the panel. Bright light from little current; in reality it needs a series resistor and polarity matters — here it behaves like a mains-ready LED lamp.",
+  "Floresan lamba (Leuchtstofflampe). Açılınca starter yüzünden birkaç kez titrer, sonra sabit yanar — ofis tavanlarının klasik açılış dansı.":
+    "Fluorescent lamp (Leuchtstofflampe). When switched on it flickers a few times because of the starter, then burns steadily — the classic opening dance of office ceilings.",
+  "Trifaze şebeke: L1, L2, L3 aralarında 120° kaymalı, her biri N'ye karşı 230 V, birbirine karşı 400 V. Laststromkreis buradan beslenir. Simülasyonda tıkla: şebekeyi kes/aç.":
+    "Three-phase supply: L1, L2, L3 are shifted by 120°, each 230 V to N and 400 V to each other. The power circuit is fed from here. Click it during the simulation to cut/restore the supply.",
+  "Motor koruma şalteri / ana şalter (Q, 3 kutup). Baştan devrede; simülasyonda tıklayınca üç fazı birden keser. Sembolde I> = kısa devre korumalı.":
+    "Motor protection switch / main switch (Q, 3-pole). On from the start; clicking it during the simulation disconnects all three phases at once. I> in the symbol = short-circuit protected.",
+  "Kontaktörün ana kontakları (1-2, 3-4, 5-6). Kumanda devresindeki aynı etiketli bobin (K1…) çekince üç kutup birden kapanır. Panelden hangi bobine ait olduğunu seç.":
+    "The contactor's main contacts (1-2, 3-4, 5-6). When the coil with the same label (K1…) in the control circuit picks up, all three poles close together. Choose the coil they belong to in the panel.",
+  "Motor koruma rölesi (F, bimetal). Ana akım içinden geçer; aşırı yükte bimetaller bükülür ve yardımcı kontakları (95-96 / 97-98) oynatır. Simülasyonda TIKLA = aşırı yük, tekrar tıkla = reset.":
+    "Overload relay (F, bimetal). The main current flows through it; on overload the bimetals bend and move the auxiliary contacts (95-96 / 97-98). During the simulation CLICK = overload, click again = reset.",
+  "Trifaze asenkron motor, 6 uçlu klemens (U1 V1 W1 / U2 V2 W2). Klemens köprüsünü panelden seç: yıldız (Y, sargı başına 230 V) ya da üçgen (Δ, 400 V). Stern-Dreieck için köprüsüz bırak, köprüyü kontaktörler kursun. İki fazı çaprazlarsan ters döner; bir faz eksikse vınlar ama dönmez.":
+    "Three-phase induction motor, 6-terminal board (U1 V1 W1 / U2 V2 W2). Choose the terminal links in the panel: star (Y, 230 V per winding) or delta (Δ, 400 V). For star-delta leave it unlinked and let the contactors make the links. Swap two phases and it runs backwards; if a phase is missing, it hums but won't turn.",
+  "Direktanlauf (Selbsthaltung + motor koruma)":
+    "Direct-on-line start (latching + overload protection)",
+  "Wendeschützschaltung (yön değiştirme)":
+    "Reversing contactor circuit",
+  "Stern-Dreieck-Anlauf (otomatik, KT1)":
+    "Star-delta start (automatic, KT1)",
 };
 
 export default dict;

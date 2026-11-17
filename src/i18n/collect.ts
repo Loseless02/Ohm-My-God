@@ -2,7 +2,7 @@ import { CATEGORIES, FORMULAS, TOPICS } from "../data";
 import { EXAM_QUESTIONS } from "../data/pruefung";
 import { SPEC } from "../playground/types";
 import { PART_INFO } from "../playground/info";
-import { LOGIC_PRESETS, PRESETS } from "../playground/presets";
+import { LOGIC_PRESETS, POWER_PRESETS, PRESETS } from "../playground/presets";
 
 /** tx() ile çevrilen bütün içerik metinleri (tekrarsız, görünme sırasıyla). Sadece i18n denetimi kullanır. */
 export function collectStrings(): string[] {
@@ -40,7 +40,7 @@ export function collectStrings(): string[] {
   }
   for (const s of Object.values(SPEC)) add(s.name);
   Object.values(PART_INFO).forEach(add);
-  for (const p of [...PRESETS, ...LOGIC_PRESETS]) add(p.name);
+  for (const p of [...PRESETS, ...LOGIC_PRESETS, ...POWER_PRESETS]) add(p.name);
   for (const q of EXAM_QUESTIONS) {
     add(q.topic);
     add(q.q);

@@ -105,6 +105,41 @@ export const CATEGORIES: CategoryDef[] = [
     icon: "📉",
     blurb: "Kablo hesabının kalbi: düşümü hesapla, kesiti seç, %3'ü geçme.",
   },
+  {
+    id: "kompensation",
+    title: "Kompanzasyon",
+    de: "Blindleistungskompensation",
+    icon: "🔋",
+    blurb: "Reaktif gücü kondansatörle yerinde karşıla: daha iyi cos φ, daha rahat kablo, daha kısa fatura.",
+  },
+  {
+    id: "schutzrechnung",
+    title: "Koruma Hesapları",
+    de: "Schutzmaßnahmen berechnen",
+    icon: "🛡️",
+    blurb: "Çevrim empedansı, açma akımı, topraklama direnci: sigorta zamanında atacak mı?",
+  },
+  {
+    id: "antriebe",
+    title: "Motor Kalkışı & Sürücüler",
+    de: "Anlauf & Antriebstechnik",
+    icon: "🌀",
+    blurb: "Kalkış akımı, yıldız-üçgen, U/f, doğrultucu — motoru şebekeyi üzmeden döndürmenin yolları.",
+  },
+  {
+    id: "licht",
+    title: "Aydınlatma",
+    de: "Beleuchtungstechnik",
+    icon: "💡",
+    blurb: "Lux, lümen, lm/W ve 'bu odaya kaç armatür lazım?' sorusunun cevabı.",
+  },
+  {
+    id: "gebaeude",
+    title: "Bina Tekniği & Enerji",
+    de: "Gebäudetechnik & Energie",
+    icon: "🏠",
+    blurb: "Fatura, boyler, güneş paneli ve 'her şey aynı anda açılırsa ne olur?' hesabı.",
+  },
 ];
 
 export const CATEGORY_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));

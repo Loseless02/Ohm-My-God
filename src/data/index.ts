@@ -10,6 +10,8 @@ import { F_TRAFO } from "./f-trafo";
 import { F_LEISTUNGSARTEN } from "./f-leistungsarten";
 import { F_INSTALL } from "./f-install";
 import { F_EXTRA } from "./f-extra";
+import { F_JAHR3 } from "./f-jahr3";
+import { F_JAHR3B } from "./f-jahr3b";
 
 export const FORMULAS: FormulaDef[] = [
   ...F_GRUND,
@@ -23,6 +25,8 @@ export const FORMULAS: FormulaDef[] = [
   ...F_LEISTUNGSARTEN,
   ...F_INSTALL,
   ...F_EXTRA,
+  ...F_JAHR3,
+  ...F_JAHR3B,
 ];
 
 export const FORMULA_BY_ID: Record<string, FormulaDef> = Object.fromEntries(

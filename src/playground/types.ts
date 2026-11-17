@@ -19,6 +19,18 @@ export type PartType =
   | "tcoil" // Zeitrelais bobini (KT) — tmode ile 4 çeşit
   | "tcontact_no" // zaman kontağı
   | "tcontact_nc"
+  | "contact_co" // Wechsler: 11 ortak, 12 açıcı, 14 kapayıcı
+  | "relay_ss" // Stromstoßrelais (Eltako): her darbede konum değiştirir
+  | "ol_nc" // Motorschutzrelais yardımcı kontağı 95-96
+  | "ol_no" // 97-98
+  | "led"
+  | "fluo" // Leuchtstofflampe
+  // Laststromkreis (trifaze)
+  | "netz3" // L1 L2 L3 N besleme
+  | "q3" // Motorschutzschalter / ana şalter, 3 kutup
+  | "contact3" // Schütz ana kontakları 1-2 / 3-4 / 5-6
+  | "ol3" // Motorschutzrelais (termik), 3 kutup
+  | "motor3" // asenkron motor, 6 uçlu klemens
   // Logik kapıları (DIN EN 60617 kutu sembolleri)
   | "and"
   | "or"
@@ -27,7 +39,9 @@ export type PartType =
   | "nor"
   | "xor";
 
-export type TimerMode = "ein" | "aus" | "impuls" | "blink";
+export type TimerMode = "ein" | "aus" | "impuls" | "blink" | "treppe";
+export type LedColor = "red" | "green" | "yellow" | "blue" | "white";
+export type MotorConn = "6" | "Y" | "D"; // klemens: köprüsüz / yıldız köprüsü / üçgen köprüsü
 
 export interface Part {
   id: string;
@@ -41,6 +55,8 @@ export interface Part {
   enabled?: boolean; // kaynaklar: aktif/deaktif (undefined = aktif)
   rot?: number; // çeyrek tur (saat yönü tersine): 0..3
   tmode?: TimerMode; // zaman rölesi çalışma şekli
+  color?: LedColor;
+  conn?: MotorConn;
 }
 
 // Terminal kimliği: "partId:0" | "partId:1" | …
@@ -51,7 +67,18 @@ export interface Wire {
   pts?: { x: number; y: number }[]; // eski kayıtlar için korunuyor (yeni kablolar node zinciri kullanır)
 }
 
-export type PartKind = "source" | "switch" | "load" | "coil" | "node" | "rail" | "gate";
+export type PartKind =
+  | "source"
+  | "switch"
+  | "changeover"
+  | "load"
+  | "coil"
+  | "node"
+  | "rail"
+  | "gate"
+  | "source3"
+  | "pole3"
+  | "motor3";
 
 export interface PartSpec {
   name: string; // palet adı (TR)
@@ -88,6 +115,15 @@ const gate = (name: string, de: string): PartSpec => ({
   t: GATE_T,
 });
 
+const POLE3: [number, number][] = [
+  [0, 0],
+  [40, 0],
+  [80, 0],
+  [0, 60],
+  [40, 60],
+  [80, 60],
+];
+
 export const SPEC: Record<PartType, PartSpec> = {
   source: { name: "Kaynak (yatay)", de: "Netz / Spannungsquelle", prefix: "G", kind: "source", w: 80, h: 40, t: [[0, 40], [80, 40]] },
   source2: { name: "Kaynak (dikey)", de: "Spannungsquelle, L üst / N alt", prefix: "G", kind: "source", w: 0, h: 60, t: V, vert: true },
@@ -108,6 +144,32 @@ export const SPEC: Record<PartType, PartSpec> = {
   tcoil: { name: "Zaman rölesi", de: "Zeitrelais", prefix: "KT", kind: "coil", w: 0, h: 60, t: V, vert: true },
   tcontact_no: { name: "Zaman kontağı (kapayıcı)", de: "zeitverzögerter Schließer", prefix: "", kind: "switch", w: 0, h: 60, t: V, vert: true },
   tcontact_nc: { name: "Zaman kontağı (açıcı)", de: "zeitverzögerter Öffner", prefix: "", kind: "switch", w: 0, h: 60, t: V, vert: true },
+  contact_co: { name: "Kontak (Wechsler)", de: "Wechsler 11-12-14", prefix: "", kind: "changeover", w: 20, h: 60, t: [[0, 60], [0, 0], [20, 0]], vert: true },
+  relay_ss: { name: "Darbe rölesi", de: "Stromstoßrelais", prefix: "K", kind: "coil", w: 0, h: 60, t: V, vert: true },
+  ol_nc: { name: "Motor koruma kontağı (açıcı)", de: "Motorschutz-Öffner 95-96", prefix: "", kind: "switch", w: 0, h: 60, t: V, vert: true },
+  ol_no: { name: "Motor koruma kontağı (kapayıcı)", de: "Motorschutz-Schließer 97-98", prefix: "", kind: "switch", w: 0, h: 60, t: V, vert: true },
+  led: { name: "LED", de: "Leuchtdiode (LED)", prefix: "P", kind: "load", w: 0, h: 60, t: V, vert: true },
+  fluo: { name: "Floresan lamba", de: "Leuchtstofflampe", prefix: "E", kind: "load", w: 0, h: 60, t: V, vert: true },
+  netz3: { name: "Trifaze şebeke", de: "Drehstromnetz L1 L2 L3 N", prefix: "", kind: "source3", w: 120, h: 0, t: [[0, 0], [40, 0], [80, 0], [120, 0]] },
+  q3: { name: "Motor koruma şalteri", de: "Motorschutzschalter (3-polig)", prefix: "Q", kind: "pole3", w: 80, h: 60, t: POLE3 },
+  contact3: { name: "Kontaktör ana kontakları", de: "Hauptkontakte 1-2 / 3-4 / 5-6", prefix: "", kind: "pole3", w: 80, h: 60, t: POLE3 },
+  ol3: { name: "Motor koruma rölesi", de: "Motorschutzrelais (Bimetall)", prefix: "F", kind: "pole3", w: 80, h: 60, t: POLE3 },
+  motor3: {
+    name: "Trifaze motor",
+    de: "Drehstrom-Asynchronmotor",
+    prefix: "M",
+    kind: "motor3",
+    w: 80,
+    h: 100,
+    t: [
+      [0, 0],
+      [40, 0],
+      [80, 0],
+      [0, 100],
+      [40, 100],
+      [80, 100],
+    ],
+  },
   and: gate("UND (&)", "AND-Gatter"),
   or: gate("ODER (≥1)", "OR-Gatter"),
   not: { ...gate("NICHT (1)", "NOT / Negation"), t: [[0, 20], [60, 20]] },
@@ -168,6 +230,10 @@ export function localBox(t: PartType): Box {
   if (spec.kind === "node") return { x1: -8, y1: -8, x2: 8, y2: 8 };
   if (spec.kind === "gate") return { x1: -2, y1: -10, x2: 62, y2: 50 };
   if (t.startsWith("taster")) return { x1: -28, y1: -4, x2: 20, y2: 64 };
+  if (t === "contact_co") return { x1: -14, y1: -4, x2: 30, y2: 64 };
+  if (t === "netz3") return { x1: -16, y1: -44, x2: 136, y2: -6 };
+  if (spec.kind === "pole3") return { x1: -14, y1: -4, x2: 94, y2: 64 };
+  if (t === "motor3") return { x1: -12, y1: -4, x2: 92, y2: 104 };
   return { x1: -20, y1: -4, x2: 20, y2: 64 };
 }
 

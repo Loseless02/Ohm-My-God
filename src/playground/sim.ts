@@ -17,6 +17,13 @@ export interface SimIO {
   actuated: Record<string, boolean>; // şalter/buton PART ID → basılı/kapalı konum
   timerDone: Record<string, boolean>; // tcoil LABEL → kontakları şu an çekili mi
   prevEnergized: Record<string, boolean>; // bobin LABEL → önceki durum (tohum)
+  held?: Record<string, boolean>; // kendi durumunu tutanlar: darbe rölesi konumu, motor koruma "attı" (LABEL)
+}
+
+export interface MotorState {
+  speed: number; // 0..1 (yıldızda ~0.58, üçgende 1)
+  dir: number; // +1 sağa, -1 sola, 0 duruyor
+  fault?: "phase"; // faz kaybı: vınlar ama dönmez
 }
 
 export interface SimResult {
@@ -28,6 +35,8 @@ export interface SimResult {
   flow: Record<string, number>; // kablo id → normalize akım / mantık değeri
   dir: Record<string, number>; // kablo id → akış yönü: +1 = a→b, -1 = b→a
   closed: Record<string, boolean>; // anahtar part id → kapalı mı
+  burnt?: Record<string, boolean>; // bobin part id → nominalin çok üstünde gerilim
+  motor?: Record<string, MotorState>; // trifaze motor part id → durum
 }
 
 // act: part id'ler + "§<label>" anahtarlarıyla ana şalter konumları
@@ -36,7 +45,10 @@ export function isClosed(
   energized: Record<string, boolean>,
   act: Record<string, boolean>,
   timerDone: Record<string, boolean>,
+  held: Record<string, boolean> = {},
 ): boolean {
+  const g = p.group ?? "";
+  const relay = () => (g in held ? !!held[g] : !!energized[g]);
   switch (p.type) {
     case "switch_no":
     case "taster_no":
@@ -49,9 +61,14 @@ export function isClosed(
     case "pairc_nc":
       return !act["§" + (p.group ?? "")];
     case "contact_no":
-      return !!energized[p.group ?? ""];
+    case "contact_co": // Wechsler: "kapalı" = 11-14 konumu
+      return relay();
     case "contact_nc":
-      return !energized[p.group ?? ""];
+      return !relay();
+    case "ol_nc":
+      return !held[g];
+    case "ol_no":
+      return !!held[g];
     case "tcontact_no":
       return !!timerDone[p.group ?? ""];
     case "tcontact_nc":
@@ -68,7 +85,7 @@ function withLabels(parts: Part[], actuated: Record<string, boolean>) {
   return m;
 }
 
-function solve(n: number, A: number[][], b: number[]): number[] {
+export function solve(n: number, A: number[][], b: number[]): number[] {
   for (let col = 0; col < n; col++) {
     let piv = col;
     for (let row = col + 1; row < n; row++)
@@ -98,6 +115,7 @@ function solve(n: number, A: number[][], b: number[]): number[] {
 // ── Fiziksel simülasyon ──────────────────────────────────────────────────────
 export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
   const act = withLabels(parts, io.actuated);
+  const held = io.held ?? {};
   const sources = parts.filter((p) => SPEC[p.type].kind === "source" && p.enabled !== false);
   const railsL = parts.filter((p) => p.type === "rail_l");
   const railsN = parts.filter((p) => p.type === "rail_n");
@@ -113,7 +131,8 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
   };
   if (!empty.hasSource) {
     for (const p of parts)
-      if (SPEC[p.type].kind === "switch") empty.closed[p.id] = isClosed(p, {}, act, io.timerDone);
+      if (SPEC[p.type].kind === "switch" || SPEC[p.type].kind === "changeover")
+        empty.closed[p.id] = isClosed(p, {}, act, io.timerDone, held);
     return empty;
   }
   const vRef = Math.max(
@@ -140,12 +159,18 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
     }
     for (const p of parts) {
       const kind = SPEC[p.type].kind;
+      if (kind === "changeover") {
+        const [c, nc, no] = terminalsOf(p).map((t) => nodeIdx.get(t.id)!);
+        const up = isClosed(p, energized, act, io.timerDone, held);
+        edges.push({ a: c, b: up ? no : nc, g: G_WIRE });
+        continue;
+      }
       if (kind !== "switch" && kind !== "load" && kind !== "coil") continue;
       const [t0, t1] = terminalsOf(p);
       const a = nodeIdx.get(t0.id)!;
       const b = nodeIdx.get(t1.id)!;
       if (kind === "switch") {
-        if (isClosed(p, energized, act, io.timerDone)) edges.push({ a, b, g: G_WIRE });
+        if (isClosed(p, energized, act, io.timerDone, held)) edges.push({ a, b, g: G_WIRE });
       } else {
         edges.push({ a, b, g: G_LOAD });
       }
@@ -180,7 +205,8 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
       if (SPEC[p.type].kind !== "coil") continue;
       const [t0, t1] = terminalsOf(p);
       const dv = Math.abs(volts[nodeIdx.get(t0.id)!] - volts[nodeIdx.get(t1.id)!]);
-      const on = dv / vRef > 0.7;
+      // bobin kendi nominal gerilimine göre çeker (Spulenspannung, varsayılan 230 V)
+      const on = dv >= 0.7 * (p.volts ?? 230);
       next[p.label] = next[p.label] || on;
     }
     const key = JSON.stringify(next);
@@ -198,15 +224,23 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
     energized = next;
   }
 
-  const res: SimResult = { ...empty, chatter, energized };
+  const res: SimResult = { ...empty, chatter, energized, burnt: {} };
   for (const p of parts) {
     const kind = SPEC[p.type].kind;
+    if (kind === "changeover") {
+      res.closed[p.id] = isClosed(p, energized, act, io.timerDone, held);
+      continue;
+    }
     if (kind !== "switch" && kind !== "load" && kind !== "coil") continue;
     const [t0, t1] = terminalsOf(p);
-    if (kind === "switch") res.closed[p.id] = isClosed(p, energized, act, io.timerDone);
+    if (kind === "switch") res.closed[p.id] = isClosed(p, energized, act, io.timerDone, held);
     else {
       const dv = Math.abs(volts[nodeIdx.get(t0.id)!] - volts[nodeIdx.get(t1.id)!]);
       res.level[p.id] = Math.min(1, dv / vRef);
+      if (kind === "coil") {
+        res.level[p.id] = Math.min(1, dv / (p.volts ?? 230));
+        if (dv > 1.25 * (p.volts ?? 230)) res.burnt![p.id] = true;
+      }
     }
   }
   for (const w of wires) {
@@ -238,9 +272,10 @@ export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
 export function simulateLogic(
   parts: Part[],
   wires: Wire[],
-  io: { actuated: Record<string, boolean> },
+  io: { actuated: Record<string, boolean>; held?: Record<string, boolean> },
 ): SimResult {
   const act = withLabels(parts, io.actuated);
+  const held = io.held ?? {};
   const res: SimResult = {
     hasSource: parts.some((p) => p.type === "rail_l"),
     short: false,
@@ -275,12 +310,18 @@ export function simulateLogic(
   for (const p of parts) {
     const kind = SPEC[p.type].kind;
     if (kind === "switch") {
-      const c = isClosed(p, {}, act, {});
+      const c = isClosed(p, {}, act, {}, held);
       res.closed[p.id] = c;
       if (c) {
         const [t0, t1] = terminalsOf(p);
         union(t0.id, t1.id);
       }
+    }
+    if (kind === "changeover") {
+      const c = isClosed(p, {}, act, {}, held);
+      res.closed[p.id] = c;
+      const [t0, t1, t2] = terminalsOf(p);
+      union(t0.id, c ? t2.id : t1.id);
     }
     if (kind === "rail") {
       const ts = terminalsOf(p);
@@ -363,6 +404,10 @@ export function simulateLogic(
     if (kind === "switch" && res.closed[p.id]) {
       const [t0, t1] = terminalsOf(p);
       link(t0.id, t1.id);
+    }
+    if (kind === "changeover") {
+      const [t0, t1, t2] = terminalsOf(p);
+      link(t0.id, res.closed[p.id] ? t2.id : t1.id);
     }
     if (kind === "rail") {
       const ts = terminalsOf(p);

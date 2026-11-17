@@ -292,6 +292,16 @@ export const TOPICS: TopicDef[] = [
         symbols: ["lamp", "motor", "source2"],
       },
       {
+        h: "Röle çeşitleri ve ışık kaynakları",
+        body: "Wechsler (11-12-14) tek kontakla iki yolu yönetir: bobin düşükken 11-12, çekince 11-14. Darbe rölesi (Stromstoßrelais) her kısa darbede konum değiştirip orada kalır — koridordaki beş butonun tek röleyle lamba yakmasının sırrı. LED, ışık yayan diyottur (oklar dışarı bakar); floresan lamba uzun tüp sembolüyle çizilir.",
+        symbols: ["contact_co", "relay_ss", "led", "fluo"],
+      },
+      {
+        h: "Güç devresi (Laststromkreis)",
+        body: "Güç devresinde her şey üç kutupludur: motor koruma şalteri (Q), kontaktörün ana kontakları (1-2, 3-4, 5-6), termik motor koruma rölesi (F) ve trifaze motor (U1 V1 W1 / U2 V2 W2). Kesik çizgi, üç kutbun mekanik olarak birlikte hareket ettiğini gösterir. Motor koruma rölesinin kendisi güç devresinde, yardımcı kontağı (95-96) kumanda devresindedir.",
+        symbols: ["q3", "contact3", "ol3", "ol_nc", "motor3", "netz3"],
+      },
+      {
         h: "Harf kodları (Betriebsmittelkennzeichnung)",
         body: "Her elemanın yanındaki harf, onun ne iş yaptığını söyler (DIN EN 81346-2). Eski şemalarda ve birçok okul kitabında hâlâ eski harfler geçer: sinyal lambası için H, ana kontaktör için K. İkisini de tanımak zorundasın; sınav hangisini kullanıyorsa onu yaz.",
         table: {
@@ -311,6 +321,183 @@ export const TOPICS: TopicDef[] = [
             ["X", "Bağlar", "Klemens, priz, fiş"],
           ],
         },
+      },
+    ],
+  },
+  {
+    id: "anlaufverfahren",
+    title: "Motor Kalkış Devreleri",
+    de: "Anlaufverfahren & Schützschaltungen",
+    icon: "🏭",
+    tagline: "Direkt, ters yön, yıldız-üçgen — kontaktörlerin koreografisi.",
+    sections: [
+      {
+        body: "Kontaktör devresi her zaman iki parçadır. Steuerstromkreis (kumanda devresi) düşünen kısımdır: butonlar, bobinler, kilitlemeler, genelde 230 V ya da 24 V. Laststromkreis (güç devresi) iş yapan kısımdır: 400 V, ana kontaklar, motor. İkisi sadece etiketle bağlıdır — kumandadaki K1 bobini çekince güç devresindeki K1 ana kontakları kapanır. Playground'daki 'Last + Steuer' modu tam olarak bunu yan yana gösterir.",
+      },
+      {
+        h: "Direktanlauf",
+        body: "En basit yol: S1'e bas, K1 çeker ve kendi 13-14 kontağıyla kendini besler (Selbsthaltung), motor doğrudan şebekeye bağlanır. Ucuz ve sağlam, ama kalkışta anma akımının 5–8 katı çekilir. Küçük motorlar için ideal; büyüklerde şebeke işletmecisi kaşlarını çatar. Motor koruma rölesi (F) aşırı yükte 95-96 kontağını açar ve kumandayı keser — motoru koruyan o, sigorta değil.",
+        symbols: ["q3", "contact3", "ol3", "motor3"],
+      },
+      {
+        h: "Wendeschützschaltung — dönüş yönü",
+        body: "Motorun yönünü değiştirmek için iki fazı yer değiştirmek yeter: döner alan ters döner. K1 sağa, K2 sola çalıştırır; K2 güç devresinde L1 ile L3'ü çaprazlar. İkisi aynı anda çekerse L1–L3 kısa devresi olur — bu yüzden kontaktörler birbirini açıcı kontaklarıyla kilitler (Schützverriegelung). Ciddi tesislerde buna bir de buton kilitlemesi (Tasterverriegelung) eklenir: çift dikiş.",
+      },
+      {
+        h: "Stern-Dreieck-Anlauf",
+        body: "Normalde üçgende çalışan motor yıldızda kalkar: her sargıya 400 V yerine 230 V düşer, şebekeden çekilen kalkış akımı üçte bire iner. Bedeli, moment de üçte bire düşer. Sıra şöyle: K1 (şebeke) + K3 (yıldız) çeker, motor hızlanır; zaman rölesi KT1 dolunca K3 düşer, K2 (üçgen) çeker. K2 ile K3 asla birlikte çekmemeli — yıldız köprüsü ile üçgen bağlantısı aynı anda = kısa devre.",
+        table: {
+          head: ["", "Yıldız (Y)", "Üçgen (Δ)"],
+          rows: [
+            ["Sargı gerilimi", "230 V", "400 V"],
+            ["Şebeke kalkış akımı", "I_A / 3", "I_A"],
+            ["Kalkış momenti", "M_A / 3", "M_A"],
+            ["Ne zaman?", "Kalkış", "Çalışma"],
+          ],
+        },
+      },
+      {
+        h: "Yumuşak yolverici ve frekans konvertörü",
+        body: "Sanftanlasser tristörlerle gerilimi yavaşça yükseltir: akım darbesi yok, ama devir ayarı da yok. Frekans konvertörü (Frequenzumrichter) hem kalkışı yumuşatır hem devri istediğin değere getirir: şebekeyi doğrultur (B6U, ~540 V DC), sonra istediği frekansta yeni bir trifaze üretir. U/f oranını sabit tutar ki motor doyuma gitmesin. Bugün yeni tesislerde yıldız-üçgenin yerini büyük ölçüde FU aldı — ama sınavda yıldız-üçgen hâlâ başrolde.",
+      },
+    ],
+  },
+  {
+    id: "erstpruefung",
+    title: "İlk Muayene (VDE 0100-600)",
+    de: "Erstprüfung nach DIN VDE 0100-600",
+    icon: "🔍",
+    tagline: "Gözle bak, dene, ölç — sonra imzala.",
+    sections: [
+      {
+        body: "Yeni ya da değiştirilmiş her tesisat, işletmeye alınmadan önce muayene edilir ve sonuç protokole yazılır. Sıra kutsaldır: önce Besichtigen (gözle kontrol), sonra Erproben (çalıştırarak deneme) ve Messen (ölçme). Gerilim vermeden yapılabilecek her şey gerilim vermeden yapılır — mantık basit: hatayı sen bul, müşteri değil.",
+      },
+      {
+        h: "1 · Besichtigen — gözle kontrol",
+        body: "Gerilimsiz yapılır. Doğru kablo ve kesit mi seçilmiş, koruma elemanları doğru mu, iletken renkleri (yeşil-sarı sadece PE!) doğru mu, klemensler sıkı mı, kapaklar ve dokunma koruması yerinde mi, banyo bölgeleri ve yangın önlemleri tutuyor mu, devreler panoda etiketli mi. Gözle görülen hatayı ölçü aletine bırakmak, sınavda da puan kaybettirir.",
+      },
+      {
+        h: "2 · Messen — ölçümler sırasıyla",
+        body: "Ölçümler belli bir sırayla yapılır, çünkü her biri bir sonrakinin güvenliğini sağlar. Örneğin izolasyon ölçülmeden gerilim verilmez; PE sürekliliği doğrulanmadan çevrim empedansı ölçülmez.",
+        table: {
+          head: ["Ölçüm", "Ne kontrol edilir?", "Tipik sınır"],
+          rows: [
+            ["Durchgängigkeit PE / Potentialausgleich", "Koruma iletkeni her gövdeye kesintisiz ulaşıyor mu", "Küçük, makul değer (≈ < 1 Ω)"],
+            ["Isolationswiderstand", "Aktif iletkenler arası ve PE'ye karşı yalıtım", "≥ 1 MΩ (500 V DC ölçüm gerilimi)"],
+            ["Schleifenimpedanz Z_S", "Hata akımı sigortayı zamanında attırır mı", "Z_S ≤ U₀ / I_a"],
+            ["RCD testi", "Açma akımı ve açma süresi", "I_Δ ≤ I_Δn, t ≤ 300 ms (genel tip)"],
+            ["Erdungswiderstand (TT)", "Toprak elektrodu yeterli mi", "R_A ≤ 50 V / I_Δn"],
+            ["Drehfeld", "Prizlerde ve motorlarda faz sırası", "Sağ döner alan"],
+          ],
+        },
+      },
+      {
+        h: "3 · Erproben — fonksiyon denemesi",
+        body: "RCD'nin test butonu, acil durdurma, kilitlemeler, kontaktör devreleri, zaman röleleri: hepsi bir kez gerçekten çalıştırılır. Wendeschütz'te iki butona birlikte basmayı denemek dahil — kilitleme çalışmıyorsa bunu müşteriden önce sen öğren.",
+      },
+      {
+        h: "4 · Dokumentation — protokol",
+        body: "Tüm ölçüm değerleri, kullanılan ölçü aletleri ve sonuç bir muayene protokolüne yazılır, imzalanır ve müşteriye verilir. Protokol yoksa hukuken muayene de yoktur. Sınavda 'neden ölçtün?' sorusu kadar 'nereye yazdın?' sorusu da gelir.",
+      },
+    ],
+  },
+  {
+    id: "sps",
+    title: "PLC Temelleri",
+    de: "SPS — Speicherprogrammierbare Steuerung",
+    icon: "🖥️",
+    tagline: "Kablolarla değil, programla kurulan kontaktör devresi.",
+    sections: [
+      {
+        body: "SPS (PLC), kontaktör mantığını kablolardan alıp yazılıma taşır. Butonlar ve sensörler girişlere (E / I), kontaktörler ve lambalar çıkışlara (A / Q) bağlanır; aradaki bütün 'eğer şuna basıldıysa ve şu kapalıysa' mantığı programdadır. Devreyi değiştirmek için tornavida değil klavye gerekir.",
+      },
+      {
+        h: "EVA prensibi ve tarama döngüsü",
+        body: "Eingabe → Verarbeitung → Ausgabe. PLC döngü halinde çalışır: önce tüm girişlerin anlık görüntüsünü alır (Prozessabbild), sonra programı baştan sona bir kez işler, en sonda sonuçları çıkışlara yazar. Bir döngü birkaç milisaniye sürer ve sonsuza kadar tekrarlanır.",
+      },
+      {
+        h: "Programlama dilleri (IEC 61131-3)",
+        body: "Aynı mantık farklı kılıklarda yazılabilir. Elektrikçiler için en tanıdık olanı KOP'tur: Stromlaufplan'ın yan yatırılmış hali. FUP, Logik konusundaki kapı sembolleriyle çizilir — Playground'un Logik modu tam olarak bu.",
+        table: {
+          head: ["Dil", "Görünüş", "Kime yakın?"],
+          rows: [
+            ["KOP / LD (Kontaktplan)", "Kontak ve bobin sembolleri, raylar arasında", "Kontaktör devresi bilenlere"],
+            ["FUP / FBD (Funktionsplan)", "&, ≥1 kutuları", "Logik kapı bilenlere"],
+            ["AWL / IL", "Satır satır komutlar (U, O, =)", "Eski Siemens dünyası"],
+            ["ST (Strukturierter Text)", "Pascal benzeri metin: IF … THEN", "Programcılara"],
+          ],
+        },
+      },
+      {
+        h: "Altın kural: STOP butonu açıcıdır",
+        body: "Durdurma butonu PLC girişine AÇICI (Öffner) olarak bağlanır ve programda '1 ise çalışabilir' diye sorgulanır. Neden? Kablo koparsa giriş 0 olur ve makine durur (Drahtbruchsicherheit). Kapayıcı bağlasaydın kopuk kablo fark edilmezdi — ta ki biri acil durumda butona basıp hiçbir şey olmadığını görene kadar. Acil durdurma (Not-Halt) zaten PLC'ye güvenmez: güç devresini donanımla da keser.",
+      },
+    ],
+  },
+  {
+    id: "photovoltaik",
+    title: "Güneş Enerjisi Sistemleri",
+    de: "Photovoltaik (PV-Anlagen)",
+    icon: "☀️",
+    tagline: "Çatıda santral — ama DC tarafı şaka kaldırmaz.",
+    sections: [
+      {
+        body: "PV hücresi ışığı doğrudan doğru akıma çevirir. Hücreler modülde, modüller seri bağlanarak string'de birleşir; string gerilimi kolayca 600–1000 V DC'ye çıkar. İnverter (Wechselrichter) bu DC'yi şebekeye uygun 230/400 V AC'ye çevirir. Üretilen enerji önce evde tüketilir, fazlası şebekeye ya da bataryaya gider.",
+      },
+      {
+        h: "Önemli büyüklükler",
+        body: "Modül veri sayfasındaki değerler standart test koşullarında (STC: 1000 W/m², 25 °C) ölçülür. Soğuk kış sabahında modül gerilimi STC değerinin üstüne çıkar — inverterin giriş sınırı bu yüzden en düşük sıcaklığa göre kontrol edilir.",
+        table: {
+          head: ["Kısaltma", "Anlamı"],
+          rows: [
+            ["P_MPP (Wp)", "En yüksek güç noktasındaki güç — modülün 'etiket gücü'"],
+            ["U_OC", "Açık devre gerilimi (Leerlaufspannung) — yük yokken"],
+            ["I_SC", "Kısa devre akımı — I_MPP'den sadece biraz büyük!"],
+            ["U_MPP / I_MPP", "En yüksek güç noktasındaki gerilim ve akım"],
+            ["MPP-Tracker", "İnverterin her an en verimli çalışma noktasını arayan beyni"],
+          ],
+        },
+      },
+      {
+        h: "DC tarafının tehlikesi",
+        body: "Güneş varken modüller kapatılamaz: string'in uçlarında her zaman yüksek DC gerilim vardır. DC arkı sıfır geçişi olmadığı için kendiliğinden sönmez — yük altında DC fiş çekmek ark ve yangın demektir. Kısa devre akımı anma akımından sadece biraz büyük olduğundan sigorta da kurtarmaz. Bu yüzden DC tarafında yalnızca DC için onaylı ayırıcılar ve fişler kullanılır, bağlantı sırası kurallara göre yapılır.",
+      },
+      {
+        h: "AC tarafı ve koruma",
+        body: "İnverter AC tarafta kendi devresiyle bağlanır, RCD tipi inverter üreticisinin istediği gibi seçilir (çoğu zaman Tip A yeter, bazen Tip B). Şebeke kesildiğinde inverter otomatik olarak ayrılmak zorundadır (NA-Schutz) — hat üzerinde çalışan teknisyen, çatından gelen sürpriz gerilime çarpılmasın diye.",
+      },
+    ],
+  },
+  {
+    id: "ueberspannungsschutz",
+    title: "Aşırı Gerilim Koruması",
+    de: "Blitz- und Überspannungsschutz",
+    icon: "🌩️",
+    tagline: "Yıldırım bir kez düşer, ama elektroniği tek seferde götürür.",
+    sections: [
+      {
+        body: "Aşırı gerilimler iki yerden gelir: yıldırımdan (doğrudan ya da yakına düşüp hatta indüklenen) ve şebekedeki anahtarlama olaylarından. Mikrosaniyeler sürer ama binlerce volta ulaşır; bir televizyonun, ısı pompasının ya da inverterin elektroniği için bu kadarı yeter. Koruma, darbeyi kontrollü şekilde toprağa saptırmaktır.",
+      },
+      {
+        h: "Kademeli koruma: Tip 1 · 2 · 3",
+        body: "Tek bir cihaz her şeyi yapamaz; koruma kademeli kurulur ve her kademe bir öncekinden kalan enerjiyi azaltır. Kaba koruma bina girişinde, ince koruma cihazın hemen yanında durur.",
+        table: {
+          head: ["Tip", "Yer", "Görev"],
+          rows: [
+            ["Tip 1 (eski B)", "Ana dağıtım / bina girişi", "Yıldırım akımı taşıyıcı — dış paratoner varsa şart"],
+            ["Tip 2 (eski C)", "Alt dağıtım panoları", "Aşırı gerilimi sınırlar — konutlarda standart"],
+            ["Tip 3 (eski D)", "Cihazın yanında (priz, ara fiş)", "Hassas elektroniğe ince ayar"],
+            ["Kombi Tip 1+2", "Konut sayaç panosu", "İkisi bir arada — günümüzün pratik çözümü"],
+          ],
+        },
+      },
+      {
+        h: "Potansiyel dengeleme olmadan olmaz",
+        body: "Aşırı gerilim koruyucu (SPD) ancak iyi bir potansiyel dengeleme barasına (Haupterdungsschiene) kısa ve düz bir hatla bağlandığında işe yarar. Bağlantı kablosu uzarsa endüktansı darbe anında yüzlerce volt düşürür ve koruma seviyesi boşa gider. Kural: SPD bağlantıları mümkün olduğunca kısa, toplamda 0,5 m'nin altında.",
+      },
+      {
+        h: "Ne zaman zorunlu?",
+        body: "DIN VDE 0100-443 ve -534'e göre yeni tesisatlarda aşırı gerilim koruması pratikte zorunludur: insan hayatını, kamu hizmetlerini veya çok sayıda kişiyi etkileyebilecek durumlarda kesin, konutlarda da artık genel kural. Kısacası: yeni sayaç panosu kuruyorsan Tip 1+2 için yer ayır.",
       },
     ],
   },

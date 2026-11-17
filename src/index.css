@@ -305,3 +305,90 @@ select {
 input::placeholder {
   color: color-mix(in srgb, var(--color-mut) 60%, transparent);
 }
+
+/* dönen motor pervanesi */
+@keyframes pg-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* faz kaybı: motor vınlar ama dönmez */
+.pg-hum {
+  animation: pg-hum 0.09s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes pg-hum {
+  50% {
+    transform: translateX(0.8px);
+  }
+}
+
+/* floresan: ilk anda starter titremesi, sonra sabit ışık */
+.pg-fluo-on {
+  animation: pg-fluo 0.9s steps(1, end) both;
+}
+
+@keyframes pg-fluo {
+  0% {
+    opacity: 0.2;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  25% {
+    opacity: 0.1;
+  }
+  40% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  65% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.4;
+  }
+  80%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* bağlantısız terminal noktası: parçanın üstüne gelince ya da kablo çekerken görünür */
+.pg-term.quiet .dot {
+  opacity: 0;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.pg-term.quiet:hover .dot {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-hum,
+  .pg-fluo-on {
+    animation: none;
+  }
+}
+
+/* özellik paneli alanları */
+.pg-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+  padding: 0.375rem 0.5rem;
+  color: var(--color-ink);
+  outline: none;
+}
+
+.pg-input:focus {
+  border-color: color-mix(in srgb, var(--color-volt) 60%, transparent);
+}

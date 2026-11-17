@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CATEGORIES, FORMULAS, TOPICS, formulasOfCategory } from "../data";
 import type { FormulaDef } from "../data/types";
 import { FormulaCard } from "../components/FormulaCard";
+import { adminLogin } from "../lib/admin";
 import { rich, useI18n, type Lang } from "../i18n";
 
 // birim adı → temel birim sembolü ("volt" yazana V birimli her şeyi bul)
@@ -91,8 +92,19 @@ function searchFormulas(qRaw: string, lang: Lang, tx: (s: string) => string): Hi
 function Search() {
   const { t, tx, lang } = useI18n();
   const [q, setQ] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
   const results = useMemo(() => searchFormulas(q, lang, tx), [q, lang, tx]);
   const active = q.trim().length > 0;
+
+  // sonuç vermeyen uzun bir metinle Enter: admin şifresi olabilir, sunucuya sor
+  async function onEnter() {
+    const s = q.trim();
+    if (results.length || s.length < 12) return;
+    if (await adminLogin(s)) {
+      setQ("");
+      setUnlocked(true);
+    }
+  }
 
   return (
     <div className="mx-auto mt-8 max-w-3xl">
@@ -103,11 +115,20 @@ function Search() {
         placeholder={t("home.search")}
         aria-label={t("home.search")}
         enterKeyHint="search"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") void onEnter();
+        }}
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
         className="mx-auto block w-full max-w-xl rounded-2xl border border-line bg-panel/80 px-5 py-3.5 text-ink shadow-lg outline-none backdrop-blur transition focus:border-volt/60 focus:ring-2 focus:ring-volt/20"
       />
+
+      {unlocked && (
+        <p role="status" className="mx-auto mt-3 max-w-xl rounded-xl border border-volt/40 bg-volt/10 px-4 py-2 text-sm text-volt">
+          🔓 {t("home.adminOn")}
+        </p>
+      )}
 
       {/* büyüklük tablosu: yazmak istemeyenler için */}
       <div className="mt-4 flex flex-wrap justify-center gap-1.5">

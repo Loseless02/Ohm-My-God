@@ -13,10 +13,10 @@ import CategoryPage from "./pages/CategoryPage";
 import FormulaPage from "./pages/FormulaPage";
 import TopicPage from "./pages/TopicPage";
 import PruefungPage from "./pages/PruefungPage";
+import PlaygroundGate from "./pages/PlaygroundGate";
 import { I18nProvider, applyLang, detectLang, loadLang } from "./i18n";
 
 // ağır sayfalar ayrı parçalarda: ana sayfa telefonda hızlı açılsın
-const Playground = lazy(() => import("./playground/Playground"));
 const SchaltungPage = lazy(() => import("./pages/SchaltungPage"));
 
 const lang = detectLang();
@@ -36,14 +36,7 @@ loadLang(lang)
                 <Route path="/kategori/:id" element={<CategoryPage />} />
                 <Route path="/formul/:id" element={<FormulaPage />} />
                 <Route path="/konu/:id" element={<TopicPage />} />
-                <Route
-                  path="/playground"
-                  element={
-                    <Suspense fallback={null}>
-                      <Playground />
-                    </Suspense>
-                  }
-                />
+                <Route path="/playground" element={<PlaygroundGate />} />
                 <Route
                   path="/schaltung"
                   element={

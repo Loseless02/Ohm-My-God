@@ -1311,6 +1311,928 @@ const dict: Record<string, string> = {
     "XOR — Flurbeleuchtung",
   "NAND — üniversal kapı":
     "NAND — Universalgatter",
+  "Kompanzasyon":
+    "Blindleistungskompensation",
+  "Reaktif gücü kondansatörle yerinde karşıla: daha iyi cos φ, daha rahat kablo, daha kısa fatura.":
+    "Blindleistung per Kondensator direkt vor Ort bereitstellen: besseres cos φ, entspannte Leitungen, kürzere Rechnung.",
+  "Koruma Hesapları":
+    "Schutzmaßnahmen berechnen",
+  "Çevrim empedansı, açma akımı, topraklama direnci: sigorta zamanında atacak mı?":
+    "Schleifenimpedanz, Abschaltstrom, Erdungswiderstand: Löst die Sicherung rechtzeitig aus?",
+  "Motor Kalkışı & Sürücüler":
+    "Anlauf & Antriebstechnik",
+  "Kalkış akımı, yıldız-üçgen, U/f, doğrultucu — motoru şebekeyi üzmeden döndürmenin yolları.":
+    "Anlaufstrom, Stern-Dreieck, U/f, Gleichrichter — wie man einen Motor dreht, ohne das Netz zu ärgern.",
+  "Aydınlatma":
+    "Beleuchtungstechnik",
+  "Lux, lümen, lm/W ve 'bu odaya kaç armatür lazım?' sorusunun cevabı.":
+    "Lux, Lumen, lm/W und die Antwort auf „Wie viele Leuchten braucht dieser Raum?“",
+  "Bina Tekniği & Enerji":
+    "Gebäudetechnik & Energie",
+  "Fatura, boyler, güneş paneli ve 'her şey aynı anda açılırsa ne olur?' hesabı.":
+    "Stromrechnung, Warmwasserspeicher, PV-Anlage und die Rechnung „Was, wenn alles gleichzeitig läuft?“",
+  "Kompanzasyon Gücü":
+    "Kompensationsleistung",
+  "Q_C = P·(tan φ₁ − tan φ₂) — reaktif gücü yerinde üret, şebekeden taşıma.":
+    "Q_C = P·(tan φ₁ − tan φ₂) — Blindleistung vor Ort erzeugen, statt sie durchs Netz zu schleppen.",
+  "Motorlar ve balastlar şebekeden reaktif güç çeker; bu güç iş yapmaz ama kabloyu ve trafoyu doldurur, enerji şirketi de faturaya yazar. Paralel bağlanan kondansatör bu reaktif gücü yerinde karşılar. P sabit kalır, sadece φ küçülür: φ₁'den hedef φ₂'ye inmek için gereken kondansatör gücü budur.":
+    "Motoren und Vorschaltgeräte ziehen Blindleistung aus dem Netz; sie verrichtet keine Arbeit, belegt aber Leitungen und Trafo — und der Versorger stellt sie in Rechnung. Ein parallel geschalteter Kondensator liefert diese Blindleistung direkt vor Ort. P bleibt gleich, nur φ wird kleiner: Das hier ist die Kondensatorleistung, die du brauchst, um von φ₁ auf das Ziel φ₂ zu kommen.",
+  "Hedef genelde cos φ₂ = 0,95 civarı. Tam 1'e kompanze etme: yük değişince aşırı kompanzasyona (kapasitif) kayarsın, o da ayrı dert.":
+    "Üblich ist ein Ziel um cos φ₂ = 0,95. Nicht ganz auf 1 kompensieren: Ändert sich die Last, rutschst du in die Überkompensation (kapazitiv) — das ist ein eigenes Problem.",
+  "Kondansatör gücü":
+    "Kondensatorleistung",
+  "Kondansatörün şebekeye 'geri verdiği' reaktif güç. Bobinin çektiği reaktif gücü yerinde karşılar, kablo da trafo da rahatlar.":
+    "Die Blindleistung, die der Kondensator ans Netz „zurückgibt“. Sie deckt die Blindleistung der Spule direkt vor Ort — Leitung und Trafo atmen auf.",
+  "Kompanzasyon formülüyle hesaplanır; kondansatör etiketinde kvar olarak yazar.":
+    "Mit der Kompensationsformel berechnet; steht in kvar auf dem Kondensator.",
+  "Tesisin aktif gücü (Wirkleistung). Kompanzasyon bunu değiştirmez.":
+    "Wirkleistung der Anlage. Die Kompensation ändert sie nicht.",
+  "Kompanzasyon öncesi tan φ":
+    "tan φ vor der Kompensation",
+  "Mevcut durumun tan φ'si. cos φ ne kadar kötüyse tan φ o kadar büyük.":
+    "Der tan φ des Ist-Zustands. Je schlechter das cos φ, desto größer der tan φ.",
+  "cos φ biliniyorsa: tan φ = √(1 − cos²φ) / cos φ. Örnek: cos φ 0,7 → 1,02 · 0,9 → 0,48 · 0,95 → 0,33.":
+    "Wenn cos φ bekannt ist: tan φ = √(1 − cos²φ) / cos φ. Beispiele: cos φ 0,7 → 1,02 · 0,9 → 0,48 · 0,95 → 0,33.",
+  "Hedef tan φ":
+    "Ziel-tan φ",
+  "Ulaşmak istediğin tan φ (ör. cos φ = 0,95 için 0,33).":
+    "Der tan φ, den du erreichen willst (z. B. 0,33 für cos φ = 0,95).",
+  "Kompanzasyon Kondansatörü (1 faz)":
+    "Kompensationskondensator (einphasig)",
+  "C = Q_C / (U²·2π·f) — kvar'ı mikrofarada çevir.":
+    "C = Q_C / (U²·2π·f) — aus kvar werden Mikrofarad.",
+  "Gereken reaktif gücü bulduktan sonra sıra kondansatörün kapasitesinde. Kondansatörün reaktif gücü Q_C = U²·ω·C olduğundan C bundan çekilir. Floresan armatürlerdeki paralel kondansatör tam olarak bu hesapla seçilir.":
+    "Ist die nötige Blindleistung bekannt, ist die Kapazität dran. Weil für die Blindleistung eines Kondensators Q_C = U²·ω·C gilt, folgt C direkt daraus. Der Parallelkondensator in Leuchtstofflampen-Leuchten wird genau so ausgewählt.",
+  "Kompanzasyon Kondansatörü (üçgen)":
+    "Kompensationskondensator (Dreieck)",
+  "C_Δ = Q_C / (3·U²·2π·f) — üç kondansatör, her biri 400 V'ta.":
+    "C_Δ = Q_C / (3·U²·2π·f) — drei Kondensatoren, jeder an 400 V.",
+  "Trifaze kompanzasyonda üç kondansatör çoğunlukla üçgen bağlanır: her biri hat gerilimini (400 V) görür ve toplam Q_C'nin üçte birini taşır. Üçgen bağlantı, yıldıza göre üç kat daha küçük kapasite ister — bu yüzden pratikte hep üçgen.":
+    "Bei der Drehstromkompensation werden die drei Kondensatoren meist im Dreieck geschaltet: Jeder liegt an der Leiterspannung (400 V) und trägt ein Drittel von Q_C. Im Dreieck braucht man dreimal weniger Kapazität als im Stern — deshalb in der Praxis immer Dreieck.",
+  "U burada hat gerilimi (400 V). Hesaplanan C, TEK kondansatörün kapasitesidir.":
+    "U ist hier die Leiterspannung (400 V). Das berechnete C ist die Kapazität EINES Kondensators.",
+  "Kondansatör başına kapasite":
+    "Kapazität je Kondensator",
+  "Hata Akımı & Çevrim Empedansı":
+    "Fehlerstrom & Schleifenimpedanz",
+  "I_k = U₀ / Z_S — kısa devre akımı ne kadar büyükse o kadar iyi (evet, gerçekten).":
+    "I_k = U₀ / Z_S — je größer der Kurzschlussstrom, desto besser (ja, wirklich).",
+  "Gövdeye kaçak olduğunda akımın büyüklüğünü çevrim empedansı belirler. Otomatik kesme (Abschaltung) koruması ancak I_k, koruma elemanının açma akımından (I_a) büyükse çalışır. Yani uzun ve ince kablo burada iki kez cezalandırılır: hem gerilim düşer, hem sigorta zamanında atmaz.":
+    "Bei einem Körperschluss bestimmt die Schleifenimpedanz, wie groß der Strom wird. Die automatische Abschaltung funktioniert nur, wenn I_k größer ist als der Abschaltstrom I_a der Schutzeinrichtung. Eine lange, dünne Leitung wird hier also doppelt bestraft: Die Spannung fällt ab und die Sicherung löst nicht rechtzeitig aus.",
+  "Abschaltbedingung: Z_S · I_a ≤ U₀. I_a'yı yandaki 'Açma Akımı' kartından bul, I_k ≥ I_a mı diye karşılaştır.":
+    "Abschaltbedingung: Z_S · I_a ≤ U₀. I_a mit der Karte „Abschaltstrom“ bestimmen und prüfen, ob I_k ≥ I_a.",
+  "Hata akımı":
+    "Fehlerstrom",
+  "Faz ile PE arasında tam kısa devrede akan akım. Sigortayı attıran şey.":
+    "Der Strom, der bei einem satten Kurzschluss zwischen Außenleiter und PE fließt. Das, was die Sicherung auslöst.",
+  "Bu formülle hesaplanır; ölçüm cihazları Z_S'yi ölçüp I_k'yı da gösterir.":
+    "Mit dieser Formel berechnet; Messgeräte messen Z_S und zeigen I_k gleich mit an.",
+  "Faz-toprak gerilimi":
+    "Spannung gegen Erde",
+  "Dış iletken ile toprak (PE) arasındaki anma gerilimi. Bizim şebekede 230 V.":
+    "Nennspannung zwischen Außenleiter und Erde (PE). In unserem Netz 230 V.",
+  "TN sisteminde 230 V — sınavda da hep bu.":
+    "Im TN-System 230 V — in der Prüfung sowieso.",
+  "Çevrim empedansı":
+    "Schleifenimpedanz",
+  "Hata akımının dolaştığı tüm yolun direnci: trafo sargısı + faz iletkeni + hata yeri + PE + dönüş. Ne kadar küçükse hata akımı o kadar büyük, sigorta o kadar hızlı atar.":
+    "Widerstand des ganzen Wegs, den der Fehlerstrom nimmt: Trafowicklung + Außenleiter + Fehlerstelle + PE + Rückweg. Je kleiner, desto größer der Fehlerstrom und desto schneller löst die Sicherung aus.",
+  "Schleifenimpedanz ölçüm cihazıyla prizde ölçülür (VDE 0100-600 ilk muayene).":
+    "Mit einem Schleifenimpedanz-Messgerät an der Steckdose gemessen (Erstprüfung nach VDE 0100-600).",
+  "Açma Akımı (LS)":
+    "Abschaltstrom (LS)",
+  "I_a = k · I_n — B'de 5, C'de 10, D'de 20 kat.":
+    "I_a = k · I_n — bei B das 5-, bei C das 10-, bei D das 20-Fache.",
+  "LS sigortanın manyetik açıcısı, anma akımının belli bir katında anında (≤ 0,1 s) açar. Bu kat karakteristiğe bağlıdır. Çevrim empedansı kontrolünde I_a bu yüzden k·I_n olarak alınır.":
+    "Der magnetische Auslöser eines LS-Schalters löst bei einem bestimmten Vielfachen des Bemessungsstroms sofort aus (≤ 0,1 s). Dieses Vielfache hängt von der Charakteristik ab. Deshalb setzt man bei der Prüfung der Schleifenimpedanz I_a = k·I_n an.",
+  "B16 → I_a = 80 A, C16 → 160 A. Aynı kabloda C karakteristik daha büyük hata akımı ister — uzun hatta B seçmenin sebebi bu.":
+    "B16 → I_a = 80 A, C16 → 160 A. An derselben Leitung braucht Charakteristik C einen größeren Fehlerstrom — darum bekommen lange Leitungen ein B.",
+  "Açma akımı":
+    "Abschaltstrom",
+  "Koruma elemanının istenen sürede (ör. 0,4 s) kesin açtığı akım. Hata akımı bunun altında kalırsa sigorta 'düşünür' — ve o arada gövde gerilim altında kalır.":
+    "Der Strom, bei dem die Schutzeinrichtung in der geforderten Zeit (z. B. 0,4 s) sicher abschaltet. Bleibt der Fehlerstrom darunter, „überlegt“ die Sicherung — und so lange steht das Gehäuse unter Spannung.",
+  "LS için karakteristikten: B → 5·I_n, C → 10·I_n, D → 20·I_n.":
+    "Aus der LS-Charakteristik: B → 5·I_n, C → 10·I_n, D → 20·I_n.",
+  "Karakteristik katsayısı":
+    "Auslösefaktor",
+  "birimsiz · B = 5, C = 10, D = 20":
+    "ohne Einheit · B = 5, C = 10, D = 20",
+  "Manyetik açıcının çalıştığı akım katı (üst sınır).":
+    "Stromvielfaches, bei dem der magnetische Auslöser anspricht (Obergrenze).",
+  "Sigortanın üstündeki harf: B, C, D.":
+    "Der Buchstabe auf dem LS: B, C, D.",
+  "Anma akımı":
+    "Bemessungsstrom",
+  "Sigortanın üstünde yazan akım (B16 → 16 A).":
+    "Der Strom, der auf dem LS steht (B16 → 16 A).",
+  "Sigortanın üstünde yazar.":
+    "Steht auf dem LS-Schalter.",
+  "TT: Topraklama Direnci":
+    "TT: Erdungswiderstand",
+  "R_A ≤ U_L / I_Δn — 50 V'u geçmeyecek kadar iyi bir toprak.":
+    "R_A ≤ U_L / I_Δn — ein Erder, gut genug, um unter 50 V zu bleiben.",
+  "TT sisteminde gövdeler binanın kendi toprak elektroduna bağlıdır. Kaçak olduğunda gövdede oluşan dokunma gerilimi R_A · I_Δn'dir ve izin verilen sınırı (U_L = 50 V) aşmamalıdır. 30 mA'lik RCD ile bu sınır ~1667 Ω'a kadar çıkar — bu yüzden TT'de RCD hayat kurtarır.":
+    "Im TT-System hängen die Körper am eigenen Erder des Gebäudes. Im Fehlerfall entsteht am Gehäuse die Berührungsspannung R_A · I_Δn, und die darf die zulässige Grenze (U_L = 50 V) nicht überschreiten. Mit einem 30-mA-RCD geht diese Grenze bis ~1667 Ω — darum ist der RCD im TT-System Lebensretter.",
+  "U_L: insanlar için 50 V AC (tarım hayvanları için 25 V). Hesaplanan R_A üst sınırdır, ölçülen değer bunun altında olmalı.":
+    "U_L: 50 V AC für Menschen (25 V bei Nutztieren). Das berechnete R_A ist eine Obergrenze, der Messwert muss darunter liegen.",
+  "Topraklama direnci":
+    "Erdungswiderstand",
+  "Toprak elektrodu ile toprak arasındaki direnç + PE iletkeni.":
+    "Widerstand zwischen Erder und Erdreich plus Schutzleiter.",
+  "Topraklama ölçer (Erdungsmesser) ile ölçülür.":
+    "Mit dem Erdungsmesser gemessen.",
+  "İzin verilen dokunma gerilimi":
+    "Zulässige Berührungsspannung",
+  "Kalıcı olarak dokunulmasına izin verilen en büyük gerilim: 50 V AC.":
+    "Höchste Spannung, die dauerhaft berührt werden darf: 50 V AC.",
+  "Normda: 50 V AC (hayvanlar için 25 V).":
+    "Laut Norm: 50 V AC (bei Tieren 25 V).",
+  "RCD anma fark akımı":
+    "Bemessungsdifferenzstrom des RCD",
+  "RCD'nin açtığı kaçak akım: genelde 30 mA.":
+    "Fehlerstrom, bei dem der RCD auslöst: meist 30 mA.",
+  "RCD'nin üstünde yazar (I_Δn = 30 mA).":
+    "Steht auf dem RCD (I_Δn = 30 mA).",
+  "Kalkış Akımı":
+    "Anlaufstrom",
+  "I_A = k · I_N — motor uyanırken 6 kat fazla kahve içer.":
+    "I_A = k · I_N — ein Motor trinkt beim Aufwachen sechsmal so viel Kaffee.",
+  "Asenkron motor dururken rotor kısa devre edilmiş bir trafo sekonderi gibidir: kalkışta anma akımının 5–8 katını çeker. Bu ani akım hattı düşürür, ışıkları titretir, sigortayı attırabilir. Büyük motorlarda yıldız-üçgen, yumuşak yolverici ya da frekans konvertörü bu yüzden var.":
+    "Im Stillstand ist der Läufer eines Asynchronmotors wie eine kurzgeschlossene Trafo-Sekundärwicklung: Beim Anlauf zieht er das 5- bis 8-Fache des Bemessungsstroms. Dieser Stromstoß zieht die Netzspannung runter, lässt Licht flackern und kann die Sicherung auslösen. Darum gibt es bei großen Motoren Stern-Dreieck, Sanftanlasser oder Frequenzumrichter.",
+  "k = I_A/I_N tip etiketinde ya da katalogda yazar. Sigorta seçerken bu akımı unutma — motor korumada 'gecikmeli' (träge) karakteristiklerin sebebi bu.":
+    "k = I_A/I_N steht auf dem Typenschild oder im Katalog. Diesen Strom bei der Sicherungsauswahl nicht vergessen — er ist der Grund für träge Charakteristiken beim Motorschutz.",
+  "Kalkış akımı":
+    "Anlaufstrom",
+  "Motorun ilk anda çektiği akım.":
+    "Der Strom, den der Motor im ersten Moment zieht.",
+  "Hesapla ya da pens ampermetrenin 'inrush' fonksiyonuyla ölç.":
+    "Berechnen oder mit der Inrush-Funktion einer Stromzange messen.",
+  "Kalkış akımı oranı":
+    "Anzugsstromverhältnis",
+  "birimsiz · tipik 5–8":
+    "ohne Einheit · typisch 5–8",
+  "Kalkış akımının anma akımına oranı.":
+    "Verhältnis von Anlaufstrom zu Bemessungsstrom.",
+  "Motor kataloğu / tip etiketi (I_A/I_N).":
+    "Motorkatalog / Typenschild (I_A/I_N).",
+  "Motorun tam yükte çektiği akım.":
+    "Strom, den der Motor bei Volllast zieht.",
+  "Tip etiketinde (bağlantı türüne göre: Δ 400 V / Y 690 V).":
+    "Auf dem Typenschild (je nach Schaltung: Δ 400 V / Y 690 V).",
+  "Yıldız-Üçgen Kalkış Akımı":
+    "Anlaufstrom bei Stern-Dreieck",
+  "I_Y = I_Δ / 3 — yıldızda kalk, şebekeyi üzme.":
+    "I_Y = I_Δ / 3 — im Stern anlaufen, das Netz schonen.",
+  "Motor normalde üçgende çalışırken yıldızda kalkarsa her sargıya 400 V yerine 230 V düşer. Sargı akımı √3 azalır, hat akımı da üçgendeki √3 çarpanını kaybeder: toplamda şebekeden çekilen kalkış akımı ÜÇTE BİRE iner. Bedeli: moment de üçte bire düşer — yüklü kalkışlarda motor kalkamayabilir.":
+    "Läuft ein Motor, der normal im Dreieck arbeitet, im Stern an, liegen an jeder Wicklung 230 V statt 400 V. Der Strangstrom sinkt um √3, und der Leiterstrom verliert zusätzlich den √3-Faktor des Dreiecks: Insgesamt sinkt der Anlaufstrom aus dem Netz auf EIN DRITTEL. Der Preis: Auch das Drehmoment sinkt auf ein Drittel — bei Lastanlauf kommt der Motor eventuell nicht hoch.",
+  "Sadece üçgende 400 V için yapılmış motorlarda (etiket: Δ 400 V / Y 690 V) kullanılır. M_Y = M_Δ / 3 — moment için de aynı formül geçerli. Playground'da 'Last + Steuer' modunda dene: pervanenin yıldızda yavaş döndüğünü gör.":
+    "Nur für Motoren, die im Dreieck für 400 V gebaut sind (Typenschild: Δ 400 V / Y 690 V). M_Y = M_Δ / 3 — für das Drehmoment gilt dieselbe Formel. Probier es im Playground im Modus „Last + Steuer“ aus: Im Stern dreht das Lüfterrad langsam.",
+  "Yıldızda kalkış akımı":
+    "Anlaufstrom in Sternschaltung",
+  "Yıldız kalkışta şebekeden çekilen akım.":
+    "Der Netzstrom beim Sternanlauf.",
+  "Bu formülle hesaplanır.":
+    "Mit dieser Formel berechnet.",
+  "Üçgende (direkt) kalkış akımı":
+    "Anlaufstrom im Dreieck (direkt)",
+  "Motor direkt üçgende kalksaydı çekeceği akım.":
+    "Der Strom, den der Motor bei direktem Anlauf im Dreieck ziehen würde.",
+  "I_A = k · I_N ile (Kalkış Akımı kartı).":
+    "Mit I_A = k · I_N (Karte „Anlaufstrom“).",
+  "Frekans Konvertörü: U/f Sabit":
+    "Frequenzumrichter: U/f konstant",
+  "U₂ = U₁ · f₂ / f₁ — frekansı düşürürsen gerilimi de düşür.":
+    "U₂ = U₁ · f₂ / f₁ — Frequenz runter, Spannung auch runter.",
+  "Frekans konvertörü motoru yavaşlatmak için frekansı düşürür. Ama gerilim aynı kalırsa düşük frekansta sargının reaktansı azalır, akım ve mıknatıslanma şişer — motor doyuma gider ve ısınır. Çözüm: U/f oranını sabit tutmak. 400 V / 50 Hz = 8 V/Hz; 25 Hz'te 200 V.":
+    "Ein Frequenzumrichter macht den Motor langsamer, indem er die Frequenz senkt. Bliebe die Spannung gleich, würde der Blindwiderstand der Wicklung bei niedriger Frequenz sinken — Strom und Magnetisierung schießen hoch, der Motor geht in die Sättigung und wird heiß. Die Lösung: das Verhältnis U/f konstant halten. 400 V / 50 Hz = 8 V/Hz; bei 25 Hz also 200 V.",
+  "50 Hz'in üstünde (alan zayıflatma bölgesi) gerilim 400 V'ta sabit kalır, sadece frekans artar — moment düşer.":
+    "Über 50 Hz (Feldschwächbereich) bleibt die Spannung bei 400 V, nur die Frequenz steigt — das Drehmoment sinkt.",
+  "Yeni gerilim":
+    "Neue Spannung",
+  "Konvertörün yeni frekansta vermesi gereken gerilim.":
+    "Die Spannung, die der Umrichter bei der neuen Frequenz liefern muss.",
+  "Motorun anma gerilimi (genelde 400 V).":
+    "Bemessungsspannung des Motors (meist 400 V).",
+  "Tip etiketi.":
+    "Typenschild.",
+  "Yeni frekans":
+    "Neue Frequenz",
+  "Ayarlanan çıkış frekansı.":
+    "Die eingestellte Ausgangsfrequenz.",
+  "Konvertör ayarı.":
+    "Einstellung am Umrichter.",
+  "Anma frekansı":
+    "Bemessungsfrequenz",
+  "Motorun anma frekansı (50 Hz).":
+    "Bemessungsfrequenz des Motors (50 Hz).",
+  "Doğrultucu Çıkış Gerilimi":
+    "Gleichrichter-Ausgangsspannung",
+  "U_di = k · U — B2U'da 0,9, B6U'da 1,35.":
+    "U_di = k · U — bei B2U 0,9, bei B6U 1,35.",
+  "Köprü doğrultucunun çıkışındaki ideal ortalama DC gerilim (filtresiz). Tek fazlı köprüde (B2U) k = 0,9; trifaze köprüde (B6U) k = 1,35. Frekans konvertörünün ara devresindeki ~540 V tam olarak buradan gelir: 400 V · 1,35.":
+    "Die ideelle mittlere Gleichspannung am Ausgang einer Brückenschaltung (ungeglättet). Bei der einphasigen Brücke (B2U) ist k = 0,9, bei der Drehstrombrücke (B6U) k = 1,35. Die ~540 V im Zwischenkreis eines Frequenzumrichters kommen genau daher: 400 V · 1,35.",
+  "Kondansatörle filtrelenirse gerilim tepe değere (√2 · U) yaklaşır: 230 V → ~325 V. Formül filtresiz ortalama değer içindir.":
+    "Mit Glättungskondensator nähert sich die Spannung dem Scheitelwert (√2 · U): 230 V → ~325 V. Die Formel gilt für den ungeglätteten Mittelwert.",
+  "İdeal DC gerilim":
+    "Ideelle Gleichspannung",
+  "Doğrultucu çıkışının ortalama değeri.":
+    "Mittelwert der Gleichrichter-Ausgangsspannung.",
+  "DC voltmetreyle ölçülür (ortalama değer).":
+    "Mit einem DC-Voltmeter gemessen (Mittelwert).",
+  "Doğrultucu katsayısı":
+    "Gleichrichterfaktor",
+  "birimsiz · M1U 0,45 · B2U 0,9 · B6U 1,35":
+    "ohne Einheit · M1U 0,45 · B2U 0,9 · B6U 1,35",
+  "Bağlantı tipine göre sabit.":
+    "Konstante, die von der Schaltung abhängt.",
+  "Devre tipinden: B2U → 0,9, B6U → 1,35.":
+    "Aus der Schaltungsart: B2U → 0,9, B6U → 1,35.",
+  "Giriş gerilimi (efektif)":
+    "Anschlussspannung (Effektivwert)",
+  "Doğrultucunun beslendiği AC gerilim: B2U'da faz gerilimi, B6U'da hat gerilimi.":
+    "AC-Spannung, die den Gleichrichter speist: bei B2U die Strangspannung, bei B6U die Leiterspannung.",
+  "230 V ya da 400 V.":
+    "230 V oder 400 V.",
+  "Kısa Devre Gerilimi & Sürekli Kısa Devre Akımı":
+    "Kurzschlussspannung & Dauerkurzschlussstrom",
+  "I_k = I_N · 100 / u_k — küçük u_k, büyük kısa devre akımı.":
+    "I_k = I_N · 100 / u_k — kleines u_k, großer Kurzschlussstrom.",
+  "u_k, sekonder kısa devre edilmişken anma akımını akıtmak için primere uygulanması gereken gerilimin yüzdesidir. Trafonun iç 'sertliğini' anlatır: u_k küçükse trafo serttir, gerilimi yükte az düşer ama kısa devre akımı çok büyüktür. Dağıtım trafolarında tipik u_k %4–6.":
+    "u_k ist der Prozentsatz der Bemessungs-Primärspannung, der bei kurzgeschlossener Sekundärseite nötig ist, damit der Bemessungsstrom fließt. Es beschreibt, wie „steif“ der Trafo ist: Bei kleinem u_k ist er steif, die Spannung sackt unter Last kaum ab, aber der Kurzschlussstrom ist riesig. Verteiltrafos haben typisch u_k = 4–6 %.",
+  "u_k = %4 → I_k = 25 · I_N. Şalt cihazlarının kesme kapasitesi bu akıma göre seçilir.":
+    "u_k = 4 % → I_k = 25 · I_N. Das Schaltvermögen der Schaltgeräte wird nach diesem Strom ausgewählt.",
+  "Sürekli kısa devre akımı":
+    "Dauerkurzschlussstrom",
+  "Sekonder uçları kısa devre edilince akan akım.":
+    "Der Strom, der bei kurzgeschlossenen Sekundärklemmen fließt.",
+  "Trafonun sekonder anma akımı.":
+    "Sekundärer Bemessungsstrom des Trafos.",
+  "Tip etiketi ya da S / (√3 · U).":
+    "Typenschild oder S / (√3 · U).",
+  "Bağıl kısa devre gerilimi":
+    "Relative Kurzschlussspannung",
+  "Kısa devre deneyinde anma akımı için gereken primer gerilimin yüzdesi.":
+    "Prozentsatz der Primärspannung, der im Kurzschlussversuch für den Bemessungsstrom nötig ist.",
+  "Tip etiketinde (ör. u_k = %4).":
+    "Auf dem Typenschild (z. B. u_k = 4 %).",
+  "Aydınlık Düzeyi":
+    "Beleuchtungsstärke",
+  "E = Φ / A — ışığı metrekareye bölüştür.":
+    "E = Φ / A — Licht pro Quadratmeter aufteilen.",
+  "Bir yüzeye düşen ışık akısının o yüzeyin alanına oranı. 1 lux = 1 lümen / m². Normlar iş yerleri için en az aydınlık düzeyini belirler (DIN EN 12464-1): ofis 500 lx, koridor 100 lx, ince montaj işi 750 lx ve üstü.":
+    "Der Lichtstrom, der auf eine Fläche fällt, geteilt durch diese Fläche. 1 Lux = 1 Lumen / m². Normen schreiben Mindestwerte für Arbeitsplätze vor (DIN EN 12464-1): Büro 500 lx, Flur 100 lx, Feinmontage 750 lx und mehr.",
+  "Aydınlık düzeyi":
+    "Beleuchtungsstärke",
+  "Yüzeye düşen ışık miktarı.":
+    "Lichtmenge, die auf die Fläche fällt.",
+  "Luxmetre ile çalışma yüksekliğinde (≈ 0,75 m) ölçülür.":
+    "Mit dem Luxmeter in Arbeitshöhe (≈ 0,75 m) gemessen.",
+  "Işık akısı":
+    "Lichtstrom",
+  "Kaynağın her yöne saldığı toplam ışık.":
+    "Gesamtes Licht, das die Quelle in alle Richtungen abgibt.",
+  "Lamba ambalajında lümen olarak yazar.":
+    "Steht in Lumen auf der Lampenverpackung.",
+  "Alan":
+    "Fläche",
+  "Aydınlatılan yüzey.":
+    "Die beleuchtete Fläche.",
+  "En × boy.":
+    "Länge × Breite.",
+  "Işık Verimi":
+    "Lichtausbeute",
+  "η = Φ / P — watt başına kaç lümen?":
+    "η = Φ / P — wie viele Lumen pro Watt?",
+  "Lambanın elektrik gücünü ne kadar ışığa çevirdiği. Akkor lamba ~12 lm/W (geri kalanı ısıtıcı), floresan ~80 lm/W, iyi bir LED 150 lm/W'ın üstü. Watt artık parlaklığın değil, faturanın birimi.":
+    "Wie viel der elektrischen Leistung einer Lampe zu Licht wird. Glühlampe ~12 lm/W (der Rest ist Heizung), Leuchtstofflampe ~80 lm/W, eine gute LED über 150 lm/W. Watt sind keine Einheit für Helligkeit mehr — sondern für die Stromrechnung.",
+  "Işık verimi":
+    "Lichtausbeute",
+  "Watt başına üretilen lümen.":
+    "Erzeugte Lumen pro Watt.",
+  "Ürün etiketi / veri sayfası.":
+    "Produktetikett / Datenblatt.",
+  "Lambanın toplam ışık çıkışı.":
+    "Gesamter Lichtstrom der Lampe.",
+  "Ambalajda lümen olarak.":
+    "In Lumen auf der Verpackung.",
+  "Lambanın çektiği elektrik gücü.":
+    "Elektrische Leistung der Lampe.",
+  "Ambalaj / tip etiketi.":
+    "Verpackung / Typenschild.",
+  "Armatür Sayısı (Verim Yöntemi)":
+    "Anzahl der Leuchten (Wirkungsgradverfahren)",
+  "n = E·A / (Φ·η_B·WF) — kaç armatür lazım?":
+    "n = E·A / (Φ·η_B·WF) — wie viele Leuchten brauchst du?",
+  "Wirkungsgradverfahren: istenen aydınlık düzeyi için gereken armatür sayısı. Armatürün tüm ışığı yere ulaşmaz (η_B, aydınlatma verimi: oda geometrisi + duvar yansıması), zamanla lambalar kirlenip zayıflar (WF, bakım faktörü). İkisini de hesaba katmazsan açılış günü güzel, bir yıl sonra loş bir oda teslim edersin.":
+    "Wirkungsgradverfahren: die Anzahl der Leuchten für eine geforderte Beleuchtungsstärke. Nicht das ganze Licht einer Leuchte kommt unten an (η_B, Beleuchtungswirkungsgrad: Raumgeometrie + Reflexion der Wände), und mit der Zeit verschmutzen und altern die Lampen (WF, Wartungsfaktor). Wer eins davon ignoriert, übergibt einen Raum, der am Eröffnungstag schön und ein Jahr später düster ist.",
+  "Sonucu YUKARI yuvarla. Tipik değerler: η_B 0,5–0,8 · WF 0,8 (temiz oda), 0,67 (normal).":
+    "Ergebnis immer AUFRUNDEN. Typische Werte: η_B 0,5–0,8 · WF 0,8 (sauberer Raum), 0,67 (normal).",
+  "Armatür sayısı":
+    "Anzahl der Leuchten",
+  "Gereken armatür (ya da lamba) adedi.":
+    "Benötigte Anzahl Leuchten (oder Lampen).",
+  "Bu formülle hesaplanır, yukarı yuvarlanır.":
+    "Mit dieser Formel berechnet, aufgerundet.",
+  "İstenen aydınlık düzeyi":
+    "Geforderte Beleuchtungsstärke",
+  "Normun istediği değer (ofis 500 lx).":
+    "Der von der Norm geforderte Wert (Büro 500 lx).",
+  "DIN EN 12464-1 tabloları.":
+    "Tabellen der DIN EN 12464-1.",
+  "Oda alanı":
+    "Raumfläche",
+  "Aydınlatılacak zemin alanı.":
+    "Zu beleuchtende Bodenfläche.",
+  "Armatür başına ışık akısı":
+    "Lichtstrom je Leuchte",
+  "Bir armatürün toplam lümeni.":
+    "Gesamte Lumen einer Leuchte.",
+  "Armatür veri sayfası.":
+    "Datenblatt der Leuchte.",
+  "Aydınlatma verimi":
+    "Beleuchtungswirkungsgrad",
+  "birimsiz · 0,5–0,8":
+    "ohne Einheit · 0,5–0,8",
+  "Işığın ne kadarının çalışma yüzeyine ulaştığı.":
+    "Wie viel des Lichts die Arbeitsfläche erreicht.",
+  "Üretici tabloları (oda indeksi + yansıma).":
+    "Herstellertabellen (Raumindex + Reflexionsgrade).",
+  "Bakım faktörü":
+    "Wartungsfaktor",
+  "birimsiz · 0,67–0,8":
+    "ohne Einheit · 0,67–0,8",
+  "Kirlenme ve yaşlanma payı.":
+    "Zuschlag für Verschmutzung und Alterung.",
+  "Ortama göre seçilir: temiz 0,8, normal 0,67.":
+    "Nach Umgebung: sauber 0,8, normal 0,67.",
+  "Motor Anma Akımı (trifaze)":
+    "Bemessungsstrom des Motors (Drehstrom)",
+  "I = P / (√3 · U · cos φ · η) — kablo ve motor koruma bununla seçilir.":
+    "I = P / (√3 · U · cos φ · η) — danach werden Leitung und Motorschutz ausgewählt.",
+  "Tip etiketindeki güç milden ALINAN mekanik güçtür. Şebekeden çekilen elektrik gücü verim kadar daha büyüktür; akım da buna göre. Kablo kesiti, motor koruma rölesi ayarı ve sigorta hep bu akımdan başlar.":
+    "Die Leistung auf dem Typenschild ist die mechanische Leistung, die an der Welle ABGEGEBEN wird. Die aus dem Netz aufgenommene elektrische Leistung ist um den Wirkungsgrad größer, der Strom also auch. Leitungsquerschnitt, Einstellung des Motorschutzrelais und Sicherung beginnen alle bei diesem Strom.",
+  "P'yi watt olarak gir (ya da birimi kW seç). Motor koruma rölesi genelde tam bu anma akımına ayarlanır.":
+    "P in Watt eingeben (oder kW als Einheit wählen). Das Motorschutzrelais wird meist genau auf diesen Bemessungsstrom eingestellt.",
+  "Hat akımı (anma)":
+    "Leiterstrom (Bemessung)",
+  "Motorun tam yükte şebekeden çektiği akım.":
+    "Der Strom, den der Motor bei Volllast aus dem Netz zieht.",
+  "Tip etiketinde de yazar — hesapla karşılaştır.":
+    "Steht auch auf dem Typenschild — mit deiner Rechnung vergleichen.",
+  "Mil gücü":
+    "Wellenleistung",
+  "Tip etiketindeki güç: milden alınan mekanik güç.":
+    "Leistung auf dem Typenschild: an der Welle abgegebene mechanische Leistung.",
+  "Tip etiketi (kW).":
+    "Typenschild (kW).",
+  "Akım Taşıma Kapasitesi (düzeltilmiş)":
+    "Strombelastbarkeit (umgerechnet)",
+  "I_z = I_r · f₁ · f₂ — tablo değeri ideal dünya içindir.":
+    "I_z = I_r · f₁ · f₂ — Tabellenwerte gelten für eine ideale Welt.",
+  "Tablodaki akım taşıma değeri (I_r) 30 °C ortam ve tek başına döşenmiş kablo içindir. Gerçekte kablolar demet halinde yatar ve tavan arası yazın 40 °C olur. Her olumsuz koşul bir düşürme faktörü getirir; çarpılınca kablonun GERÇEKTE taşıyabileceği akım (I_z) çıkar. Sonra kural: I_b ≤ I_n ≤ I_z.":
+    "Der Tabellenwert (I_r) gilt für 30 °C Umgebung und eine einzeln verlegte Leitung. In der Realität liegen Leitungen gebündelt, und im Dachboden hat es im Sommer 40 °C. Jede ungünstige Bedingung bringt einen Umrechnungsfaktor; multipliziert ergibt sich der Strom, den die Leitung WIRKLICH tragen kann (I_z). Danach gilt: I_b ≤ I_n ≤ I_z.",
+  "f₁: ortam sıcaklığı (ör. 40 °C → 0,87), f₂: demetleme (ör. 3 devre yan yana → 0,7). Değerler DIN VDE 0298-4 tablolarından.":
+    "f₁: Umgebungstemperatur (z. B. 40 °C → 0,87), f₂: Häufung (z. B. 3 Stromkreise nebeneinander → 0,7). Werte aus den Tabellen der DIN VDE 0298-4.",
+  "Düzeltilmiş taşıma akımı":
+    "Umgerechnete Strombelastbarkeit",
+  "Kablonun bu döşeme koşullarında sürekli taşıyabileceği akım.":
+    "Strom, den die Leitung unter diesen Verlegebedingungen dauerhaft tragen kann.",
+  "Tablo değeri":
+    "Tabellenwert",
+  "Döşeme türü ve kesite göre tablodaki akım.":
+    "Strom laut Tabelle für Verlegeart und Querschnitt.",
+  "DIN VDE 0298-4 tablosu (döşeme türü + kesit + yüklü damar sayısı).":
+    "Tabelle der DIN VDE 0298-4 (Verlegeart + Querschnitt + belastete Adern).",
+  "birimsiz · 30 °C = 1":
+    "ohne Einheit · 30 °C = 1",
+  "Ortam sıcaklığı 30 °C'den farklıysa.":
+    "Wenn die Umgebungstemperatur von 30 °C abweicht.",
+  "Tablo: 25 °C 1,06 · 35 °C 0,94 · 40 °C 0,87.":
+    "Tabelle: 25 °C 1,06 · 35 °C 0,94 · 40 °C 0,87.",
+  "Demetleme faktörü":
+    "Häufungsfaktor",
+  "birimsiz · tek devre = 1":
+    "ohne Einheit · einzelner Stromkreis = 1",
+  "Yan yana döşenen devre sayısına göre.":
+    "Je nach Anzahl nebeneinander verlegter Stromkreise.",
+  "Tablo: 2 devre 0,8 · 3 devre 0,7 · 4 devre 0,65.":
+    "Tabelle: 2 Stromkreise 0,8 · 3 Stromkreise 0,7 · 4 Stromkreise 0,65.",
+  "Aktif ve Reaktif Akım":
+    "Wirk- und Blindstrom",
+  "I_w = I · cos φ — akımın sadece bir kısmı iş yapar.":
+    "I_w = I · cos φ — nur ein Teil des Stroms arbeitet.",
+  "Ampermetre toplam (görünür) akımı gösterir. Bunun cos φ kadarı aktif akımdır (I_w) ve iş yapar; geri kalanı reaktif akımdır (I_b = I·sin φ) ve bobinle şebeke arasında gidip gelir. Kabloyu ikisi birlikte ısıtır — kompanzasyonun derdi tam olarak bu.":
+    "Das Amperemeter zeigt den Gesamtstrom (Scheinstrom). Der cos-φ-Anteil davon ist der Wirkstrom (I_w) und verrichtet Arbeit; der Rest ist Blindstrom (I_b = I·sin φ) und pendelt zwischen Spule und Netz hin und her. Erwärmen tun beide die Leitung — und genau darum geht es bei der Kompensation.",
+  "Aktif akım":
+    "Wirkstrom",
+  "Akımın gerilimle aynı fazdaki, iş yapan kısmı.":
+    "Der Anteil des Stroms, der mit der Spannung in Phase ist und Arbeit verrichtet.",
+  "Görünür akım":
+    "Scheinstrom",
+  "Ampermetrenin gösterdiği toplam akım.":
+    "Gesamtstrom, den das Amperemeter anzeigt.",
+  "Pens ampermetreyle ölç.":
+    "Mit der Stromzange messen.",
+  "Empedans (seri R + X)":
+    "Scheinwiderstand (Reihe R + X)",
+  "Z = √(R² + X²) — dirençler AC'de Pisagor'la toplanır.":
+    "Z = √(R² + X²) — im Wechselstrom addieren sich Widerstände nach Pythagoras.",
+  "AC devresinde omik direnç ile reaktans aynı fazda değildir; düz toplanmazlar, dik üçgenin kenarları gibi birleşirler. Sonuç, devrenin AC'ye gösterdiği toplam direnç: empedans Z. I = U / Z ve cos φ = R / Z.":
+    "Im Wechselstromkreis sind Wirkwiderstand und Blindwiderstand nicht in Phase; sie addieren sich nicht einfach, sondern wie die Seiten eines rechtwinkligen Dreiecks. Ergebnis ist der Gesamtwiderstand für Wechselstrom: der Scheinwiderstand Z. I = U / Z und cos φ = R / Z.",
+  "Seri RL ve seri RC için geçerli. Hem bobin hem kondansatör varsa X = X_L − X_C al (biri diğerini götürür).":
+    "Gilt für Reihen-RL und Reihen-RC. Sind Spule und Kondensator da, nimm X = X_L − X_C (der eine hebt den anderen auf).",
+  "Empedans":
+    "Scheinwiderstand",
+  "AC'deki toplam direnç.":
+    "Gesamtwiderstand bei Wechselstrom.",
+  "Z = U / I ile ölçümden ya da bu formülle.":
+    "Aus einer Messung mit Z = U / I oder mit dieser Formel.",
+  "Reaktans":
+    "Blindwiderstand",
+  "Bobinin ya da kondansatörün AC'ye gösterdiği 'ısıtmayan' direnç. Enerjiyi yakmaz, sadece ileri geri taşır.":
+    "Der „nicht heizende“ Widerstand einer Spule oder eines Kondensators bei Wechselstrom. Er verbraucht keine Energie, er schiebt sie nur hin und her.",
+  "X_L = 2π·f·L ya da X_C = 1/(2π·f·C) kartlarından.":
+    "Aus den Karten X_L = 2π·f·L oder X_C = 1/(2π·f·C).",
+  "Rezonans Frekansı":
+    "Resonanzfrequenz",
+  "f₀ = 1 / (2π·√(L·C)) — X_L ile X_C'nin eşit olduğu an.":
+    "f₀ = 1 / (2π·√(L·C)) — der Moment, in dem X_L gleich X_C ist.",
+  "Frekans arttıkça X_L büyür, X_C küçülür. Bir noktada ikisi eşitlenir ve birbirini götürür: rezonans. Seri devrede empedans minimuma iner (akım tavan yapar), paralel devrede maksimuma çıkar. Radyo istasyonu seçmek de, kompanzasyon tesislerinde harmonik sorunları da buradan çıkar.":
+    "Mit steigender Frequenz wächst X_L und X_C sinkt. Irgendwann sind beide gleich und heben sich auf: Resonanz. Im Reihenkreis fällt der Scheinwiderstand auf ein Minimum (der Strom schießt hoch), im Parallelkreis steigt er auf ein Maximum. Sender einstellen im Radio und Oberschwingungsprobleme in Kompensationsanlagen — beides kommt von hier.",
+  "Rezonans frekansı":
+    "Resonanzfrequenz",
+  "X_L = X_C olduğu frekans.":
+    "Die Frequenz, bei der X_L = X_C.",
+  "Zaman Sabiti (RC)":
+    "Zeitkonstante (RC)",
+  "τ = R · C — 5τ sonra kondansatör 'dolu' sayılır.":
+    "τ = R · C — nach 5τ gilt der Kondensator als „voll“.",
+  "Kondansatör bir direnç üzerinden dolarken gerilimi üstel artar. τ kadar sürede son değerin %63'üne, 5τ'da %99'una ulaşır. Zaman rölelerinin, yumuşak kalkış devrelerinin ve filtrelerin hepsi bu süreye göre tasarlanır. Bobinde aynı mantık: τ = L / R.":
+    "Lädt ein Kondensator über einen Widerstand, steigt seine Spannung exponentiell. Nach τ erreicht sie 63 % des Endwerts, nach 5τ 99 %. Zeitrelais, Sanftanlaufschaltungen und Filter werden alle nach dieser Zeit ausgelegt. Bei der Spule gilt dieselbe Logik: τ = L / R.",
+  "Zaman sabiti":
+    "Zeitkonstante",
+  "Dolma/boşalmanın hızı. 1τ → %63, 5τ → ~%100.":
+    "Geschwindigkeit des Ladens/Entladens. 1τ → 63 %, 5τ → ~100 %.",
+  "Bu formülle hesaplanır; osiloskopla da ölçülür.":
+    "Mit dieser Formel berechnet; lässt sich auch mit dem Oszilloskop messen.",
+  "Trafo Verimi (kayıplarla)":
+    "Wirkungsgrad des Transformators (mit Verlusten)",
+  "η = P₂ / (P₂ + P_Fe + P_Cu) — demir ve bakırın faturası.":
+    "η = P₂ / (P₂ + P_Fe + P_Cu) — die Rechnung für Eisen und Kupfer.",
+  "Trafonun iki kaybı var: demir kaybı (P_Fe) çekirdekte, gerilim olduğu sürece hep vardır — yük olsun olmasın. Bakır kaybı (P_Cu) sargılarda, yük akımıyla artar. Verim, verilen gücün bunların toplamına oranıdır. Büyük trafolarda %98'i geçer; elektrikteki en verimli makineler bunlar.":
+    "Ein Trafo hat zwei Verluste: Eisenverluste (P_Fe) im Kern, immer da, solange Spannung anliegt — mit oder ohne Last. Kupferverluste (P_Cu) in den Wicklungen, sie wachsen mit dem Laststrom. Der Wirkungsgrad ist die abgegebene Leistung geteilt durch abgegebene Leistung plus beide Verluste. Große Trafos liegen über 98 % — die effizientesten Maschinen der Elektrotechnik.",
+  "Verilen güç":
+    "Abgegebene Leistung",
+  "Sekonderden yüke verilen aktif güç.":
+    "Wirkleistung, die die Sekundärseite an die Last abgibt.",
+  "Sekonder tarafta ölç: U₂ · I₂ · cos φ.":
+    "Auf der Sekundärseite messen: U₂ · I₂ · cos φ.",
+  "Demir kaybı":
+    "Eisenverluste",
+  "Çekirdekteki histerezis ve girdap akımı kayıpları — boşta da var.":
+    "Hysterese- und Wirbelstromverluste im Kern — auch im Leerlauf vorhanden.",
+  "Boşta çalışma deneyi (Leerlaufversuch) / veri sayfası.":
+    "Leerlaufversuch / Datenblatt.",
+  "Bakır kaybı":
+    "Kupferverluste",
+  "Sargı dirençlerinde ısıya dönen güç — akımın karesiyle artar.":
+    "In den Wicklungswiderständen in Wärme umgesetzte Leistung — steigt mit dem Quadrat des Stroms.",
+  "Kısa devre deneyi (Kurzschlussversuch) / veri sayfası.":
+    "Kurzschlussversuch / Datenblatt.",
+  "Yüke Göre Bakır Kaybı":
+    "Kupferverluste bei Teillast",
+  "P_Cu = P_CuN · (S / S_N)² — yarı yükte dörtte bir kayıp.":
+    "P_Cu = P_CuN · (S / S_N)² — halbe Last, ein Viertel der Verluste.",
+  "Bakır kaybı akımın karesiyle değişir. Trafo yarı yükte çalışıyorsa bakır kaybı anma değerinin dörtte birine iner. Bu yüzden trafoların verimi tam yükte değil, genelde %40–60 yük civarında en yüksektir (bakır kaybı demir kaybına eşit olduğunda).":
+    "Die Kupferverluste ändern sich mit dem Quadrat des Stroms. Bei halber Last sinken sie auf ein Viertel des Bemessungswerts. Darum hat ein Trafo seinen besten Wirkungsgrad nicht bei Volllast, sondern meist bei 40–60 % Last (wenn Kupfer- und Eisenverluste gleich groß sind).",
+  "Bakır kaybı (anlık)":
+    "Kupferverluste (aktuell)",
+  "O anki yükte sargılarda kaybolan güç.":
+    "In den Wicklungen bei der aktuellen Last verlorene Leistung.",
+  "Anma bakır kaybı":
+    "Kupferverluste bei Bemessungslast",
+  "Tam yükteki bakır kaybı.":
+    "Kupferverluste bei Volllast.",
+  "Veri sayfası / kısa devre deneyi.":
+    "Datenblatt / Kurzschlussversuch.",
+  "O anki görünür güç":
+    "Aktuelle Scheinleistung",
+  "Trafonun şu an verdiği görünür güç.":
+    "Scheinleistung, die der Trafo gerade abgibt.",
+  "Ölç ya da hesapla: √3 · U · I.":
+    "Messen oder berechnen: √3 · U · I.",
+  "Anma görünür gücü":
+    "Bemessungsscheinleistung",
+  "Trafonun etiket gücü.":
+    "Typenschildleistung des Trafos.",
+  "Tip etiketi (kVA).":
+    "Typenschild (kVA).",
+  "Enerji Maliyeti":
+    "Energiekosten",
+  "K = P · t · k — wattın cüzdandaki karşılığı.":
+    "K = P · t · k — was ein Watt für den Geldbeutel bedeutet.",
+  "Tüketilen enerji (kWh) ile birim fiyatın çarpımı. Bekleme modundaki 10 W'lık bir cihaz yılda 87,6 kWh yer — 30 ct/kWh ile ~26 €. 'Küçük şeyler' fatura üzerinde hiç de küçük değildir.":
+    "Verbrauchte Energie (kWh) mal Arbeitspreis. Ein Gerät mit 10 W Standby frisst 87,6 kWh im Jahr — bei 30 ct/kWh rund 26 €. „Kleinigkeiten“ sind auf der Rechnung alles andere als klein.",
+  "Maliyet":
+    "Kosten",
+  "Ödenecek tutar.":
+    "Der zu zahlende Betrag.",
+  "Cihazın çektiği güç.":
+    "Leistungsaufnahme des Geräts.",
+  "Tip etiketi ya da enerji ölçer priz.":
+    "Typenschild oder Energiemessstecker.",
+  "Çalışma süresi.":
+    "Betriebszeit.",
+  "Gün × saat. Yıl = 8760 h.":
+    "Tage × Stunden. Ein Jahr = 8760 h.",
+  "Birim fiyat":
+    "Arbeitspreis",
+  "Bir kWh'in fiyatı.":
+    "Preis einer kWh.",
+  "Elektrik faturası (ct/kWh).":
+    "Stromrechnung (ct/kWh).",
+  "Eş Zamanlılık Faktörü":
+    "Gleichzeitigkeitsfaktor",
+  "P_max = g · ΣP — her şey aynı anda açılmaz (umarız).":
+    "P_max = g · ΣP — nicht alles läuft gleichzeitig (hoffentlich).",
+  "Bir binadaki tüm cihazların gücü toplanırsa absürt bir rakam çıkar; ama fırın, çamaşır makinesi, ısıtıcı ve kaynak makinesi aynı anda tam güçte çalışmaz. Eş zamanlılık faktörü g, gerçekte beklenen en yüksek gücü verir. Ana hat ve sayaç sigortası buna göre boyutlandırılır.":
+    "Addiert man die Leistung aller Geräte eines Gebäudes, kommt eine absurde Zahl heraus; aber Backofen, Waschmaschine, Heizlüfter und Schweißgerät laufen nicht alle gleichzeitig auf Volllast. Der Gleichzeitigkeitsfaktor g liefert die realistische Spitzenleistung. Danach werden Hausanschluss und Zählervorsicherung bemessen.",
+  "Konutlarda g çoğunlukla 0,3–0,6. Daire sayısı arttıkça g düşer (DIN 18015-1 eğrileri).":
+    "In Wohnungen liegt g meist bei 0,3–0,6. Je mehr Wohnungen, desto kleiner g (Kurven der DIN 18015-1).",
+  "Beklenen en yüksek güç":
+    "Erwartete Spitzenleistung",
+  "Aynı anda çekilmesi beklenen güç.":
+    "Leistung, die voraussichtlich gleichzeitig benötigt wird.",
+  "Eş zamanlılık faktörü":
+    "Gleichzeitigkeitsfaktor",
+  "birimsiz · 0 ile 1 arası":
+    "ohne Einheit · zwischen 0 und 1",
+  "Kurulu gücün ne kadarının aynı anda çalıştığı.":
+    "Welcher Teil der installierten Leistung gleichzeitig läuft.",
+  "Normlar / deneyim değerleri (DIN 18015).":
+    "Normen / Erfahrungswerte (DIN 18015).",
+  "Kurulu toplam güç":
+    "Installierte Gesamtleistung",
+  "Tüm cihazların toplam gücü.":
+    "Summe der Leistungen aller Geräte.",
+  "Cihaz listesi topla.":
+    "Geräteliste aufaddieren.",
+  "Su Isıtma Süresi":
+    "Aufheizzeit für Warmwasser",
+  "t = m · c · Δϑ / (P · η) — boylerin sabır testi.":
+    "t = m · c · Δϑ / (P · η) — die Geduldsprobe des Warmwasserspeichers.",
+  "Boylerdeki suyu ısıtmak için gereken enerji m·c·Δϑ'dır; ısıtıcı gücüne (ve verime) bölünce süre çıkar. Su için c = 1,163 Wh/(kg·K): bir litre suyu 1 derece ısıtmak ~1,16 Wh ister. 80 litreyi 10'dan 60 °C'ye 2 kW ile ısıtmak ~2,5 saat sürer — sabah duşunu planlarken işe yarar.":
+    "Die Energie zum Aufheizen des Wassers im Speicher ist m·c·Δϑ; geteilt durch die Heizleistung (und den Wirkungsgrad) ergibt sich die Zeit. Für Wasser gilt c = 1,163 Wh/(kg·K): Einen Liter um ein Grad zu erwärmen, kostet ~1,16 Wh. 80 Liter mit 2 kW von 10 auf 60 °C zu bringen, dauert ~2,5 Stunden — praktisch, wenn man die Morgendusche plant.",
+  "Isıtma süresi":
+    "Aufheizzeit",
+  "Hedef sıcaklığa ulaşma süresi.":
+    "Zeit bis zur Zieltemperatur.",
+  "Su kütlesi":
+    "Masse des Wassers",
+  "Isıtılacak su miktarı (1 litre ≈ 1 kg).":
+    "Zu erwärmende Wassermenge (1 Liter ≈ 1 kg).",
+  "Boyler hacmi.":
+    "Speicherinhalt.",
+  "Özgül ısı":
+    "Spezifische Wärmekapazität",
+  "Su için 1,163 Wh/(kg·K).":
+    "Für Wasser 1,163 Wh/(kg·K).",
+  "Su: 1,163 — tablolardan.":
+    "Wasser: 1,163 — aus Tabellen.",
+  "Son sıcaklık − ilk sıcaklık.":
+    "Endtemperatur − Anfangstemperatur.",
+  "Ör. 60 °C − 10 °C = 50 K.":
+    "Z. B. 60 °C − 10 °C = 50 K.",
+  "Isıtıcının elektrik gücü.":
+    "Elektrische Leistung der Heizung.",
+  "Isıtma verimi (boylerde ~0,95).":
+    "Wirkungsgrad der Erwärmung (Speicher ~0,95).",
+  "Veri sayfası; bilinmiyorsa 0,9–0,95.":
+    "Datenblatt; wenn unbekannt, 0,9–0,95.",
+  "Güneş Paneli Yıllık Üretimi":
+    "Jahresertrag einer PV-Anlage",
+  "W = P_peak · y — kWp çarpı güneşin cömertliği.":
+    "W = P_peak · y — kWp mal Großzügigkeit der Sonne.",
+  "PV sisteminin gücü kWp (kilowatt-peak) olarak verilir: standart test koşullarında (1000 W/m², 25 °C) verdiği güç. Yıllık üretimi bulmak için bunu bölgenin özgül verimiyle (kWh/kWp) çarp. Almanya'da güneye bakan bir çatıda yaklaşık 900–1100 kWh/kWp — yani 10 kWp'lik sistem yılda ~10.000 kWh.":
+    "Die Leistung einer PV-Anlage wird in kWp (Kilowatt-Peak) angegeben: die Leistung unter Standard-Testbedingungen (1000 W/m², 25 °C). Für den Jahresertrag multiplizierst du sie mit dem spezifischen Ertrag des Standorts (kWh/kWp). In Deutschland liefert ein Süddach etwa 900–1100 kWh/kWp — eine 10-kWp-Anlage also ~10.000 kWh im Jahr.",
+  "Yıllık üretim":
+    "Jahresertrag",
+  "Bir yılda üretilen enerji.":
+    "In einem Jahr erzeugte Energie.",
+  "Bu formülle tahmin edilir; inverter ekranında gerçek değer.":
+    "Mit dieser Formel geschätzt; den echten Wert zeigt der Wechselrichter.",
+  "Tepe güç":
+    "Spitzenleistung",
+  "Panellerin toplam STC gücü.":
+    "STC-Gesamtleistung der Module.",
+  "Panel adedi × panel gücü (ör. 24 × 420 Wp = 10 kWp).":
+    "Modulanzahl × Modulleistung (z. B. 24 × 420 Wp = 10 kWp).",
+  "Özgül verim":
+    "Spezifischer Ertrag",
+  "Konum, yön ve eğime bağlı yıllık verim.":
+    "Jahresertrag abhängig von Standort, Ausrichtung und Neigung.",
+  "Güneş haritaları / PVGIS. Almanya ≈ 950 kWh/kWp.":
+    "Solarkarten / PVGIS. Deutschland ≈ 950 kWh/kWp.",
+  "Röle çeşitleri ve ışık kaynakları":
+    "Relaisarten und Lichtquellen",
+  "Wechsler (11-12-14) tek kontakla iki yolu yönetir: bobin düşükken 11-12, çekince 11-14. Darbe rölesi (Stromstoßrelais) her kısa darbede konum değiştirip orada kalır — koridordaki beş butonun tek röleyle lamba yakmasının sırrı. LED, ışık yayan diyottur (oklar dışarı bakar); floresan lamba uzun tüp sembolüyle çizilir.":
+    "Der Wechsler (11-12-14) schaltet mit einem Kontakt zwei Wege: Bei abgefallener Spule 11-12, bei angezogener 11-14. Ein Stromstoßrelais wechselt bei jedem kurzen Impuls seine Stellung und bleibt dort — das Geheimnis, wie fünf Flurtaster mit einem einzigen Relais eine Leuchte schalten. Die LED ist eine Leuchtdiode (Pfeile zeigen nach außen); die Leuchtstofflampe wird als lange Röhre gezeichnet.",
+  "Güç devresi (Laststromkreis)":
+    "Laststromkreis",
+  "Güç devresinde her şey üç kutupludur: motor koruma şalteri (Q), kontaktörün ana kontakları (1-2, 3-4, 5-6), termik motor koruma rölesi (F) ve trifaze motor (U1 V1 W1 / U2 V2 W2). Kesik çizgi, üç kutbun mekanik olarak birlikte hareket ettiğini gösterir. Motor koruma rölesinin kendisi güç devresinde, yardımcı kontağı (95-96) kumanda devresindedir.":
+    "Im Laststromkreis ist alles dreipolig: Motorschutzschalter (Q), die Hauptkontakte des Schützes (1-2, 3-4, 5-6), das thermische Motorschutzrelais (F) und der Drehstrommotor (U1 V1 W1 / U2 V2 W2). Die gestrichelte Linie zeigt, dass die drei Pole mechanisch gemeinsam schalten. Das Motorschutzrelais selbst sitzt im Laststromkreis, sein Hilfskontakt (95-96) im Steuerstromkreis.",
+  "Motor Kalkış Devreleri":
+    "Motor-Anlaufschaltungen",
+  "Direkt, ters yön, yıldız-üçgen — kontaktörlerin koreografisi.":
+    "Direkt, Wende, Stern-Dreieck — die Choreografie der Schütze.",
+  "Kontaktör devresi her zaman iki parçadır. Steuerstromkreis (kumanda devresi) düşünen kısımdır: butonlar, bobinler, kilitlemeler, genelde 230 V ya da 24 V. Laststromkreis (güç devresi) iş yapan kısımdır: 400 V, ana kontaklar, motor. İkisi sadece etiketle bağlıdır — kumandadaki K1 bobini çekince güç devresindeki K1 ana kontakları kapanır. Playground'daki 'Last + Steuer' modu tam olarak bunu yan yana gösterir.":
+    "Eine Schützschaltung besteht immer aus zwei Teilen. Der Steuerstromkreis ist der denkende Teil: Taster, Spulen, Verriegelungen, meist 230 V oder 24 V. Der Laststromkreis ist der arbeitende Teil: 400 V, Hauptkontakte, Motor. Verbunden sind beide nur über die Bezeichnung — zieht im Steuerstromkreis die Spule K1 an, schließen im Laststromkreis die Hauptkontakte K1. Der Modus „Last + Steuer“ im Playground zeigt genau das nebeneinander.",
+  "Direktanlauf":
+    "Direktanlauf",
+  "En basit yol: S1'e bas, K1 çeker ve kendi 13-14 kontağıyla kendini besler (Selbsthaltung), motor doğrudan şebekeye bağlanır. Ucuz ve sağlam, ama kalkışta anma akımının 5–8 katı çekilir. Küçük motorlar için ideal; büyüklerde şebeke işletmecisi kaşlarını çatar. Motor koruma rölesi (F) aşırı yükte 95-96 kontağını açar ve kumandayı keser — motoru koruyan o, sigorta değil.":
+    "Der einfachste Weg: S1 drücken, K1 zieht an und hält sich über seinen eigenen Kontakt 13-14 (Selbsthaltung), der Motor hängt direkt am Netz. Billig und robust, aber beim Anlauf fließt das 5- bis 8-Fache des Bemessungsstroms. Ideal für kleine Motoren; bei großen runzelt der Netzbetreiber die Stirn. Das Motorschutzrelais (F) öffnet bei Überlast seinen Kontakt 95-96 und unterbricht die Steuerung — es schützt den Motor, nicht die Sicherung.",
+  "Wendeschützschaltung — dönüş yönü":
+    "Wendeschützschaltung — Drehrichtung",
+  "Motorun yönünü değiştirmek için iki fazı yer değiştirmek yeter: döner alan ters döner. K1 sağa, K2 sola çalıştırır; K2 güç devresinde L1 ile L3'ü çaprazlar. İkisi aynı anda çekerse L1–L3 kısa devresi olur — bu yüzden kontaktörler birbirini açıcı kontaklarıyla kilitler (Schützverriegelung). Ciddi tesislerde buna bir de buton kilitlemesi (Tasterverriegelung) eklenir: çift dikiş.":
+    "Um die Drehrichtung zu ändern, reicht es, zwei Außenleiter zu tauschen: Das Drehfeld dreht andersherum. K1 schaltet Rechtslauf, K2 Linkslauf; im Laststromkreis vertauscht K2 L1 und L3. Würden beide gleichzeitig anziehen, gäbe es einen Kurzschluss L1–L3 — darum verriegeln sich die Schütze gegenseitig über ihre Öffner (Schützverriegelung). In ernsthaften Anlagen kommt noch die Tasterverriegelung dazu: doppelt hält besser.",
+  "Stern-Dreieck-Anlauf":
+    "Stern-Dreieck-Anlauf",
+  "Normalde üçgende çalışan motor yıldızda kalkar: her sargıya 400 V yerine 230 V düşer, şebekeden çekilen kalkış akımı üçte bire iner. Bedeli, moment de üçte bire düşer. Sıra şöyle: K1 (şebeke) + K3 (yıldız) çeker, motor hızlanır; zaman rölesi KT1 dolunca K3 düşer, K2 (üçgen) çeker. K2 ile K3 asla birlikte çekmemeli — yıldız köprüsü ile üçgen bağlantısı aynı anda = kısa devre.":
+    "Ein Motor, der normal im Dreieck läuft, startet im Stern: An jeder Wicklung liegen 230 V statt 400 V, der Anlaufstrom aus dem Netz sinkt auf ein Drittel. Der Preis: Auch das Drehmoment sinkt auf ein Drittel. Der Ablauf: K1 (Netz) + K3 (Stern) ziehen an, der Motor läuft hoch; ist die Zeit von KT1 abgelaufen, fällt K3 ab und K2 (Dreieck) zieht an. K2 und K3 dürfen nie gleichzeitig anziehen — Sternbrücke und Dreieckschaltung zugleich = Kurzschluss.",
+  "Yıldız (Y)":
+    "Stern (Y)",
+  "Üçgen (Δ)":
+    "Dreieck (Δ)",
+  "Sargı gerilimi":
+    "Strangspannung",
+  "Şebeke kalkış akımı":
+    "Anlaufstrom aus dem Netz",
+  "I_A / 3":
+    "I_A / 3",
+  "I_A":
+    "I_A",
+  "Kalkış momenti":
+    "Anlaufmoment",
+  "M_A / 3":
+    "M_A / 3",
+  "M_A":
+    "M_A",
+  "Ne zaman?":
+    "Wann?",
+  "Kalkış":
+    "Anlauf",
+  "Çalışma":
+    "Betrieb",
+  "Yumuşak yolverici ve frekans konvertörü":
+    "Sanftanlasser und Frequenzumrichter",
+  "Sanftanlasser tristörlerle gerilimi yavaşça yükseltir: akım darbesi yok, ama devir ayarı da yok. Frekans konvertörü (Frequenzumrichter) hem kalkışı yumuşatır hem devri istediğin değere getirir: şebekeyi doğrultur (B6U, ~540 V DC), sonra istediği frekansta yeni bir trifaze üretir. U/f oranını sabit tutar ki motor doyuma gitmesin. Bugün yeni tesislerde yıldız-üçgenin yerini büyük ölçüde FU aldı — ama sınavda yıldız-üçgen hâlâ başrolde.":
+    "Der Sanftanlasser fährt die Spannung mit Thyristoren langsam hoch: kein Stromstoß, aber auch keine Drehzahlregelung. Der Frequenzumrichter macht den Anlauf sanft UND stellt jede gewünschte Drehzahl ein: Er richtet das Netz gleich (B6U, ~540 V DC) und erzeugt daraus ein neues Drehstromsystem mit beliebiger Frequenz. Dabei hält er U/f konstant, damit der Motor nicht in die Sättigung geht. In neuen Anlagen hat der FU Stern-Dreieck weitgehend abgelöst — in der Prüfung spielt Stern-Dreieck aber immer noch die Hauptrolle.",
+  "İlk Muayene (VDE 0100-600)":
+    "Erstprüfung (VDE 0100-600)",
+  "Gözle bak, dene, ölç — sonra imzala.":
+    "Besichtigen, erproben, messen — dann unterschreiben.",
+  "Yeni ya da değiştirilmiş her tesisat, işletmeye alınmadan önce muayene edilir ve sonuç protokole yazılır. Sıra kutsaldır: önce Besichtigen (gözle kontrol), sonra Erproben (çalıştırarak deneme) ve Messen (ölçme). Gerilim vermeden yapılabilecek her şey gerilim vermeden yapılır — mantık basit: hatayı sen bul, müşteri değil.":
+    "Jede neue oder geänderte Anlage wird vor der Inbetriebnahme geprüft, das Ergebnis kommt ins Protokoll. Die Reihenfolge ist heilig: erst Besichtigen, dann Erproben und Messen. Alles, was ohne Spannung geht, wird ohne Spannung gemacht — die Logik ist einfach: Den Fehler findest du, nicht der Kunde.",
+  "1 · Besichtigen — gözle kontrol":
+    "1 · Besichtigen",
+  "Gerilimsiz yapılır. Doğru kablo ve kesit mi seçilmiş, koruma elemanları doğru mu, iletken renkleri (yeşil-sarı sadece PE!) doğru mu, klemensler sıkı mı, kapaklar ve dokunma koruması yerinde mi, banyo bölgeleri ve yangın önlemleri tutuyor mu, devreler panoda etiketli mi. Gözle görülen hatayı ölçü aletine bırakmak, sınavda da puan kaybettirir.":
+    "Im spannungsfreien Zustand. Richtige Leitung und richtiger Querschnitt? Passende Schutzeinrichtungen? Aderfarben korrekt (Grün-Gelb nur für PE!)? Klemmen fest? Abdeckungen und Berührungsschutz vorhanden? Bereiche im Bad und Brandschutz eingehalten? Stromkreise im Verteiler beschriftet? Einen sichtbaren Fehler dem Messgerät zu überlassen, kostet auch in der Prüfung Punkte.",
+  "2 · Messen — ölçümler sırasıyla":
+    "2 · Messen — in der richtigen Reihenfolge",
+  "Ölçümler belli bir sırayla yapılır, çünkü her biri bir sonrakinin güvenliğini sağlar. Örneğin izolasyon ölçülmeden gerilim verilmez; PE sürekliliği doğrulanmadan çevrim empedansı ölçülmez.":
+    "Die Messungen laufen in einer festen Reihenfolge ab, weil jede die nächste sicher macht. Zum Beispiel wird keine Spannung zugeschaltet, bevor der Isolationswiderstand gemessen ist; die Schleifenimpedanz wird erst gemessen, wenn der Schutzleiter durchgängig ist.",
+  "Ölçüm":
+    "Messung",
+  "Ne kontrol edilir?":
+    "Was wird geprüft?",
+  "Tipik sınır":
+    "Typischer Grenzwert",
+  "Durchgängigkeit PE / Potentialausgleich":
+    "Durchgängigkeit PE / Potentialausgleich",
+  "Koruma iletkeni her gövdeye kesintisiz ulaşıyor mu":
+    "Erreicht der Schutzleiter jeden Körper ohne Unterbrechung?",
+  "Küçük, makul değer (≈ < 1 Ω)":
+    "Kleiner, plausibler Wert (≈ < 1 Ω)",
+  "Isolationswiderstand":
+    "Isolationswiderstand",
+  "Aktif iletkenler arası ve PE'ye karşı yalıtım":
+    "Isolation zwischen den aktiven Leitern und gegen PE",
+  "≥ 1 MΩ (500 V DC ölçüm gerilimi)":
+    "≥ 1 MΩ (Messspannung 500 V DC)",
+  "Schleifenimpedanz Z_S":
+    "Schleifenimpedanz Z_S",
+  "Hata akımı sigortayı zamanında attırır mı":
+    "Löst der Fehlerstrom die Sicherung rechtzeitig aus?",
+  "Z_S ≤ U₀ / I_a":
+    "Z_S ≤ U₀ / I_a",
+  "RCD testi":
+    "RCD-Prüfung",
+  "Açma akımı ve açma süresi":
+    "Auslösestrom und Auslösezeit",
+  "I_Δ ≤ I_Δn, t ≤ 300 ms (genel tip)":
+    "I_Δ ≤ I_Δn, t ≤ 300 ms (allgemeiner Typ)",
+  "Erdungswiderstand (TT)":
+    "Erdungswiderstand (TT)",
+  "Toprak elektrodu yeterli mi":
+    "Ist der Erder ausreichend?",
+  "R_A ≤ 50 V / I_Δn":
+    "R_A ≤ 50 V / I_Δn",
+  "Drehfeld":
+    "Drehfeld",
+  "Prizlerde ve motorlarda faz sırası":
+    "Phasenfolge an Steckdosen und Motoren",
+  "Sağ döner alan":
+    "Rechtsdrehfeld",
+  "3 · Erproben — fonksiyon denemesi":
+    "3 · Erproben",
+  "RCD'nin test butonu, acil durdurma, kilitlemeler, kontaktör devreleri, zaman röleleri: hepsi bir kez gerçekten çalıştırılır. Wendeschütz'te iki butona birlikte basmayı denemek dahil — kilitleme çalışmıyorsa bunu müşteriden önce sen öğren.":
+    "Prüftaste des RCD, Not-Halt, Verriegelungen, Schützschaltungen, Zeitrelais: alles wird einmal wirklich betätigt. Dazu gehört auch, bei der Wendeschützschaltung beide Taster gleichzeitig zu drücken — funktioniert die Verriegelung nicht, erfährst du es besser vor dem Kunden.",
+  "4 · Dokumentation — protokol":
+    "4 · Dokumentation — das Protokoll",
+  "Tüm ölçüm değerleri, kullanılan ölçü aletleri ve sonuç bir muayene protokolüne yazılır, imzalanır ve müşteriye verilir. Protokol yoksa hukuken muayene de yoktur. Sınavda 'neden ölçtün?' sorusu kadar 'nereye yazdın?' sorusu da gelir.":
+    "Alle Messwerte, die verwendeten Messgeräte und das Ergebnis kommen in ein Prüfprotokoll, das unterschrieben und dem Kunden übergeben wird. Kein Protokoll heißt rechtlich: keine Prüfung. In der Prüfung kommt „Wo hast du es dokumentiert?“ genauso oft wie „Warum hast du gemessen?“.",
+  "PLC Temelleri":
+    "SPS-Grundlagen",
+  "Kablolarla değil, programla kurulan kontaktör devresi.":
+    "Eine Schützschaltung — programmiert statt verdrahtet.",
+  "SPS (PLC), kontaktör mantığını kablolardan alıp yazılıma taşır. Butonlar ve sensörler girişlere (E / I), kontaktörler ve lambalar çıkışlara (A / Q) bağlanır; aradaki bütün 'eğer şuna basıldıysa ve şu kapalıysa' mantığı programdadır. Devreyi değiştirmek için tornavida değil klavye gerekir.":
+    "Eine SPS holt die Schützlogik aus der Verdrahtung in die Software. Taster und Sensoren kommen an die Eingänge (E / I), Schütze und Leuchten an die Ausgänge (A / Q); die ganze „Wenn das gedrückt und das geschlossen ist“-Logik dazwischen steckt im Programm. Um die Schaltung zu ändern, brauchst du eine Tastatur statt eines Schraubendrehers.",
+  "EVA prensibi ve tarama döngüsü":
+    "EVA-Prinzip und Zyklus",
+  "Eingabe → Verarbeitung → Ausgabe. PLC döngü halinde çalışır: önce tüm girişlerin anlık görüntüsünü alır (Prozessabbild), sonra programı baştan sona bir kez işler, en sonda sonuçları çıkışlara yazar. Bir döngü birkaç milisaniye sürer ve sonsuza kadar tekrarlanır.":
+    "Eingabe → Verarbeitung → Ausgabe. Die SPS arbeitet zyklisch: Zuerst liest sie ein Abbild aller Eingänge ein (Prozessabbild), dann arbeitet sie das Programm einmal von oben nach unten ab und schreibt am Ende die Ergebnisse auf die Ausgänge. Ein Zyklus dauert wenige Millisekunden und wiederholt sich endlos.",
+  "Programlama dilleri (IEC 61131-3)":
+    "Programmiersprachen (IEC 61131-3)",
+  "Aynı mantık farklı kılıklarda yazılabilir. Elektrikçiler için en tanıdık olanı KOP'tur: Stromlaufplan'ın yan yatırılmış hali. FUP, Logik konusundaki kapı sembolleriyle çizilir — Playground'un Logik modu tam olarak bu.":
+    "Dieselbe Logik lässt sich in verschiedenen Gewändern schreiben. Für Elektriker am vertrautesten ist KOP: ein auf die Seite gelegter Stromlaufplan. FUP wird mit den Gattersymbolen aus dem Thema Logik gezeichnet — der Logik-Modus im Playground ist genau das.",
+  "Dil":
+    "Sprache",
+  "Görünüş":
+    "Aussehen",
+  "Kime yakın?":
+    "Am nächsten an …",
+  "KOP / LD (Kontaktplan)":
+    "KOP / LD (Kontaktplan)",
+  "Kontak ve bobin sembolleri, raylar arasında":
+    "Kontakt- und Spulensymbole zwischen Schienen",
+  "Kontaktör devresi bilenlere":
+    "… allen, die Schützschaltungen kennen",
+  "FUP / FBD (Funktionsplan)":
+    "FUP / FBD (Funktionsplan)",
+  "&, ≥1 kutuları":
+    "Kästchen mit &, ≥1",
+  "Logik kapı bilenlere":
+    "… allen, die Logikgatter kennen",
+  "Satır satır komutlar (U, O, =)":
+    "Anweisungen Zeile für Zeile (U, O, =)",
+  "Eski Siemens dünyası":
+    "Die alte Siemens-Welt",
+  "ST (Strukturierter Text)":
+    "ST (Strukturierter Text)",
+  "Pascal benzeri metin: IF … THEN":
+    "Pascal-ähnlicher Text: IF … THEN",
+  "Programcılara":
+    "Programmierern",
+  "Altın kural: STOP butonu açıcıdır":
+    "Goldene Regel: Der AUS-Taster ist ein Öffner",
+  "Durdurma butonu PLC girişine AÇICI (Öffner) olarak bağlanır ve programda '1 ise çalışabilir' diye sorgulanır. Neden? Kablo koparsa giriş 0 olur ve makine durur (Drahtbruchsicherheit). Kapayıcı bağlasaydın kopuk kablo fark edilmezdi — ta ki biri acil durumda butona basıp hiçbir şey olmadığını görene kadar. Acil durdurma (Not-Halt) zaten PLC'ye güvenmez: güç devresini donanımla da keser.":
+    "Der Stopp-Taster wird als ÖFFNER an den SPS-Eingang angeschlossen, und das Programm fragt „Ist er 1, dann darf es laufen“. Warum? Reißt der Draht, geht der Eingang auf 0 und die Maschine bleibt stehen (Drahtbruchsicherheit). Mit einem Schließer würde ein Drahtbruch nicht auffallen — bis jemand im Notfall auf den Taster drückt und nichts passiert. Der Not-Halt verlässt sich ohnehin nicht auf die SPS: Er trennt den Laststromkreis zusätzlich per Hardware.",
+  "Güneş Enerjisi Sistemleri":
+    "Photovoltaikanlagen",
+  "Çatıda santral — ama DC tarafı şaka kaldırmaz.":
+    "Ein Kraftwerk auf dem Dach — aber die DC-Seite versteht keinen Spaß.",
+  "PV hücresi ışığı doğrudan doğru akıma çevirir. Hücreler modülde, modüller seri bağlanarak string'de birleşir; string gerilimi kolayca 600–1000 V DC'ye çıkar. İnverter (Wechselrichter) bu DC'yi şebekeye uygun 230/400 V AC'ye çevirir. Üretilen enerji önce evde tüketilir, fazlası şebekeye ya da bataryaya gider.":
+    "Eine PV-Zelle wandelt Licht direkt in Gleichstrom um. Zellen werden zu Modulen, in Reihe geschaltete Module zu einem String zusammengefasst; die Stringspannung erreicht leicht 600–1000 V DC. Der Wechselrichter macht daraus netzkonforme 230/400 V AC. Die erzeugte Energie wird zuerst im Haus verbraucht, der Überschuss geht ins Netz oder in den Speicher.",
+  "Önemli büyüklükler":
+    "Wichtige Größen",
+  "Modül veri sayfasındaki değerler standart test koşullarında (STC: 1000 W/m², 25 °C) ölçülür. Soğuk kış sabahında modül gerilimi STC değerinin üstüne çıkar — inverterin giriş sınırı bu yüzden en düşük sıcaklığa göre kontrol edilir.":
+    "Die Werte im Moduldatenblatt gelten für Standard-Testbedingungen (STC: 1000 W/m², 25 °C). An einem kalten Wintermorgen steigt die Modulspannung über den STC-Wert — darum wird die Eingangsgrenze des Wechselrichters für die tiefste Temperatur geprüft.",
+  "Kısaltma":
+    "Abkürzung",
+  "Anlamı":
+    "Bedeutung",
+  "P_MPP (Wp)":
+    "P_MPP (Wp)",
+  "En yüksek güç noktasındaki güç — modülün 'etiket gücü'":
+    "Leistung im Punkt maximaler Leistung — die „Typenschildleistung“ des Moduls",
+  "U_OC":
+    "U_OC",
+  "Açık devre gerilimi (Leerlaufspannung) — yük yokken":
+    "Leerlaufspannung — ohne Last",
+  "I_SC":
+    "I_SC",
+  "Kısa devre akımı — I_MPP'den sadece biraz büyük!":
+    "Kurzschlussstrom — nur wenig größer als I_MPP!",
+  "U_MPP / I_MPP":
+    "U_MPP / I_MPP",
+  "En yüksek güç noktasındaki gerilim ve akım":
+    "Spannung und Strom im Punkt maximaler Leistung",
+  "MPP-Tracker":
+    "MPP-Tracker",
+  "İnverterin her an en verimli çalışma noktasını arayan beyni":
+    "Das Gehirn des Wechselrichters, das ständig den effizientesten Arbeitspunkt sucht",
+  "DC tarafının tehlikesi":
+    "Die Gefahr auf der DC-Seite",
+  "Güneş varken modüller kapatılamaz: string'in uçlarında her zaman yüksek DC gerilim vardır. DC arkı sıfır geçişi olmadığı için kendiliğinden sönmez — yük altında DC fiş çekmek ark ve yangın demektir. Kısa devre akımı anma akımından sadece biraz büyük olduğundan sigorta da kurtarmaz. Bu yüzden DC tarafında yalnızca DC için onaylı ayırıcılar ve fişler kullanılır, bağlantı sırası kurallara göre yapılır.":
+    "Solange die Sonne scheint, lassen sich Module nicht abschalten: An den Enden eines Strings liegt immer hohe Gleichspannung. Ein DC-Lichtbogen hat keinen Nulldurchgang und erlischt nicht von selbst — einen DC-Stecker unter Last zu ziehen heißt Lichtbogen und Brand. Und weil der Kurzschlussstrom nur wenig über dem Bemessungsstrom liegt, rettet dich auch keine Sicherung. Darum werden auf der DC-Seite nur für DC zugelassene Trennschalter und Steckverbinder verwendet und in vorgeschriebener Reihenfolge angeschlossen.",
+  "AC tarafı ve koruma":
+    "AC-Seite und Schutz",
+  "İnverter AC tarafta kendi devresiyle bağlanır, RCD tipi inverter üreticisinin istediği gibi seçilir (çoğu zaman Tip A yeter, bazen Tip B). Şebeke kesildiğinde inverter otomatik olarak ayrılmak zorundadır (NA-Schutz) — hat üzerinde çalışan teknisyen, çatından gelen sürpriz gerilime çarpılmasın diye.":
+    "Auf der AC-Seite bekommt der Wechselrichter einen eigenen Stromkreis, der RCD-Typ richtet sich nach den Vorgaben des Herstellers (oft reicht Typ A, manchmal Typ B). Fällt das Netz aus, muss sich der Wechselrichter automatisch trennen (NA-Schutz) — damit der Kollege, der an der Leitung arbeitet, keine überraschende Spannung von deinem Dach bekommt.",
+  "Aşırı Gerilim Koruması":
+    "Überspannungsschutz",
+  "Yıldırım bir kez düşer, ama elektroniği tek seferde götürür.":
+    "Der Blitz schlägt einmal ein, aber er nimmt die Elektronik in einem Rutsch mit.",
+  "Aşırı gerilimler iki yerden gelir: yıldırımdan (doğrudan ya da yakına düşüp hatta indüklenen) ve şebekedeki anahtarlama olaylarından. Mikrosaniyeler sürer ama binlerce volta ulaşır; bir televizyonun, ısı pompasının ya da inverterin elektroniği için bu kadarı yeter. Koruma, darbeyi kontrollü şekilde toprağa saptırmaktır.":
+    "Überspannungen kommen aus zwei Richtungen: vom Blitz (direkter Einschlag oder Einschlag in der Nähe, der in die Leitungen einkoppelt) und von Schalthandlungen im Netz. Sie dauern Mikrosekunden, erreichen aber Tausende Volt; das reicht für die Elektronik von Fernseher, Wärmepumpe oder Wechselrichter. Schutz heißt, den Impuls kontrolliert zur Erde abzuleiten.",
+  "Kademeli koruma: Tip 1 · 2 · 3":
+    "Gestaffelter Schutz: Typ 1 · 2 · 3",
+  "Tek bir cihaz her şeyi yapamaz; koruma kademeli kurulur ve her kademe bir öncekinden kalan enerjiyi azaltır. Kaba koruma bina girişinde, ince koruma cihazın hemen yanında durur.":
+    "Kein einzelnes Gerät schafft alles; der Schutz wird gestaffelt aufgebaut, und jede Stufe verringert die Energie, die von der vorigen übrig bleibt. Grobschutz sitzt am Gebäudeeintritt, Feinschutz direkt am Gerät.",
+  "Tip":
+    "Typ",
+  "Yer":
+    "Ort",
+  "Tip 1 (eski B)":
+    "Typ 1 (früher B)",
+  "Ana dağıtım / bina girişi":
+    "Hauptverteilung / Gebäudeeintritt",
+  "Yıldırım akımı taşıyıcı — dış paratoner varsa şart":
+    "Blitzstromableiter — Pflicht bei äußerem Blitzschutz",
+  "Tip 2 (eski C)":
+    "Typ 2 (früher C)",
+  "Alt dağıtım panoları":
+    "Unterverteilungen",
+  "Aşırı gerilimi sınırlar — konutlarda standart":
+    "Begrenzt Überspannungen — Standard in Wohngebäuden",
+  "Tip 3 (eski D)":
+    "Typ 3 (früher D)",
+  "Cihazın yanında (priz, ara fiş)":
+    "Am Gerät (Steckdose, Zwischenstecker)",
+  "Hassas elektroniğe ince ayar":
+    "Feinschutz für empfindliche Elektronik",
+  "Kombi Tip 1+2":
+    "Kombi Typ 1+2",
+  "Konut sayaç panosu":
+    "Zählerschrank im Wohnhaus",
+  "İkisi bir arada — günümüzün pratik çözümü":
+    "Zwei in einem — die praktische Lösung von heute",
+  "Potansiyel dengeleme olmadan olmaz":
+    "Ohne Potentialausgleich geht nichts",
+  "Aşırı gerilim koruyucu (SPD) ancak iyi bir potansiyel dengeleme barasına (Haupterdungsschiene) kısa ve düz bir hatla bağlandığında işe yarar. Bağlantı kablosu uzarsa endüktansı darbe anında yüzlerce volt düşürür ve koruma seviyesi boşa gider. Kural: SPD bağlantıları mümkün olduğunca kısa, toplamda 0,5 m'nin altında.":
+    "Ein Überspannungsschutzgerät (SPD) wirkt nur, wenn es kurz und gerade an eine gute Haupterdungsschiene angeschlossen ist. Wird die Anschlussleitung lang, fallen an ihrer Induktivität beim Impuls Hunderte Volt ab und das Schutzniveau ist verschenkt. Regel: SPD-Anschlüsse so kurz wie möglich, insgesamt unter 0,5 m.",
+  "Ne zaman zorunlu?":
+    "Wann ist er Pflicht?",
+  "DIN VDE 0100-443 ve -534'e göre yeni tesisatlarda aşırı gerilim koruması pratikte zorunludur: insan hayatını, kamu hizmetlerini veya çok sayıda kişiyi etkileyebilecek durumlarda kesin, konutlarda da artık genel kural. Kısacası: yeni sayaç panosu kuruyorsan Tip 1+2 için yer ayır.":
+    "Nach DIN VDE 0100-443 und -534 ist Überspannungsschutz in neuen Anlagen praktisch Pflicht: sicher dort, wo Menschenleben, öffentliche Dienste oder viele Personen betroffen sein können — und in Wohngebäuden inzwischen als allgemeine Regel. Kurz: Wer einen neuen Zählerschrank setzt, plant Platz für Typ 1+2 ein.",
+  "Kontak (Wechsler)":
+    "Kontakt (Wechsler)",
+  "Darbe rölesi":
+    "Stromstoßrelais",
+  "Motor koruma kontağı (açıcı)":
+    "Motorschutz-Öffner",
+  "Motor koruma kontağı (kapayıcı)":
+    "Motorschutz-Schließer",
+  "Floresan lamba":
+    "Leuchtstofflampe",
+  "Trifaze şebeke":
+    "Drehstromnetz",
+  "Motor koruma şalteri":
+    "Motorschutzschalter",
+  "Kontaktör ana kontakları":
+    "Hauptkontakte des Schützes",
+  "Motor koruma rölesi":
+    "Motorschutzrelais",
+  "Trifaze motor":
+    "Drehstrommotor",
+  "Wechsler (11-12-14): ortak uç 11 bobin düşükken 12'ye, bobin çekince 14'e bağlanır. Tek kontakla iki yolu birden yönetir — 'ya şu ya bu' kontağı.":
+    "Wechsler (11-12-14): Der gemeinsame Anschluss 11 liegt bei abgefallener Spule an 12, bei angezogener an 14. Ein Kontakt, zwei Wege — der „Entweder-oder“-Kontakt.",
+  "Darbe rölesi (Stromstoßrelais / Eltako): her kısa darbede konum değiştirir ve orada kalır. Koridordaki 5 butondan hangisine basarsan bas lamba aç/kapa — kablo yığını yerine tek röle. Kontakları panelden onu seçerek bağla.":
+    "Stromstoßrelais (Eltako): wechselt bei jedem kurzen Impuls seine Stellung und bleibt dort. Egal, welchen der fünf Flurtaster du drückst, das Licht schaltet um — ein Relais statt eines Kabelbergs. Seine Kontakte verknüpfst du, indem du es im Eigenschaften-Feld auswählst.",
+  "Motor koruma rölesinin açıcı kontağı (95-96). Motor aşırı akım çekip termik röle (F) atınca AÇILIR ve kontaktörün bobinini düşürür. Kumanda devresine, durdurma butonuyla seri koy.":
+    "Öffner des Motorschutzrelais (95-96). Zieht der Motor zu viel Strom und das thermische Relais (F) löst aus, ÖFFNET er und lässt die Schützspule abfallen. In den Steuerstromkreis, in Reihe mit dem AUS-Taster.",
+  "Motor koruma rölesinin kapayıcı kontağı (97-98): röle atınca kapanır. Genelde 'arıza' ikaz lambası buna bağlanır.":
+    "Schließer des Motorschutzrelais (97-98): schließt, wenn das Relais auslöst. Meist hängt daran eine Störmeldeleuchte.",
+  "LED (Leuchtdiode). Rengini panelden seç. Az akımla parlak ışık; gerçekte ön direnç ister ve yönü önemlidir — burada şebeke dostu bir LED lamba gibi davranır.":
+    "LED (Leuchtdiode). Farbe im Eigenschaften-Feld wählen. Viel Licht aus wenig Strom; in echt braucht sie einen Vorwiderstand und die Polung zählt — hier verhält sie sich wie eine netztaugliche LED-Lampe.",
+  "Floresan lamba (Leuchtstofflampe). Açılınca starter yüzünden birkaç kez titrer, sonra sabit yanar — ofis tavanlarının klasik açılış dansı.":
+    "Leuchtstofflampe. Beim Einschalten flackert sie wegen des Starters ein paar Mal und leuchtet dann ruhig — der klassische Eröffnungstanz an Bürodecken.",
+  "Trifaze şebeke: L1, L2, L3 aralarında 120° kaymalı, her biri N'ye karşı 230 V, birbirine karşı 400 V. Laststromkreis buradan beslenir. Simülasyonda tıkla: şebekeyi kes/aç.":
+    "Drehstromnetz: L1, L2, L3 sind um 120° verschoben, jeweils 230 V gegen N und 400 V untereinander. Von hier wird der Laststromkreis gespeist. In der Simulation anklicken: Netz aus/ein.",
+  "Motor koruma şalteri / ana şalter (Q, 3 kutup). Baştan devrede; simülasyonda tıklayınca üç fazı birden keser. Sembolde I> = kısa devre korumalı.":
+    "Motorschutzschalter / Hauptschalter (Q, 3-polig). Von Anfang an eingeschaltet; ein Klick in der Simulation trennt alle drei Außenleiter gleichzeitig. I> im Symbol = kurzschlussgeschützt.",
+  "Kontaktörün ana kontakları (1-2, 3-4, 5-6). Kumanda devresindeki aynı etiketli bobin (K1…) çekince üç kutup birden kapanır. Panelden hangi bobine ait olduğunu seç.":
+    "Die Hauptkontakte des Schützes (1-2, 3-4, 5-6). Zieht im Steuerstromkreis die Spule mit gleicher Bezeichnung (K1 …) an, schließen alle drei Pole gemeinsam. Im Eigenschaften-Feld wählen, zu welcher Spule sie gehören.",
+  "Motor koruma rölesi (F, bimetal). Ana akım içinden geçer; aşırı yükte bimetaller bükülür ve yardımcı kontakları (95-96 / 97-98) oynatır. Simülasyonda TIKLA = aşırı yük, tekrar tıkla = reset.":
+    "Motorschutzrelais (F, Bimetall). Der Hauptstrom fließt hindurch; bei Überlast biegen sich die Bimetalle und betätigen die Hilfskontakte (95-96 / 97-98). In der Simulation ANKLICKEN = Überlast, nochmal = Reset.",
+  "Trifaze asenkron motor, 6 uçlu klemens (U1 V1 W1 / U2 V2 W2). Klemens köprüsünü panelden seç: yıldız (Y, sargı başına 230 V) ya da üçgen (Δ, 400 V). Stern-Dreieck için köprüsüz bırak, köprüyü kontaktörler kursun. İki fazı çaprazlarsan ters döner; bir faz eksikse vınlar ama dönmez.":
+    "Drehstrom-Asynchronmotor mit 6-poligem Klemmbrett (U1 V1 W1 / U2 V2 W2). Die Brücken im Eigenschaften-Feld wählen: Stern (Y, 230 V je Wicklung) oder Dreieck (Δ, 400 V). Für Stern-Dreieck ohne Brücken lassen und die Schütze verbinden lassen. Zwei Außenleiter tauschen = Linkslauf; fehlt ein Außenleiter, brummt er, läuft aber nicht.",
+  "Direktanlauf (Selbsthaltung + motor koruma)":
+    "Direktanlauf (Selbsthaltung + Motorschutz)",
+  "Wendeschützschaltung (yön değiştirme)":
+    "Wendeschützschaltung",
+  "Stern-Dreieck-Anlauf (otomatik, KT1)":
+    "Stern-Dreieck-Anlauf (automatisch, KT1)",
 };
 
 export default dict;

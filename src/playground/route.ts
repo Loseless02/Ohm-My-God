@@ -18,10 +18,14 @@ const DIRS = [
   [0, -1],
 ];
 const TURN_COST = 0.7;
+const OVERLAP_COST = 6; // başka bir kablonun yattığı kenar: paralel üst üste binme
+const TERM_COST = 12; // yabancı bir terminalin üstünden geçmek (bağlıymış gibi görünür)
 const MAX_CELLS = 260; // tek eksende en fazla hücre (sonsuz tuvalde sınırla)
 
 export interface RouteGrid {
   blocked: Uint8Array;
+  term: Uint8Array; // terminal hücreleri
+  used: { h: Uint8Array; v: Uint8Array }; // daha önce yönlendirilen kabloların kenarları
   gx0: number; // grid'in dünya koordinatındaki başlangıcı (hücre cinsinden)
   gy0: number;
   gw: number; // hücre sayısı
@@ -55,12 +59,23 @@ export function buildGrid(obstacles: Box[], frees: Pt[]): RouteGrid {
     for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) blocked[idx(x, y)] = 1;
   }
   // terminal hücreleri her zaman geçilebilir
+  const term = new Uint8Array((gw + 1) * (gh + 1));
   for (const p of frees) {
     const x = Math.round(p.x / GRID) - gx0;
     const y = Math.round(p.y / GRID) - gy0;
-    if (x >= 0 && x <= gw && y >= 0 && y <= gh) blocked[idx(x, y)] = 0;
+    if (x >= 0 && x <= gw && y >= 0 && y <= gh) {
+      blocked[idx(x, y)] = 0;
+      term[idx(x, y)] = 1;
+    }
   }
-  return { blocked, gx0, gy0, gw, gh };
+  const used = { h: new Uint8Array((gw + 1) * (gh + 1)), v: new Uint8Array((gw + 1) * (gh + 1)) };
+  return { blocked, term, used, gx0, gy0, gw, gh };
+}
+
+/** Kablolar her çizimde baştan yerleşsin diye kullanılmış kenarları sıfırla. */
+export function resetUsage(g: RouteGrid) {
+  g.used.h.fill(0);
+  g.used.v.fill(0);
 }
 
 function fallback(a: Pt, b: Pt): Pt[] {
@@ -69,7 +84,7 @@ function fallback(a: Pt, b: Pt): Pt[] {
 }
 
 export function routeWire(a: Pt, b: Pt, g: RouteGrid): Pt[] {
-  const { blocked, gx0, gy0, gw, gh } = g;
+  const { blocked, term, used, gx0, gy0, gw, gh } = g;
   const nIdx = (x: number, y: number) => y * (gw + 1) + x;
   const ax = Math.round(a.x / GRID) - gx0;
   const ay = Math.round(a.y / GRID) - gy0;
@@ -77,6 +92,15 @@ export function routeWire(a: Pt, b: Pt, g: RouteGrid): Pt[] {
   const by = Math.round(b.y / GRID) - gy0;
   const inb = (x: number, y: number) => x >= 0 && x <= gw && y >= 0 && y <= gh;
   if (!inb(ax, ay) || !inb(bx, by)) return fallback(a, b);
+  // (x,y)'den nd yönüne giden kenarın kayıt yeri
+  const edgeOf = (x: number, y: number, nd: number): [Uint8Array, number] =>
+    nd === 0
+      ? [used.h, nIdx(x, y)]
+      : nd === 1
+        ? [used.h, nIdx(x - 1, y)]
+        : nd === 2
+          ? [used.v, nIdx(x, y)]
+          : [used.v, nIdx(x, y - 1)];
 
   // durum: (düğüm, geliş yönü). yön 4 = başlangıç.
   const S = (gw + 1) * (gh + 1) * 5;
@@ -142,7 +166,14 @@ export function routeWire(a: Pt, b: Pt, g: RouteGrid): Pt[] {
       const ny = y + DIRS[nd][1];
       if (!inb(nx, ny)) continue;
       if (blocked[nIdx(nx, ny)] && !(nx === bx && ny === by) && !(nx === ax && ny === ay)) continue;
-      const cost = dist[k] + 1 + (d !== 4 && d !== nd ? TURN_COST : 0);
+      const [arr, ei] = edgeOf(x, y, nd);
+      const endpoint = (nx === bx && ny === by) || (nx === ax && ny === ay);
+      const cost =
+        dist[k] +
+        1 +
+        (d !== 4 && d !== nd ? TURN_COST : 0) +
+        arr[ei] * OVERLAP_COST +
+        (term[nIdx(nx, ny)] && !endpoint ? TERM_COST : 0);
       const nk = sKey(nx, ny, nd);
       if (cost < dist[nk]) {
         dist[nk] = cost;
@@ -162,6 +193,16 @@ export function routeWire(a: Pt, b: Pt, g: RouteGrid): Pt[] {
     if (k === start) break;
   }
   raw.reverse();
+  // bu kablonun kenarlarını işaretle: sonrakiler üstüne binmemeye çalışsın
+  for (let i = 1; i < raw.length; i++) {
+    const x0 = raw[i - 1].x / GRID - gx0;
+    const y0 = raw[i - 1].y / GRID - gy0;
+    const x1 = raw[i].x / GRID - gx0;
+    const y1 = raw[i].y / GRID - gy0;
+    const nd = x1 > x0 ? 0 : x1 < x0 ? 1 : y1 > y0 ? 2 : 3;
+    const [arr, ei] = edgeOf(x0, y0, nd);
+    arr[ei] = Math.min(255, arr[ei] + 1);
+  }
 
   const out: Pt[] = [raw[0]];
   for (let i = 1; i < raw.length - 1; i++) {
