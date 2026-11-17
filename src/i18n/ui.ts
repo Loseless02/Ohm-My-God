@@ -2,6 +2,8 @@
 // "**…**" = vurgulu parça (rich() ile çizilir) · "{x}" = parametre · "a|b|c" = liste
 
 type Entry = { tr: string; en: string; de: string };
+/** Henüz çevrilmemiş metin: üç dilde de Türkçe. Çeviri turunda bunları ara. */
+const tr3 = (s: string): Entry => ({ tr: s, en: s, de: s });
 
 export const UI = {
   // ── genel ──────────────────────────────────────────────────────────────
@@ -243,8 +245,8 @@ export const UI = {
   },
   "pg.phys": { tr: "Fiziksel", en: "Physical", de: "Elektrisch" },
   "pg.logic": { tr: "Logik", en: "Logic", de: "Logik" },
-  "pg.vert": { tr: "Dikey", en: "Vertical", de: "Senkrecht" },
-  "pg.horiz": { tr: "Yatay (raylı)", en: "Horizontal (rails)", de: "Waagerecht (mit Schienen)" },
+  "pg.vert": { tr: "Kaynaklı", en: "With sources", de: "Mit Quellen" },
+  "pg.horiz": { tr: "Yan raylı", en: "Side rails", de: "Seitliche Schienen" },
   "pg.stop": { tr: "Durdur & Düzenle", en: "Stop & edit", de: "Stoppen & bearbeiten" },
   "pg.start": { tr: "Simülasyonu Başlat", en: "Start simulation", de: "Simulation starten" },
   "pg.loadPreset": {
@@ -494,6 +496,27 @@ export const UI = {
     de: "Schaltungen bauen heißt ziehen, winzige Anschlüsse treffen und zwei Fenster nebeneinander sehen — auf dem Handy ist das wie eine Zange mit den Daumen halten. Öffne den Playground am Computer oder Tablet. Bis dahin warten die Themen auf dich:",
   },
   "pg.mobile.topics": { tr: "Konulara göz at", en: "Browse the topics", de: "Themen ansehen" },
+  "pg.el": tr3("Elektronik"),
+  "pg.bus": tr3("L–N raylı"),
+  "pg.grid": tr3("Izgara"),
+  "pg.free": tr3("Serbest"),
+  "pg.gridHint": tr3("Izgara modu: parçalar ve kablolar 20'lik ızgaraya oturur, kablolar kendiliğinden yol bulur."),
+  "pg.freeHint": tr3("Serbest mod: ızgara yok, parçalar bıraktığın yerde ve istediğin açıda durur, kabloyu tık tık kendin çizersin."),
+  "pg.meter": tr3("Ölçü aleti"),
+  "pg.calc": tr3("Hesap makinesi"),
+  "pg.resetLayout": tr3("Panelleri varsayılan yerlerine koy"),
+  "pg.full": tr3("Tam ekran"),
+  "pg.exitFull": tr3("Tam ekrandan çık"),
+  "pg.slow": tr3("Devre ağır: simülasyon gerçek zamanın ×{x} hızında çalışıyor."),
+  "pg.angle": tr3("Açı"),
+  "pg.meterEdit": tr3("Değerler simülasyon çalışırken görünür."),
+  "pg.editFree": tr3("**Serbest mod:** paletteki parçaya tıkla, sonra tuvalde istediğin yere tıkla — ızgaraya oturmaz. **Kablo:** bir uca tıkla, sonra boşluğa her tıkladığında bir kıvrım noktası koyulur, kablo elinde kalır; başka bir uca, kabloya ya da raya tıklayınca biter. **Sağ tık = kabloyu son noktada bitir** (serbest uç kalır), **Esc = iptal**. Küçük noktalar Knotenpunkt'tur: sadece kablo bir parçaya girdiği ya da kablolar birleştiği yerde durur. **Bir parçanın bağlı ucunu tutup sürükle = o kablo kopar ve elinde kalır**, başka bir uca bırak. Serbest uçları ve kavşak noktalarını sürükleyerek taşı. Seçili kablonun kıvrım noktaları kare tutamaçlarla taşınır. **Döndürme:** çift tık = 90°, **R = 15°** (Shift+R ters), **Shift + tekerlek** = ince döndürme, ya da özelliklerdeki açı kaydırıcısı. Tekerlek = zoom, boş alanı sürükle = kaydır."),
+  "pg.guideMeter": tr3("**Ölçü aleti (🔌):** açınca tuvale kırmızı ve siyah prob gelir. Uçlarını sürükleyip bir kabloya, parça ucuna ya da parçanın gövdesine değdir — tam değmezse ölçmez. İki prob da değince gerilim (AC'de gerçek RMS, DC'de ortalama), frekans ve mini osiloskop izi görünür. İki prob aynı parçanın iki ucundaysa o parçanın akımı, gücü, direnci, sıcaklığı ve devri de gelir. Aynı kablonun iki yerine değdirirsen kablo akımını gösterir (pens ampermetre gibi)."),
+  "pg.guideEl": tr3("**Elektronik:** üstte + (ya da L), altta 0 V (ya da N) rayı hazır. Rayı seçip özelliklerden gerilimi, AC/DC'yi ve frekansı ayarla. Hazır devrelerden başla: LED + ön direnç, transistör anahtar, trafo + doğrultucu + 7805, RC şarjı, mikrodenetleyici. Her parçanın değerleri ayarlanır; sınırlarını aşarsan yanar (simülasyonda tıkla = yenisini tak)."),
+  "pg.g.passive": tr3("Pasif"),
+  "pg.g.semi": tr3("Yarı iletken"),
+  "pg.g.ic": tr3("Entegre"),
+  "pg.g.prot": tr3("Koruma"),
   "pg.choose": { tr: "— seç —", en: "— select —", de: "— wählen —" },
   "pg.off": { tr: "kapalı", en: "off", de: "aus" },
 

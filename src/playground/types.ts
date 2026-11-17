@@ -31,6 +31,33 @@ export type PartType =
   | "contact3" // Schütz ana kontakları 1-2 / 3-4 / 5-6
   | "ol3" // Motorschutzrelais (termik), 3 kutup
   | "motor3" // asenkron motor, 6 uçlu klemens
+  // L üst / N alt raylar (yatay bara) — kaynak sürüklemeye gerek yok
+  | "bus_l"
+  | "bus_n"
+  // ek güç parçaları
+  | "fuse" // sigorta / LS
+  | "heater" // ısıtıcı direnç
+  // Elektronik
+  | "res"
+  | "pot"
+  | "cap"
+  | "ecap"
+  | "ind"
+  | "diode"
+  | "zener"
+  | "led_d"
+  | "bridge"
+  | "npn"
+  | "pnp"
+  | "nmos"
+  | "reg"
+  | "xfmr"
+  | "opamp"
+  | "mcu"
+  | "fgen"
+  | "ldr"
+  | "ntc"
+  | "dcmotor"
   // Logik kapıları (DIN EN 60617 kutu sembolleri)
   | "and"
   | "or"
@@ -57,6 +84,8 @@ export interface Part {
   tmode?: TimerMode; // zaman rölesi çalışma şekli
   color?: LedColor;
   conn?: MotorConn;
+  angle?: number; // serbest modda derece (saat yönü tersine); varsa rot'un yerine geçer
+  prm?: Record<string, number | string>; // parça ayarları (R, C, P_n, U_n, program …) — params.ts
 }
 
 // Terminal kimliği: "partId:0" | "partId:1" | …
@@ -78,7 +107,8 @@ export type PartKind =
   | "gate"
   | "source3"
   | "pole3"
-  | "motor3";
+  | "motor3"
+  | "comp"; // elektronik / ayarlı yük — davranışı engine.ts tipine göre çözer
 
 export interface PartSpec {
   name: string; // palet adı (TR)
@@ -97,6 +127,8 @@ const V: [number, number][] = [
 ];
 
 export const RAIL_H = 520;
+export const BUS_W = 1600; // yatay baraların boyu
+const BUS_T: [number, number][] = Array.from({ length: BUS_W / 20 + 1 }, (_, i) => [i * 20, 0]);
 const RAIL_T: [number, number][] = Array.from({ length: 14 }, (_, i) => [0, i * 40]);
 
 const GATE_T: [number, number][] = [
@@ -170,6 +202,30 @@ export const SPEC: Record<PartType, PartSpec> = {
       [80, 100],
     ],
   },
+  bus_l: { name: "Ray L (üst)", de: "Sammelschiene L / +U", prefix: "", kind: "rail", w: BUS_W, h: 0, t: BUS_T },
+  bus_n: { name: "Ray N (alt)", de: "Sammelschiene N / 0 V", prefix: "", kind: "rail", w: BUS_W, h: 0, t: BUS_T },
+  fuse: { name: "Sigorta", de: "Sicherung / LS-Schalter", prefix: "F", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  heater: { name: "Isıtıcı", de: "Heizwiderstand", prefix: "E", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  res: { name: "Direnç", de: "Widerstand", prefix: "R", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  pot: { name: "Potansiyometre", de: "Potentiometer", prefix: "R", kind: "comp", w: 0, h: 80, t: [[0, 0], [0, 80], [40, 40]], vert: true },
+  cap: { name: "Kondansatör", de: "Kondensator", prefix: "C", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  ecap: { name: "Elektrolitik kond.", de: "Elko (gepolt)", prefix: "C", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  ind: { name: "Bobin", de: "Spule / Drossel", prefix: "L", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  diode: { name: "Diyot", de: "Diode", prefix: "V", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  zener: { name: "Zener diyot", de: "Z-Diode", prefix: "V", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  led_d: { name: "LED (diyot)", de: "Leuchtdiode", prefix: "P", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  bridge: { name: "Köprü doğrultucu", de: "Brückengleichrichter B2U", prefix: "V", kind: "comp", w: 80, h: 80, t: [[0, 40], [80, 40], [40, 0], [40, 80]] },
+  npn: { name: "NPN transistör", de: "Transistor NPN", prefix: "Q", kind: "comp", w: 40, h: 80, t: [[-40, 40], [0, 0], [0, 80]] },
+  pnp: { name: "PNP transistör", de: "Transistor PNP", prefix: "Q", kind: "comp", w: 40, h: 80, t: [[-40, 40], [0, 80], [0, 0]] },
+  nmos: { name: "N-MOSFET", de: "MOSFET N-Kanal", prefix: "Q", kind: "comp", w: 40, h: 80, t: [[-40, 40], [0, 0], [0, 80]] },
+  reg: { name: "Gerilim regülatörü", de: "Spannungsregler 78xx", prefix: "N", kind: "comp", w: 80, h: 40, t: [[0, 0], [80, 0], [40, 40]] },
+  xfmr: { name: "Trafo", de: "Transformator", prefix: "T", kind: "comp", w: 60, h: 80, t: [[0, 0], [0, 80], [60, 0], [60, 80]] },
+  opamp: { name: "Op-amp", de: "Operationsverstärker", prefix: "N", kind: "comp", w: 80, h: 40, t: [[0, 0], [0, 40], [80, 20], [40, -20], [40, 60]] },
+  mcu: { name: "Mikrodenetleyici", de: "Mikrocontroller", prefix: "A", kind: "comp", w: 100, h: 100, t: [[0, 20], [0, 80], [100, 20], [100, 40], [100, 60], [100, 80]] },
+  fgen: { name: "Sinyal üreteci", de: "Funktionsgenerator", prefix: "G", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  ldr: { name: "LDR (ışık sensörü)", de: "Fotowiderstand (LDR)", prefix: "R", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  ntc: { name: "NTC (sıcaklık sensörü)", de: "Heißleiter (NTC)", prefix: "R", kind: "comp", w: 0, h: 60, t: V, vert: true },
+  dcmotor: { name: "DC motor", de: "Gleichstrommotor", prefix: "M", kind: "comp", w: 0, h: 60, t: V, vert: true },
   and: gate("UND (&)", "AND-Gatter"),
   or: gate("ODER (≥1)", "OR-Gatter"),
   not: { ...gate("NICHT (1)", "NOT / Negation"), t: [[0, 20], [60, 20]] },
@@ -198,9 +254,22 @@ export const rotXY = (dx: number, dy: number, k: number): [number, number] => {
   }
 };
 
+/** Parçanın açısı (derece, saat yönü tersine). Serbest modda angle, ızgara modunda rot·90. */
+export const angleOf = (p: Part) => p.angle ?? (p.rot ?? 0) * 90;
+
+/** Yerel ofseti parçanın açısına göre döndür. Dik açılarda tam sayı kalsın diye rotXY kullanılır. */
+export function rotPt(dx: number, dy: number, deg: number): [number, number] {
+  const d = ((deg % 360) + 360) % 360;
+  if (d % 90 === 0) return rotXY(dx, dy, d / 90);
+  const r = (d * Math.PI) / 180;
+  const c = Math.cos(r);
+  const s = Math.sin(r);
+  return [dx * c + dy * s, -dx * s + dy * c];
+}
+
 export const terminalsOf = (p: Part) =>
   SPEC[p.type].t.map(([dx, dy], i) => {
-    const [rx, ry] = rotXY(dx, dy, p.rot ?? 0);
+    const [rx, ry] = rotPt(dx, dy, angleOf(p));
     return { id: `${p.id}:${i}`, x: p.x + rx, y: p.y + ry };
   });
 
@@ -211,7 +280,7 @@ export const termPos = (parts: Part[], tid: string) => {
   const spec = SPEC[p.type];
   const off = spec.t[Number(idxs)];
   if (!off) return null;
-  const [rx, ry] = rotXY(off[0], off[1], p.rot ?? 0);
+  const [rx, ry] = rotPt(off[0], off[1], angleOf(p));
   return { x: p.x + rx, y: p.y + ry };
 };
 
@@ -226,7 +295,15 @@ export interface Box {
 export function localBox(t: PartType): Box {
   const spec = SPEC[t];
   if (t === "source") return { x1: -4, y1: -2, x2: 84, y2: 42 };
+  if (t === "bus_l" || t === "bus_n") return { x1: -6, y1: -8, x2: BUS_W + 6, y2: 8 };
   if (spec.kind === "rail") return { x1: -8, y1: -6, x2: 8, y2: RAIL_H + 6 };
+  if (t === "pot") return { x1: -18, y1: -4, x2: 44, y2: 84 };
+  if (t === "bridge") return { x1: -4, y1: -4, x2: 84, y2: 84 };
+  if (t === "npn" || t === "pnp" || t === "nmos") return { x1: -42, y1: -4, x2: 24, y2: 84 };
+  if (t === "reg") return { x1: -4, y1: -22, x2: 84, y2: 42 };
+  if (t === "xfmr") return { x1: -14, y1: -4, x2: 74, y2: 84 };
+  if (t === "opamp") return { x1: -4, y1: -22, x2: 84, y2: 62 };
+  if (t === "mcu") return { x1: -4, y1: -4, x2: 104, y2: 104 };
   if (spec.kind === "node") return { x1: -8, y1: -8, x2: 8, y2: 8 };
   if (spec.kind === "gate") return { x1: -2, y1: -10, x2: 62, y2: 50 };
   if (t.startsWith("taster")) return { x1: -28, y1: -4, x2: 20, y2: 64 };
@@ -239,13 +316,17 @@ export function localBox(t: PartType): Box {
 
 export function worldBox(p: Part): Box {
   const lb = localBox(p.type);
-  const k = p.rot ?? 0;
-  const [ax, ay] = rotXY(lb.x1, lb.y1, k);
-  const [bx, by] = rotXY(lb.x2, lb.y2, k);
+  const a = angleOf(p);
+  const cs = [
+    rotPt(lb.x1, lb.y1, a),
+    rotPt(lb.x2, lb.y1, a),
+    rotPt(lb.x1, lb.y2, a),
+    rotPt(lb.x2, lb.y2, a),
+  ];
   return {
-    x1: p.x + Math.min(ax, bx),
-    y1: p.y + Math.min(ay, by),
-    x2: p.x + Math.max(ax, bx),
-    y2: p.y + Math.max(ay, by),
+    x1: p.x + Math.min(...cs.map((c) => c[0])),
+    y1: p.y + Math.min(...cs.map((c) => c[1])),
+    x2: p.x + Math.max(...cs.map((c) => c[0])),
+    y2: p.y + Math.max(...cs.map((c) => c[1])),
   };
 }

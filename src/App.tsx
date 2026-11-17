@@ -91,6 +91,23 @@ function LangSwitch() {
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  // masaüstünde kenar menüsü kapatılabilir (çalışma alanı büyüsün)
+  const [navHidden, setNavHidden] = useState(() => {
+    try {
+      return localStorage.getItem("omg-nav-hidden") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleNav = () =>
+    setNavHidden((h) => {
+      try {
+        localStorage.setItem("omg-nav-hidden", h ? "0" : "1");
+      } catch {
+        /* önemli değil */
+      }
+      return !h;
+    });
   const location = useLocation();
   const { t } = useI18n();
   // geniş çalışma alanı isteyen sayfalar tam genişliği kullansın
@@ -110,11 +127,33 @@ export default function App() {
   }, [menuOpen]);
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[260px_minmax(0,1fr)]">
+    <div className={`min-h-screen md:grid ${navHidden ? "md:grid-cols-[minmax(0,1fr)]" : "md:grid-cols-[260px_minmax(0,1fr)]"}`}>
       {/* Masaüstü kenar çubuğu */}
-      <aside className="sticky top-0 hidden h-screen overflow-y-auto border-r border-line bg-panel/40 px-3 py-5 md:block">
+      {navHidden ? (
+        <button
+          type="button"
+          onClick={toggleNav}
+          aria-label={t("menu.open")}
+          title={t("menu.open")}
+          className="fixed left-2 top-2 z-40 hidden h-9 w-9 rounded-lg border border-line bg-panel/90 text-mut backdrop-blur hover:text-ink md:block"
+        >
+          ☰
+        </button>
+      ) : null}
+      <aside className={`sticky top-0 h-screen overflow-y-auto border-r border-line bg-panel/40 px-3 py-5 ${navHidden ? "hidden" : "hidden md:block"}`}>
         <div className="mb-6">
-          <Logo />
+          <div className="flex items-center justify-between">
+            <Logo />
+            <button
+              type="button"
+              onClick={toggleNav}
+              aria-label={t("menu.close")}
+              title={t("menu.close")}
+              className="h-8 w-8 shrink-0 rounded-lg text-mut hover:bg-panel2 hover:text-ink"
+            >
+              «
+            </button>
+          </div>
           <p className="mt-1 px-3 text-[11px] text-mut/70">{t("app.sub")}</p>
           <div className="mt-3 px-3">
             <LangSwitch />
@@ -148,7 +187,7 @@ export default function App() {
       <div className="flex min-h-screen min-w-0 flex-col">
         <main
           className={`mx-auto w-full flex-1 px-4 md:px-8 ${
-            wide ? "max-w-[1800px] py-5" : "max-w-5xl py-8"
+            wide ? `max-w-[2400px] py-5 ${navHidden ? "md:pl-14" : ""}` : "max-w-5xl py-8"
           }`}
         >
           <Outlet />
@@ -156,11 +195,12 @@ export default function App() {
         <footer className="border-t border-line px-4 py-6 text-center text-xs text-mut/70">
           {t("footer")} ⚡ 2026
           <p className="mt-3">
-            made and owned by Atherion also known as Loseless, for more{" "}
+            made by Atherion, aka Loseless
+            <span aria-hidden="true"> · </span>
             <a href="https://github.com/loseless02" className="text-mut underline-offset-2 hover:text-volt hover:underline">
               github.com/loseless02
             </a>
-            , to contact{" "}
+            <span aria-hidden="true"> · </span>
             <a href="mailto:vet-physic0l@icloud.com" className="text-mut underline-offset-2 hover:text-volt hover:underline">
               vet-physic0l@icloud.com
             </a>

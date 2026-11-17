@@ -1,6 +1,7 @@
 // Devre üzerinde saf işlemler: hem tuval (Board) hem de Playground kabuğu kullanır.
 import type { Part, PartType, Wire } from "./types";
 import { SPEC, terminalsOf } from "./types";
+import { EL_DEFAULTS } from "./params";
 
 export const MAIN_SWITCH: PartType[] = ["switch_no", "switch_nc", "taster_no", "taster_nc"];
 
@@ -28,11 +29,18 @@ export function nextLabel(type: PartType, list: Part[]): string {
 const firstLabel = (pool: Part[], types: PartType[]) => pool.find((q) => types.includes(q.type))?.label;
 
 /** Yeni parça: etiket, varsayılan ayarlar ve bağlı olduğu bobin/düğme önerisi. */
-export function makePart(type: PartType, x: number, y: number, pool: Part[], rotate: boolean): Part {
+export function makePart(type: PartType, x: number, y: number, pool: Part[], rotate: boolean, el = false): Part {
   const p: Part = { id: newId(), type, x, y, label: nextLabel(type, pool) };
+  const d = el ? EL_DEFAULTS[type] : undefined;
+  if (d) {
+    const { U, ...rest } = d;
+    if (typeof U === "number") p.volts = U;
+    if (Object.keys(rest).length) p.prm = { ...rest };
+  }
   const kind = SPEC[type].kind;
   if (SPEC[type].vert && rotate) p.rot = 1;
-  if (kind === "source") p.volts = 230;
+  if (kind === "source" && p.volts === undefined) p.volts = el ? 12 : 230;
+  if (kind === "source" && el) p.prm = { ...p.prm, ac: "dc" };
   if (type === "tcoil") {
     p.delay = 3;
     p.tmode = "ein";
@@ -43,7 +51,7 @@ export function makePart(type: PartType, x: number, y: number, pool: Part[], rot
   if (type === "tcontact_no" || type === "tcontact_nc") p.group = firstLabel(pool, ["tcoil"]);
   if (type === "pairc_no" || type === "pairc_nc") p.group = firstLabel(pool, MAIN_SWITCH);
   if (type === "ol_nc" || type === "ol_no") p.group = firstLabel(pool, ["ol3"]);
-  if (type === "led") p.color = "red";
+  if (type === "led" || type === "led_d") p.color = "red";
   if (type === "motor3") p.conn = "6";
   return p;
 }

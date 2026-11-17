@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import type { LedColor, Part, PartType } from "./types";
 import { RAIL_H } from "./types";
 import type { MotorState } from "./sim";
+import { EL_TYPES, EL_VIEWBOX, ElSymbol } from "./parts-el";
 import { useI18n } from "../i18n";
 
 // Sembol renkleri
@@ -22,6 +23,7 @@ interface SymProps {
   sim: boolean;
   motor?: MotorState; // trifaze motor
   burnt?: boolean; // bobin aşırı gerilimde
+  hot?: number; // sıcaklık °C
 }
 
 const LED_C: Record<LedColor, string> = {
@@ -152,8 +154,10 @@ function Pole3({ closed, manual }: { closed: boolean; manual?: boolean }) {
   );
 }
 
-export function PartSymbol({ part, closed = false, level = 0, energized = false, sim, motor, burnt }: SymProps) {
+export function PartSymbol({ part, closed = false, level = 0, energized = false, sim, motor, burnt, hot }: SymProps) {
   const offText = useI18n().t("pg.off");
+  if (EL_TYPES.has(part.type))
+    return <ElSymbol part={part} sim={sim} level={level} closed={closed} motor={motor} hot={hot} broken={burnt} />;
   const on = level > 0.8;
   const dim = level > 0.15 && level <= 0.8;
   switch (part.type) {
@@ -244,7 +248,10 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
     case "tcontact_nc":
       return <SwitchBody closed={closed} nc timed />;
     case "lamp": {
-      const g = sim && on ? C.volt : sim && dim ? "#a3894a" : C.off;
+      // parlaklık gerçek güce bağlı: az güçte koyu turuncu, anma gücünde sarı, fazlasında beyaz
+      const lv = sim && !burnt ? Math.max(0, level) : 0;
+      const g = lv > 1.15 ? "#fff7d6" : lv > 0.6 ? C.volt : lv > 0.25 ? "#d98c2b" : "#8a4a1c";
+      const blur = Math.min(18, 3 + 12 * Math.min(1.5, lv));
       return (
         <>
           {lead(0, 0, 0, 16)}
@@ -253,15 +260,13 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
             cx={0}
             cy={30}
             r={14}
-            fill={sim && (on || dim) ? g : "transparent"}
-            fillOpacity={on ? 0.85 : 0.45}
-            stroke={C.line}
+            fill={lv > 0.03 ? g : burnt && sim ? "#1c1414" : "transparent"}
+            fillOpacity={Math.min(0.95, 0.15 + lv * 0.75)}
+            stroke={burnt && sim ? "#6b4040" : C.line}
             strokeWidth={2}
             style={{
-              transition: "fill 0.35s ease, fill-opacity 0.35s ease, filter 0.4s ease",
-              filter: on
-                ? "drop-shadow(0 0 10px rgba(251,191,36,0.9))"
-                : "drop-shadow(0 0 0px rgba(251,191,36,0))",
+              transition: "fill 0.2s ease, fill-opacity 0.2s ease, filter 0.25s ease",
+              filter: lv > 0.08 ? `drop-shadow(0 0 ${blur}px rgba(251,191,36,${Math.min(0.95, lv)}))` : "none",
             }}
           />
           <line x1={-9.9} y1={20.1} x2={9.9} y2={39.9} stroke={C.line} strokeWidth={2} />
@@ -603,8 +608,8 @@ export function PartSymbol({ part, closed = false, level = 0, energized = false,
 /** Palet önizlemesi için minik statik sembol. */
 export function MiniSymbol({ type }: { type: PartType }) {
   const part: Part = { id: "mini", type, x: 0, y: 0, label: "" };
-  const vb =
-    type === "source"
+  const vb = EL_VIEWBOX[type] ??
+    (type === "source"
       ? "-4 -4 88 48"
       : type === "netz3"
         ? "-18 -46 156 50"
@@ -618,7 +623,7 @@ export function MiniSymbol({ type }: { type: PartType }) {
         ? "-12 -12 24 24"
         : ["and", "or", "not", "nand", "nor", "xor"].includes(type)
           ? "-4 -12 68 64"
-          : "-28 -2 56 64";
+          : "-28 -2 56 64");
   return (
     <svg viewBox={vb} className="h-9 w-9 shrink-0">
       <PartSymbol part={part} sim={false} closed={type.endsWith("_nc")} />

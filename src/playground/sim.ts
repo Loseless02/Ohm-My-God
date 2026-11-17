@@ -1,24 +1,11 @@
-// ── Simülasyon motorları ─────────────────────────────────────────────────────
-// simulate():      fiziksel devre — iletkenlik ağı + Gauss eliminasyonu.
+// ── Ortak simülasyon tipleri + Logik motoru ─────────────────────────────────
+// Fiziksel/elektronik devreler engine.ts'te (zamana bağlı), trifaze sim3.ts'te.
 // simulateLogic(): dijital devre — net'ler üzerinde boolean yayılım.
-// İkisi de aynı SimResult şeklini döndürür; çizim katmanı farkı bilmez.
 
 import type { Part, Wire } from "./types";
 import { SPEC, terminalsOf } from "./types";
 
-const G_WIRE = 1e4;
-const G_LOAD = 1;
-const G_LEAK = 1e-9;
-const SHORT_G = 100; // etkin iletkenlik bunu aşarsa: metalik yol = kısa devre
-
 const MAIN_SWITCH = ["switch_no", "switch_nc", "taster_no", "taster_nc"];
-
-export interface SimIO {
-  actuated: Record<string, boolean>; // şalter/buton PART ID → basılı/kapalı konum
-  timerDone: Record<string, boolean>; // tcoil LABEL → kontakları şu an çekili mi
-  prevEnergized: Record<string, boolean>; // bobin LABEL → önceki durum (tohum)
-  held?: Record<string, boolean>; // kendi durumunu tutanlar: darbe rölesi konumu, motor koruma "attı" (LABEL)
-}
 
 export interface MotorState {
   speed: number; // 0..1 (yıldızda ~0.58, üçgende 1)
@@ -110,162 +97,6 @@ export function solve(n: number, A: number[][], b: number[]): number[] {
     x[row] = Math.abs(A[row][row]) < 1e-15 ? 0 : s / A[row][row];
   }
   return x;
-}
-
-// ── Fiziksel simülasyon ──────────────────────────────────────────────────────
-export function simulate(parts: Part[], wires: Wire[], io: SimIO): SimResult {
-  const act = withLabels(parts, io.actuated);
-  const held = io.held ?? {};
-  const sources = parts.filter((p) => SPEC[p.type].kind === "source" && p.enabled !== false);
-  const railsL = parts.filter((p) => p.type === "rail_l");
-  const railsN = parts.filter((p) => p.type === "rail_n");
-  const empty: SimResult = {
-    hasSource: sources.length > 0 || railsL.length > 0,
-    short: false,
-    chatter: false,
-    energized: {},
-    level: {},
-    flow: {},
-    dir: {},
-    closed: {},
-  };
-  if (!empty.hasSource) {
-    for (const p of parts)
-      if (SPEC[p.type].kind === "switch" || SPEC[p.type].kind === "changeover")
-        empty.closed[p.id] = isClosed(p, {}, act, io.timerDone, held);
-    return empty;
-  }
-  const vRef = Math.max(
-    230,
-    ...sources.map((s) => s.volts ?? 230),
-    ...railsL.map((rail) => rail.volts ?? 230),
-  );
-
-  const nodeIdx = new Map<string, number>();
-  for (const p of parts) for (const t of terminalsOf(p)) nodeIdx.set(t.id, nodeIdx.size);
-  const n = nodeIdx.size;
-
-  let energized = { ...io.prevEnergized };
-  let volts: number[] = [];
-  let chatter = false;
-  const seen: string[] = [];
-
-  for (let iter = 0; ; iter++) {
-    const edges: { a: number; b: number; g: number }[] = [];
-    for (const w of wires) {
-      const a = nodeIdx.get(w.a);
-      const b = nodeIdx.get(w.b);
-      if (a !== undefined && b !== undefined) edges.push({ a, b, g: G_WIRE });
-    }
-    for (const p of parts) {
-      const kind = SPEC[p.type].kind;
-      if (kind === "changeover") {
-        const [c, nc, no] = terminalsOf(p).map((t) => nodeIdx.get(t.id)!);
-        const up = isClosed(p, energized, act, io.timerDone, held);
-        edges.push({ a: c, b: up ? no : nc, g: G_WIRE });
-        continue;
-      }
-      if (kind !== "switch" && kind !== "load" && kind !== "coil") continue;
-      const [t0, t1] = terminalsOf(p);
-      const a = nodeIdx.get(t0.id)!;
-      const b = nodeIdx.get(t1.id)!;
-      if (kind === "switch") {
-        if (isClosed(p, energized, act, io.timerDone, held)) edges.push({ a, b, g: G_WIRE });
-      } else {
-        edges.push({ a, b, g: G_LOAD });
-      }
-    }
-
-    const A = Array.from({ length: n }, () => new Array(n).fill(0));
-    const rhs = new Array(n).fill(0);
-    for (let i = 0; i < n; i++) A[i][i] = G_LEAK;
-    for (const e of edges) {
-      A[e.a][e.a] += e.g;
-      A[e.b][e.b] += e.g;
-      A[e.a][e.b] -= e.g;
-      A[e.b][e.a] -= e.g;
-    }
-    const pins: [string, number][] = [];
-    for (const s of sources) {
-      const [tL, tN] = terminalsOf(s);
-      pins.push([tL.id, s.volts ?? 230], [tN.id, 0]);
-    }
-    for (const rail of railsL) for (const t of terminalsOf(rail)) pins.push([t.id, rail.volts ?? 230]);
-    for (const rail of railsN) for (const t of terminalsOf(rail)) pins.push([t.id, 0]);
-    for (const [tid, val] of pins) {
-      const i = nodeIdx.get(tid)!;
-      for (let c = 0; c < n; c++) A[i][c] = 0;
-      A[i][i] = 1;
-      rhs[i] = val;
-    }
-    volts = solve(n, A, rhs);
-
-    const next: Record<string, boolean> = {};
-    for (const p of parts) {
-      if (SPEC[p.type].kind !== "coil") continue;
-      const [t0, t1] = terminalsOf(p);
-      const dv = Math.abs(volts[nodeIdx.get(t0.id)!] - volts[nodeIdx.get(t1.id)!]);
-      // bobin kendi nominal gerilimine göre çeker (Spulenspannung, varsayılan 230 V)
-      const on = dv >= 0.7 * (p.volts ?? 230);
-      next[p.label] = next[p.label] || on;
-    }
-    const key = JSON.stringify(next);
-    if (JSON.stringify(energized) === key || iter >= 20) {
-      if (iter >= 20) chatter = true;
-      energized = next;
-      break;
-    }
-    if (seen.includes(key)) {
-      chatter = true;
-      energized = next;
-      break;
-    }
-    seen.push(key);
-    energized = next;
-  }
-
-  const res: SimResult = { ...empty, chatter, energized, burnt: {} };
-  for (const p of parts) {
-    const kind = SPEC[p.type].kind;
-    if (kind === "changeover") {
-      res.closed[p.id] = isClosed(p, energized, act, io.timerDone, held);
-      continue;
-    }
-    if (kind !== "switch" && kind !== "load" && kind !== "coil") continue;
-    const [t0, t1] = terminalsOf(p);
-    if (kind === "switch") res.closed[p.id] = isClosed(p, energized, act, io.timerDone, held);
-    else {
-      const dv = Math.abs(volts[nodeIdx.get(t0.id)!] - volts[nodeIdx.get(t1.id)!]);
-      res.level[p.id] = Math.min(1, dv / vRef);
-      if (kind === "coil") {
-        res.level[p.id] = Math.min(1, dv / (p.volts ?? 230));
-        if (dv > 1.25 * (p.volts ?? 230)) res.burnt![p.id] = true;
-      }
-    }
-  }
-  for (const w of wires) {
-    const a = nodeIdx.get(w.a);
-    const b = nodeIdx.get(w.b);
-    if (a === undefined || b === undefined) continue;
-    res.flow[w.id] = (Math.abs(volts[a] - volts[b]) * G_WIRE) / vRef;
-    // akım yüksek potansiyelden alçağa akar: kablonun kendi üzerindeki minik
-    // gerilim düşümünün işareti gerçek yönü verir
-    res.dir[w.id] = volts[a] > volts[b] ? 1 : volts[a] < volts[b] ? -1 : 0;
-  }
-  // kısa devre: yüksek potansiyel uçlarından çekilen etkin iletkenlik
-  const highIds = new Set<string>([
-    ...sources.map((s) => terminalsOf(s)[0].id),
-    ...railsL.flatMap((rail) => terminalsOf(rail).map((t) => t.id)),
-  ]);
-  let iSrc = 0;
-  for (const w of wires) {
-    const a = nodeIdx.get(w.a);
-    const b = nodeIdx.get(w.b);
-    if (a === undefined || b === undefined) continue;
-    if (highIds.has(w.a) !== highIds.has(w.b)) iSrc += Math.abs(volts[a] - volts[b]) * G_WIRE;
-  }
-  if (iSrc / vRef > SHORT_G) res.short = true;
-  return res;
 }
 
 // ── Dijital (Logik) simülasyon ───────────────────────────────────────────────
